@@ -22,8 +22,10 @@ table edge, making it a two-dimensional projectile problem.
 - Time on the ramp: `t_ramp = 2h / (v · sinθ)`. Ramp angle changes this time but **not** the
   exit speed — a useful thing for students to discover.
 - Fall time uses `H − c`, the table height minus the cup rim height, not `H`. The teacher's
-  guide flags forgetting `c` as the most common student error; at `H = 1 m, c = 8 cm` it is
-  worth 7.2 cm of range against a ±3.5 cm target, so the mistake reliably loses the shot.
+  guide flags forgetting `c` as the most common student error. At the default setup
+  (`H = 1.00 m, c = 8 cm`) it overstates the range by 3.8 cm against a ±3.5 cm cup, so the
+  shot misses, but only just; at `H = 1.20 m, c = 12 cm` the error grows to 6.4 cm. Raising
+  the cup rim is the reliable way to make this mistake cost a group the shot.
 - Required start distance: `D = R − v_b · t_travel`, where `t_travel` is the fall time alone
   (buggy released at the table edge) or `t_ramp + t_fall` (both released together).
 
