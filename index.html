@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Physics Simulations</title>
+<style>
+  :root {
+    color-scheme: light;
+    --surface-1: #fcfcfb; --page: #f9f9f7;
+    --text-primary: #0b0b0b; --text-secondary: #52514e; --text-muted: #898781;
+    --series-1: #2a78d6; --series-2: #eb6834;
+    --border: rgba(11,11,11,0.10);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --surface-1: #1a1a19; --page: #0d0d0d;
+      --text-primary: #ffffff; --text-secondary: #c3c2b7; --text-muted: #898781;
+      --series-1: #3987e5; --series-2: #d95926;
+      --border: rgba(255,255,255,0.10);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 28px 16px; background: var(--page); color: var(--text-primary);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main { max-width: 860px; margin: 0 auto; }
+  h1 { font-size: 26px; margin: 0 0 4px; }
+  .sub { color: var(--text-secondary); margin: 0 0 24px; font-size: 14.5px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+  a.card {
+    display: block; text-decoration: none; color: inherit;
+    background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 14px; padding: 18px 18px 16px;
+    transition: transform .12s, border-color .12s;
+  }
+  a.card:hover { transform: translateY(-2px); border-color: var(--series-1); }
+  .card h2 { font-size: 16.5px; margin: 0 0 6px; }
+  .card p { font-size: 13px; color: var(--text-secondary); margin: 0 0 10px; line-height: 1.45; }
+  .tag { display: inline-block; font-size: 11px; padding: 2px 9px; border-radius: 20px;
+         border: 1px solid var(--border); color: var(--text-muted); margin-right: 4px; }
+  .soon { opacity: 0.6; }
+  .soon:hover { transform: none; border-color: var(--border); cursor: default; }
+  footer { margin-top: 30px; color: var(--text-muted); font-size: 12.5px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Physics Simulations</h1>
+  <p class="sub">Interactive, quantitative labs for high school and AP / intro-college physics. Every sim is a single HTML file — embed anywhere with an iframe.</p>
+  <div class="grid">
+    <a class="card" href="pv-cycle-lab.html">
+      <h2>PV Cycle Lab</h2>
+      <p>Build a thermodynamic cycle by dragging state points. Per-leg W, Q, and &Delta;U accounting, Carnot &amp; Otto presets, piston animation, efficiency vs. the Carnot limit.</p>
+      <span class="tag">Thermodynamics</span><span class="tag">AP Physics 2</span>
+    </a>
+    <a class="card" href="relativity-lab.html">
+      <h2>Relativity Lab</h2>
+      <p>Light clocks, length contraction, the cosmic-ray muon experiment, and the relativity of simultaneity — all driven by one v/c slider.</p>
+      <span class="tag">Modern Physics</span><span class="tag">Special Relativity</span>
+    </a>
+    <div class="card soon">
+      <h2>Bernoulli Pipe Lab</h2>
+      <p>Continuity and Bernoulli's equation in a pipe of varying cross-section, with manometers. Coming soon.</p>
+      <span class="tag">Fluids</span>
+    </div>
+    <div class="card soon">
+      <h2>RLC Phasor Explorer</h2>
+      <p>AC circuits with phasor diagrams, impedance, and resonance curves. Coming soon.</p>
+      <span class="tag">E&amp;M</span>
+    </div>
+  </div>
+  <footer>Free for classroom use. Sims run entirely in the browser — no accounts, no data collection.</footer>
+</main>
+</body>
+</html>

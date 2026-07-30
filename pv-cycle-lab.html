@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PV Cycle Lab — Build a Heat Engine</title>
+<style>
+  .viz-root {
+    color-scheme: light;
+    --surface-1: #fcfcfb;
+    --page: #f9f9f7;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted: #898781;
+    --grid: #e1e0d9;
+    --axis: #c3c2b7;
+    --series-1: #2a78d6;   /* cycle */
+    --series-2: #eb6834;   /* hot / heat in */
+    --series-3: #1baf7a;
+    --border: rgba(11,11,11,0.10);
+    --good: #006300;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .viz-root {
+      color-scheme: dark;
+      --surface-1: #1a1a19;
+      --page: #0d0d0d;
+      --text-primary: #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted: #898781;
+      --grid: #2c2c2a;
+      --axis: #383835;
+      --series-1: #3987e5;
+      --series-2: #d95926;
+      --series-3: #199e70;
+      --border: rgba(255,255,255,0.10);
+      --good: #0ca30c;
+    }
+  }
+  :root[data-theme="dark"] .viz-root {
+    color-scheme: dark;
+    --surface-1: #1a1a19;
+    --page: #0d0d0d;
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted: #898781;
+    --grid: #2c2c2a;
+    --axis: #383835;
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --border: rgba(255,255,255,0.10);
+    --good: #0ca30c;
+  }
+  * { box-sizing: border-box; }
+  body.viz-root {
+    margin: 0; padding: 16px;
+    background: var(--page);
+    color: var(--text-primary);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 14px;
+  }
+  header h1 { font-size: 20px; margin: 0 0 2px; font-weight: 650; }
+  header p  { margin: 0 0 12px; color: var(--text-secondary); font-size: 13px; }
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    margin-bottom: 12px;
+  }
+  .controls label { color: var(--text-secondary); font-size: 12.5px; }
+  select, button {
+    font: inherit; font-size: 13px;
+    background: var(--surface-1); color: var(--text-primary);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 6px 10px; cursor: pointer;
+  }
+  button:hover, select:hover { border-color: var(--text-muted); }
+  button.primary { border-color: var(--series-1); }
+  .layout { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-start; }
+  .panel {
+    background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px;
+  }
+  #chartPanel { flex: 1 1 560px; min-width: 320px; }
+  #sidePanel  { flex: 0 1 250px; min-width: 230px; display: flex; flex-direction: column; gap: 12px; }
+  svg { display: block; width: 100%; height: auto; }
+  svg text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tile .lbl { font-size: 11.5px; color: var(--text-muted); }
+  .tile .val { font-size: 21px; font-weight: 600; }
+  .tile .sub { font-size: 11px; color: var(--text-secondary); }
+  .tile.hero .val { font-size: 30px; }
+  .tile.hero { grid-column: 1 / -1; }
+  table {
+    border-collapse: collapse; width: 100%; margin-top: 14px;
+    font-variant-numeric: tabular-nums; font-size: 13px;
+  }
+  th, td { text-align: right; padding: 5px 10px; border-bottom: 1px solid var(--grid); }
+  th { color: var(--text-muted); font-weight: 500; font-size: 12px; }
+  th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
+  .note { color: var(--text-muted); font-size: 12px; margin-top: 8px; }
+  .swatch { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: baseline; }
+  #tooltip {
+    position: fixed; pointer-events: none; display: none; z-index: 10;
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px;
+    padding: 6px 9px; font-size: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    color: var(--text-primary);
+  }
+  #toast {
+    position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
+    background: var(--text-primary); color: var(--surface-1);
+    padding: 7px 14px; border-radius: 8px; font-size: 12.5px;
+    opacity: 0; transition: opacity .25s; pointer-events: none;
+  }
+</style>
+</head>
+<body class="viz-root">
+<header>
+  <h1>PV Cycle Lab</h1>
+  <p>Build a thermodynamic cycle for 0.15 mol of ideal gas. Drag the state points, choose a preset engine, and account for W, Q, and &Delta;U on every leg. Sign convention: <b>W</b> is work done <em>by</em> the gas; <b>Q</b> is heat added <em>to</em> the gas.</p>
+</header>
+
+<div class="controls">
+  <label>Preset
+    <select id="preset">
+      <option value="rect">Rectangle (2 isobars + 2 isochors)</option>
+      <option value="carnot">Carnot (2 isotherms + 2 adiabats)</option>
+      <option value="otto">Otto (2 adiabats + 2 isochors)</option>
+      <option value="triangle">Triangle (custom)</option>
+    </select>
+  </label>
+  <label>Gas
+    <select id="gasType">
+      <option value="mono">Monatomic (&gamma; = 5/3)</option>
+      <option value="di">Diatomic (&gamma; = 7/5)</option>
+    </select>
+  </label>
+  <button id="reverseBtn" title="Reverse traversal direction">&#8635; Reverse</button>
+  <button id="addBtn">+ Point</button>
+  <button id="removeBtn">&minus; Point</button>
+  <button id="animBtn" class="primary">&#9654; Animate</button>
+  <button id="copyBtn">Copy data</button>
+</div>
+
+<div class="layout">
+  <div class="panel" id="chartPanel">
+    <svg id="chart" viewBox="0 0 640 470" role="img" aria-label="Pressure–volume diagram with a draggable thermodynamic cycle"></svg>
+    <div class="note">Drag points to reshape the cycle (curved presets convert to straight legs when dragged). Straight legs are labeled isobaric / isochoric / linear automatically.</div>
+  </div>
+  <div id="sidePanel">
+    <div class="panel">
+      <svg id="piston" viewBox="0 0 200 190" role="img" aria-label="Piston animation"></svg>
+    </div>
+    <div class="panel tiles" id="tiles"></div>
+  </div>
+</div>
+
+<div class="panel" style="margin-top:14px;">
+  <table id="legTable"></table>
+  <div class="note" id="closureNote"></div>
+</div>
+
+<div id="tooltip"></div>
+<div id="toast"></div>
+
+<script>
+/* ============================ PHYSICS CORE ============================ */
+/* Units: P in kPa, V in L  =>  P*V is directly in joules.
+   Ideal gas: T = PV/(nR),  U = n Cv T = (Cv/R) * PV,
+   W_by_gas = ∫P dV (trapezoid on samples),  Q = ΔU + W (first law). */
+const R = 8.314;               // J/(mol·K)
+const N_MOL = 0.15;            // mol
+
+function tempOf(pt, nMol) { return (pt.P * pt.V) / (nMol * R); }
+
+// Sample a leg from state a to state b. type: 'linear' | 'isothermal' | 'adiabatic'
+function sampleLeg(a, b, type, gamma, steps) {
+  steps = steps || 48;
+  const pts = [];
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const V = a.V + (b.V - a.V) * t;
+    let P;
+    if (type === 'isothermal' && Math.abs(b.V - a.V) > 1e-9) {
+      P = (a.P * a.V) / V;                       // PV = const
+    } else if (type === 'adiabatic' && Math.abs(b.V - a.V) > 1e-9) {
+      P = a.P * Math.pow(a.V / V, gamma);        // PV^γ = const
+    } else {
+      P = a.P + (b.P - a.P) * t;                 // straight line in PV plane
+    }
+    pts.push({ V: V, P: P });
+  }
+  // Force exact endpoint (guards rounding on curved legs)
+  pts[steps] = { V: b.V, P: b.P };
+  return pts;
+}
+
+function workOfSamples(pts) {
+  let W = 0;
+  for (let i = 1; i < pts.length; i++) {
+    W += 0.5 * (pts[i].P + pts[i - 1].P) * (pts[i].V - pts[i - 1].V);
+  }
+  return W; // joules (kPa·L)
+}
+
+// Analyze the full cycle. vertices: [{P,V}], legTypes: [type per leg i: i -> i+1 mod N]
+function analyzeCycle(vertices, legTypes, nMol, CvOverR) {
+  const gamma = (CvOverR + 1) / CvOverR;
+  const N = vertices.length;
+  const legs = [];
+  let Wnet = 0, Qin = 0, Qout = 0;
+  for (let i = 0; i < N; i++) {
+    const a = vertices[i], b = vertices[(i + 1) % N];
+    const type = legTypes[i] || 'linear';
+    const samples = sampleLeg(a, b, type, gamma);
+    const W = workOfSamples(samples);
+    const dU = CvOverR * (b.P * b.V - a.P * a.V);  // ΔU = (Cv/R)(P2V2 − P1V1)
+    const Q = dU + W;
+    Wnet += W;
+    if (Q > 0) Qin += Q; else Qout += -Q;
+    legs.push({ from: i, to: (i + 1) % N, type, samples, W, dU, Q,
+                Ta: tempOf(a, nMol), Tb: tempOf(b, nMol) });
+  }
+  const temps = vertices.map(v => tempOf(v, nMol));
+  const Tmax = Math.max.apply(null, temps), Tmin = Math.min.apply(null, temps);
+  const eta = (Wnet > 0 && Qin > 0) ? Wnet / Qin : null;      // engine efficiency
+  const cop = (Wnet < 0 && Qin > 0) ? Qin / (-Wnet) : null;   // refrigerator COP
+  const etaCarnot = Tmax > 0 ? 1 - Tmin / Tmax : null;
+  return { legs, Wnet, Qin, Qout, eta, cop, etaCarnot, Tmax, Tmin, temps, gamma };
+}
+/* ========================== END PHYSICS CORE ========================== */
+
+/* ------------------------------ state ------------------------------ */
+let vertices = [], legTypes = [];
+let CvOverR = 1.5; // monatomic
+let selected = -1;
+let animating = false, animPos = 0, lastFrame = null;
+
+const PMIN = 10, PMAX = 300, VMIN = 0.5, VMAX = 10;
+
+function loadPreset(name) {
+  const g = (CvOverR + 1) / CvOverR;
+  if (name === 'rect') {
+    vertices = [{V:2,P:250},{V:6,P:250},{V:6,P:100},{V:2,P:100}];
+    legTypes = ['linear','linear','linear','linear'];
+  } else if (name === 'triangle') {
+    vertices = [{V:2,P:100},{V:7,P:250},{V:7,P:100}];
+    legTypes = ['linear','linear','linear'];
+  } else if (name === 'carnot') {
+    const Th = 500, Tc = 300, nR = N_MOL * R;
+    const V1 = 2.5, V2 = 4.5;
+    const k = Math.pow(Th / Tc, 1 / (g - 1));
+    const V3 = V2 * k, V4 = V1 * k;
+    vertices = [
+      {V:V1, P:nR*Th/V1}, {V:V2, P:nR*Th/V2},
+      {V:V3, P:nR*Tc/V3}, {V:V4, P:nR*Tc/V4}
+    ];
+    legTypes = ['isothermal','adiabatic','isothermal','adiabatic'];
+  } else if (name === 'otto') {
+    const V1 = 6, V2 = 2.5, P1 = 40;
+    const P2 = P1 * Math.pow(V1 / V2, g);
+    const P3 = P2 + 60;
+    const P4 = P3 * Math.pow(V2 / V1, g);
+    vertices = [{V:V1,P:P1},{V:V2,P:P2},{V:V2,P:P3},{V:V1,P:P4}];
+    legTypes = ['adiabatic','linear','adiabatic','linear'];
+  }
+  selected = -1; animPos = 0;
+  render();
+}
+
+function hasCurvedLegs() { return legTypes.some(t => t !== 'linear'); }
+
+function toLinear() {
+  legTypes = legTypes.map(() => 'linear');
+  toast('Curved legs converted to straight lines');
+}
+
+function classifyLinear(a, b) {
+  if (Math.abs(a.V - b.V) < 1e-9) return 'isochoric';
+  if (Math.abs(a.P - b.P) < 1e-9) return 'isobaric';
+  return 'linear';
+}
+
+/* ------------------------------ chart ------------------------------ */
+const M = { l: 58, r: 16, t: 14, b: 46 };
+const CW = 640, CH = 470;
+const xOf = V => M.l + (V - 0) / (VMAX - 0) * (CW - M.l - M.r);
+const yOf = P => CH - M.b - (P - 0) / (PMAX - 0) * (CH - M.t - M.b);
+
+const svg = document.getElementById('chart');
+const tooltip = document.getElementById('tooltip');
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+function fmt(x, d){ if (Object.is(Math.round(x), -0) || Math.abs(x) < 5e-7) x = 0; return x.toLocaleString('en-US', {maximumFractionDigits: d==null?0:d, minimumFractionDigits: d==null?0:d}); }
+
+function render() {
+  const res = analyzeCycle(vertices, legTypes, N_MOL, CvOverR);
+  renderChart(res);
+  renderTiles(res);
+  renderTable(res);
+  renderPiston(res);
+  window.__lastResult = res;
+}
+
+function renderChart(res) {
+  let s = '';
+  // gridlines
+  for (let V = 1; V <= VMAX; V++)
+    s += `<line x1="${xOf(V)}" y1="${M.t}" x2="${xOf(V)}" y2="${CH-M.b}" stroke="var(--grid)" stroke-width="1"/>`;
+  for (let P = 50; P <= PMAX; P += 50)
+    s += `<line x1="${M.l}" y1="${yOf(P)}" x2="${CW-M.r}" y2="${yOf(P)}" stroke="var(--grid)" stroke-width="1"/>`;
+  // axes
+  s += `<line x1="${M.l}" y1="${M.t}" x2="${M.l}" y2="${CH-M.b}" stroke="var(--axis)" stroke-width="1"/>`;
+  s += `<line x1="${M.l}" y1="${CH-M.b}" x2="${CW-M.r}" y2="${CH-M.b}" stroke="var(--axis)" stroke-width="1"/>`;
+  // tick labels
+  for (let V = 0; V <= VMAX; V += 2)
+    s += `<text x="${xOf(V)}" y="${CH-M.b+18}" text-anchor="middle" font-size="11" fill="var(--text-muted)">${V}</text>`;
+  for (let P = 0; P <= PMAX; P += 50)
+    s += `<text x="${M.l-8}" y="${yOf(P)+4}" text-anchor="end" font-size="11" fill="var(--text-muted)">${P}</text>`;
+  s += `<text x="${(M.l+CW-M.r)/2}" y="${CH-8}" text-anchor="middle" font-size="12" fill="var(--text-secondary)">Volume (L)</text>`;
+  s += `<text x="16" y="${(M.t+CH-M.b)/2}" text-anchor="middle" font-size="12" fill="var(--text-secondary)" transform="rotate(-90 16 ${(M.t+CH-M.b)/2})">Pressure (kPa)</text>`;
+
+  // cycle path (all legs, sampled)
+  let d = '';
+  res.legs.forEach((leg, li) => {
+    leg.samples.forEach((p, i) => {
+      const cmd = (li === 0 && i === 0) ? 'M' : 'L';
+      d += `${cmd}${xOf(p.V).toFixed(1)},${yOf(p.P).toFixed(1)}`;
+    });
+  });
+  d += 'Z';
+  s += `<path d="${d}" fill="var(--series-1)" fill-opacity="0.10" stroke="var(--series-1)" stroke-width="2" stroke-linejoin="round"/>`;
+
+  // direction arrows at leg midpoints
+  res.legs.forEach(leg => {
+    const mid = leg.samples[Math.floor(leg.samples.length / 2)];
+    const nxt = leg.samples[Math.floor(leg.samples.length / 2) + 1] || mid;
+    const x1 = xOf(mid.V), y1 = yOf(mid.P), x2 = xOf(nxt.V), y2 = yOf(nxt.P);
+    const ang = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+    s += `<g transform="translate(${x1},${y1}) rotate(${ang})">
+            <path d="M-4,-4 L5,0 L-4,4 Z" fill="var(--series-1)"/>
+          </g>`;
+  });
+
+  // animation marker
+  if (animating || animPos > 0) {
+    const p = pointAt(res, animPos);
+    s += `<circle cx="${xOf(p.V)}" cy="${yOf(p.P)}" r="6" fill="var(--series-2)" stroke="var(--surface-1)" stroke-width="2"/>`;
+  }
+
+  // vertices: ≥8px marker, 2px surface ring, generous hit target
+  vertices.forEach((v, i) => {
+    const sel = i === selected;
+    s += `<g class="vx" data-i="${i}" style="cursor:grab">
+      <circle cx="${xOf(v.V)}" cy="${yOf(v.P)}" r="14" fill="transparent"/>
+      <circle cx="${xOf(v.V)}" cy="${yOf(v.P)}" r="${sel?7:5.5}" fill="var(--series-1)" stroke="var(--surface-1)" stroke-width="2"/>
+      <text x="${xOf(v.V)+10}" y="${yOf(v.P)-8}" font-size="11.5" font-weight="600" fill="var(--text-primary)">${i+1}</text>
+    </g>`;
+  });
+
+  svg.innerHTML = s;
+}
+
+function pointAt(res, t) { // t in [0,1) around the cycle, arc-length-ish by leg
+  const N = res.legs.length;
+  const li = Math.min(N - 1, Math.floor(t * N));
+  const lt = t * N - li;
+  const samples = res.legs[li].samples;
+  const si = Math.min(samples.length - 1, Math.floor(lt * (samples.length - 1)));
+  return samples[si];
+}
+
+/* --------------------------- interactions --------------------------- */
+let dragging = -1;
+svg.addEventListener('pointerdown', e => {
+  const g = e.target.closest('.vx');
+  if (!g) { selected = -1; render(); return; }
+  if (hasCurvedLegs()) toLinear();
+  dragging = +g.dataset.i;
+  selected = dragging;
+  svg.setPointerCapture(e.pointerId);
+  render();
+});
+svg.addEventListener('pointermove', e => {
+  const rect = svg.getBoundingClientRect();
+  const sx = CW / rect.width, sy = CH / rect.height;
+  const px = (e.clientX - rect.left) * sx, py = (e.clientY - rect.top) * sy;
+  if (dragging >= 0) {
+    let V = (px - M.l) / (CW - M.l - M.r) * VMAX;
+    let P = (CH - M.b - py) / (CH - M.t - M.b) * PMAX;
+    V = Math.max(VMIN, Math.min(VMAX, Math.round(V / 0.25) * 0.25));
+    P = Math.max(PMIN, Math.min(PMAX, Math.round(P / 5) * 5));
+    vertices[dragging] = { V, P };
+    render();
+    showVertexTip(e, dragging);
+  } else {
+    const g = e.target.closest('.vx');
+    if (g) showVertexTip(e, +g.dataset.i); else tooltip.style.display = 'none';
+  }
+});
+svg.addEventListener('pointerup', () => { dragging = -1; });
+svg.addEventListener('pointerleave', () => { tooltip.style.display = 'none'; });
+
+function showVertexTip(e, i) {
+  const v = vertices[i], T = tempOf(v, N_MOL);
+  tooltip.innerHTML = `<b>State ${i+1}</b><br>P = ${fmt(v.P)} kPa<br>V = ${fmt(v.V,2)} L<br>T = ${fmt(T)} K`;
+  tooltip.style.display = 'block';
+  tooltip.style.left = (e.clientX + 14) + 'px';
+  tooltip.style.top = (e.clientY - 10) + 'px';
+}
+
+/* ------------------------------ tiles ------------------------------ */
+function renderTiles(res) {
+  const el = document.getElementById('tiles');
+  let effRow;
+  if (res.eta != null) {
+    effRow = `<div class="tile"><div class="lbl">Efficiency &eta;</div>
+      <div class="val">${(res.eta*100).toFixed(1)}%</div>
+      <div class="sub">Carnot limit ${(res.etaCarnot*100).toFixed(1)}%</div></div>`;
+  } else if (res.cop != null) {
+    effRow = `<div class="tile"><div class="lbl">Refrigerator COP</div>
+      <div class="val">${res.cop.toFixed(2)}</div>
+      <div class="sub">counter-clockwise cycle</div></div>`;
+  } else {
+    effRow = `<div class="tile"><div class="lbl">Efficiency &eta;</div>
+      <div class="val">&mdash;</div><div class="sub">no net work</div></div>`;
+  }
+  el.innerHTML = `
+    <div class="tile hero"><div class="lbl">Net work per cycle</div>
+      <div class="val">${fmt(res.Wnet)} J</div>
+      <div class="sub">${res.Wnet>0?'engine (clockwise)':res.Wnet<0?'refrigerator (counter-clockwise)':'zero area'}</div></div>
+    <div class="tile"><div class="lbl">Heat in</div>
+      <div class="val"><span class="swatch" style="background:var(--series-2)"></span>${fmt(res.Qin)} J</div></div>
+    <div class="tile"><div class="lbl">Heat out</div>
+      <div class="val"><span class="swatch" style="background:var(--series-1)"></span>${fmt(res.Qout)} J</div></div>
+    ${effRow}
+    <div class="tile"><div class="lbl">T range</div>
+      <div class="val" style="font-size:16px">${fmt(res.Tmin)}–${fmt(res.Tmax)} K</div></div>`;
+}
+
+/* ------------------------------ table ------------------------------ */
+function renderTable(res) {
+  const t = document.getElementById('legTable');
+  let rows = `<tr><th>Leg</th><th>Process</th><th>W by gas (J)</th><th>&Delta;U (J)</th><th>Q (J)</th><th>T: ${'&rarr;'} (K)</th></tr>`;
+  res.legs.forEach(leg => {
+    const name = leg.type === 'linear'
+      ? classifyLinear(vertices[leg.from], vertices[leg.to])
+      : leg.type;
+    rows += `<tr>
+      <td>${leg.from+1} &rarr; ${leg.to+1}</td>
+      <td>${name}</td>
+      <td>${fmt(leg.W)}</td>
+      <td>${fmt(leg.dU)}</td>
+      <td>${fmt(leg.Q)}</td>
+      <td>${fmt(leg.Ta)} &rarr; ${fmt(leg.Tb)}</td>
+    </tr>`;
+  });
+  rows += `<tr style="font-weight:600">
+    <td>Cycle</td><td></td><td>${fmt(res.Wnet)}</td><td>0</td><td>${fmt(res.Qin - res.Qout)}</td><td></td></tr>`;
+  t.innerHTML = rows;
+  const dUsum = res.legs.reduce((s,l)=>s+l.dU,0);
+  document.getElementById('closureNote').textContent =
+    `First-law check: Σ ΔU around the closed cycle = ${dUsum.toFixed(6)} J (should be 0) · ΣQ = Wnet as required. Gas: n = 0.15 mol, γ = ${res.gamma.toFixed(3)}.`;
+}
+
+/* ------------------------------ piston ------------------------------ */
+function renderPiston(res) {
+  const p = pointAt(res, animPos);
+  const T = tempOf(p, N_MOL);
+  const frac = Math.max(0.08, Math.min(1, p.V / VMAX));
+  const h = 120 * frac;
+  // temperature tint: cool blue -> warm orange
+  const tt = Math.max(0, Math.min(1, (T - 250) / 500));
+  const gasColor = `color-mix(in oklab, var(--series-1) ${(100-tt*100).toFixed(0)}%, var(--series-2))`;
+  const legIdx = Math.min(res.legs.length - 1, Math.floor(animPos * res.legs.length));
+  const q = res.legs[legIdx].Q;
+  const flame = (animating && Math.abs(q) > 1)
+    ? `<text x="100" y="182" text-anchor="middle" font-size="12" fill="var(--text-secondary)">${q>0?'heating (Q &gt; 0)':'cooling (Q &lt; 0)'}</text>` : '';
+  document.getElementById('piston').innerHTML = `
+    <text x="100" y="14" text-anchor="middle" font-size="12" fill="var(--text-secondary)">Cylinder</text>
+    <rect x="60" y="20" width="80" height="140" fill="none" stroke="var(--axis)" stroke-width="2" rx="3"/>
+    <rect x="62" y="${158 - h}" width="76" height="${h}" fill="${gasColor}" fill-opacity="0.55"/>
+    <rect x="56" y="${152 - h}" width="88" height="8" rx="2" fill="var(--text-muted)"/>
+    <line x1="100" y1="${152 - h}" x2="100" y2="24" stroke="var(--text-muted)" stroke-width="4"/>
+    <text x="100" y="172" text-anchor="middle" font-size="11" fill="var(--text-muted)">V = ${fmt(p.V,2)} L · T = ${fmt(T)} K</text>
+    ${flame}`;
+}
+
+/* ---------------------------- animation ---------------------------- */
+function tick(ts) {
+  if (!animating) return;
+  if (lastFrame == null) lastFrame = ts;
+  const dt = (ts - lastFrame) / 1000; lastFrame = ts;
+  animPos = (animPos + dt / 6) % 1;   // 6 s per cycle
+  render();
+  requestAnimationFrame(tick);
+}
+document.getElementById('animBtn').addEventListener('click', function () {
+  animating = !animating; lastFrame = null;
+  this.innerHTML = animating ? '&#10074;&#10074; Pause' : '&#9654; Animate';
+  if (animating) requestAnimationFrame(tick); else render();
+});
+
+/* ----------------------------- controls ----------------------------- */
+document.getElementById('preset').addEventListener('change', e => loadPreset(e.target.value));
+document.getElementById('gasType').addEventListener('change', e => {
+  CvOverR = e.target.value === 'mono' ? 1.5 : 2.5;
+  // re-derive curved presets for the new γ; custom shapes just recompute
+  const preset = document.getElementById('preset').value;
+  if (hasCurvedLegs()) loadPreset(preset); else render();
+});
+document.getElementById('reverseBtn').addEventListener('click', () => {
+  vertices.reverse(); legTypes.reverse(); legTypes.push(legTypes.shift());
+  selected = -1; render();
+});
+document.getElementById('addBtn').addEventListener('click', () => {
+  if (vertices.length >= 8) { toast('Max 8 points'); return; }
+  if (hasCurvedLegs()) toLinear();
+  // insert midpoint of longest leg
+  let best = 0, bestLen = -1;
+  for (let i = 0; i < vertices.length; i++) {
+    const a = vertices[i], b = vertices[(i+1)%vertices.length];
+    const len = Math.hypot(xOf(a.V)-xOf(b.V), yOf(a.P)-yOf(b.P));
+    if (len > bestLen) { bestLen = len; best = i; }
+  }
+  const a = vertices[best], b = vertices[(best+1)%vertices.length];
+  vertices.splice(best+1, 0, { V: Math.round((a.V+b.V)/2/0.25)*0.25, P: Math.round((a.P+b.P)/2/5)*5 });
+  legTypes.splice(best+1, 0, 'linear');
+  render();
+});
+document.getElementById('removeBtn').addEventListener('click', () => {
+  if (vertices.length <= 3) { toast('A cycle needs at least 3 points'); return; }
+  if (hasCurvedLegs()) toLinear();
+  const i = selected >= 0 ? selected : vertices.length - 1;
+  vertices.splice(i, 1); legTypes.splice(i, 1);
+  selected = -1; render();
+});
+document.getElementById('copyBtn').addEventListener('click', () => {
+  const res = window.__lastResult;
+  let tsv = 'State\tP (kPa)\tV (L)\tT (K)\n';
+  vertices.forEach((v,i) => tsv += `${i+1}\t${v.P}\t${v.V}\t${tempOf(v,N_MOL).toFixed(1)}\n`);
+  tsv += '\nLeg\tProcess\tW_by_gas (J)\tdU (J)\tQ (J)\n';
+  res.legs.forEach(l => {
+    const name = l.type === 'linear' ? classifyLinear(vertices[l.from], vertices[l.to]) : l.type;
+    tsv += `${l.from+1}->${l.to+1}\t${name}\t${l.W.toFixed(1)}\t${l.dU.toFixed(1)}\t${l.Q.toFixed(1)}\n`;
+  });
+  tsv += `\nW_net (J)\t${res.Wnet.toFixed(1)}\nQ_in (J)\t${res.Qin.toFixed(1)}\nQ_out (J)\t${res.Qout.toFixed(1)}\n`;
+  if (res.eta != null) tsv += `efficiency\t${(res.eta*100).toFixed(2)}%\nCarnot_limit\t${(res.etaCarnot*100).toFixed(2)}%\n`;
+  navigator.clipboard.writeText(tsv).then(
+    () => toast('Data copied — paste into a spreadsheet'),
+    () => toast('Copy failed — your browser blocked clipboard access'));
+});
+
+let toastTimer;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.opacity = 1;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.style.opacity = 0, 2200);
+}
+
+loadPreset('rect');
+</script>
+</body>
+</html>
