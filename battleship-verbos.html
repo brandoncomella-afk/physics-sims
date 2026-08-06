@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Batalla de Barco — Verb Conjugation Battleship</title>
+<style>
+  :root {
+    color-scheme: light;
+    --surface-1: #fcfcfb; --surface-2:#f1f1ee; --page: #f9f9f7;
+    --text-primary: #0b0b0b; --text-secondary: #52514e; --text-muted: #898781;
+    --series-1: #2a78d6; --series-2: #eb6834;
+    --hit:#e0483a; --sunk:#8c1d13; --miss:#8a8a86; --ship:#3a3a37;
+    --ok:#2e8b57;
+    --border: rgba(11,11,11,0.10); --border-strong: rgba(11,11,11,0.22);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --surface-1: #1a1a19; --surface-2:#242422; --page: #0d0d0d;
+      --text-primary: #ffffff; --text-secondary: #c3c2b7; --text-muted: #898781;
+      --series-1: #3987e5; --series-2: #d95926;
+      --hit:#e0483a; --sunk:#ff6a5a; --miss:#6f6f6b; --ship:#c9c9c2;
+      --ok:#5cc98a;
+      --border: rgba(255,255,255,0.12); --border-strong: rgba(255,255,255,0.26);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px 14px 48px; background: var(--page); color: var(--text-primary);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif; line-height:1.45;
+  }
+  main { max-width: 940px; margin: 0 auto; }
+  h1 { font-size: 25px; margin: 0 0 3px; letter-spacing:-.01em; }
+  h1 .es { color: var(--series-2); }
+  .sub { color: var(--text-secondary); margin: 0 0 20px; font-size: 14px; }
+  .screen { display:none; }
+  .screen.active { display:block; }
+
+  /* cards / panels */
+  .panel { background: var(--surface-1); border:1px solid var(--border); border-radius:14px; padding:18px; }
+  .row { display:flex; flex-wrap:wrap; gap:14px; align-items:flex-start; }
+  .col { flex:1 1 340px; min-width:300px; }
+
+  /* buttons */
+  button, .btn { font: inherit; cursor:pointer; border-radius:10px; border:1px solid var(--border-strong);
+    background:var(--surface-2); color:var(--text-primary); padding:9px 15px; transition:transform .1s, border-color .1s, background .1s; }
+  button:hover:not(:disabled), .btn:hover { transform:translateY(-1px); border-color:var(--series-1); }
+  button:disabled { opacity:.45; cursor:default; }
+  button.primary { background:var(--series-1); border-color:var(--series-1); color:#fff; font-weight:600; }
+  button.primary:hover { background:var(--series-1); }
+  button.big { padding:14px 18px; font-size:15px; text-align:left; width:100%; display:block; }
+  button.big b { display:block; font-size:16px; margin-bottom:2px; }
+  button.big span { color:var(--text-secondary); font-size:13px; font-weight:400; }
+  button.ghost { background:transparent; }
+  .mode-grid { display:grid; grid-template-columns:1fr; gap:10px; }
+  @media(min-width:560px){ .mode-grid{ grid-template-columns:repeat(3,1fr);} button.big b{font-size:15px;} }
+
+  label.field { display:block; font-size:13px; color:var(--text-secondary); margin:14px 0 5px; font-weight:600; }
+  select, input[type=text] { font:inherit; padding:9px 11px; border-radius:10px; border:1px solid var(--border-strong);
+    background:var(--surface-1); color:var(--text-primary); width:100%; }
+  .toggle { display:flex; align-items:center; gap:10px; margin-top:14px; font-size:14px; cursor:pointer; }
+  .toggle input { width:18px; height:18px; }
+  .hint { font-size:12.5px; color:var(--text-muted); margin-top:6px; }
+
+  /* board */
+  .board-wrap { overflow-x:auto; }
+  table.board { border-collapse:collapse; margin:0 auto; }
+  table.board th, table.board td { border:1px solid var(--border); text-align:center; }
+  table.board th { background:var(--surface-2); color:var(--text-secondary); font-size:11.5px; font-weight:600;
+    padding:4px 6px; white-space:nowrap; }
+  table.board th.verb { text-align:right; padding-right:9px; font-style:italic; font-weight:600; color:var(--text-primary); }
+  table.board td { width:44px; height:38px; padding:0; font-size:15px; position:relative; }
+  td.cell { cursor:default; background:var(--surface-1); }
+  td.cell.fireable { cursor:crosshair; }
+  td.cell.fireable:hover { background:rgba(42,120,214,.16); box-shadow:inset 0 0 0 2px var(--series-1); }
+  td.cell.ship { background:color-mix(in srgb, var(--ship) 26%, var(--surface-1)); }
+  td.cell.preview { background:rgba(42,120,214,.28); }
+  td.cell.badprev { background:rgba(224,72,58,.30); }
+  td.cell.hit  { background:color-mix(in srgb, var(--hit) 34%, var(--surface-1)); color:var(--hit); font-weight:700; }
+  td.cell.sunk { background:color-mix(in srgb, var(--sunk) 46%, var(--surface-1)); color:#fff; font-weight:700; }
+  td.cell.miss { color:var(--miss); }
+  .board-title { text-align:center; font-weight:700; font-size:14px; margin:0 0 8px; }
+  .board-sub { text-align:center; font-size:12px; color:var(--text-muted); margin:-4px 0 10px; }
+
+  /* fleet pips */
+  .fleet { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-top:10px; }
+  .ship-pip { display:inline-flex; gap:2px; padding:3px 5px; border:1px solid var(--border); border-radius:7px; background:var(--surface-2); }
+  .ship-pip.sunk { opacity:.4; }
+  .ship-pip i { width:9px; height:12px; border-radius:2px; background:var(--ship); display:block; }
+  .ship-pip.sel { border-color:var(--series-1); box-shadow:0 0 0 2px rgba(42,120,214,.3); }
+  .ship-pip.placed { border-color:var(--ok); }
+  .ship-pip.selectable { cursor:pointer; }
+
+  .log { margin-top:14px; background:var(--surface-2); border-radius:10px; padding:10px 13px; font-size:13.5px;
+    min-height:20px; border:1px solid var(--border); }
+  .log .big { font-size:15px; font-weight:600; }
+  .good { color:var(--ok); } .bad { color:var(--hit); }
+  .toolbar { display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; align-items:center; }
+  .spacer { flex:1; }
+  .playtense { display:flex; gap:8px; align-items:center; font-size:13px; color:var(--text-secondary); }
+  .playtense select { width:auto; display:inline-block; padding:7px 10px; }
+
+  /* modal */
+  .overlay { position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; align-items:center; justify-content:center; padding:16px; z-index:10; }
+  .overlay.active { display:flex; }
+  .modal { background:var(--surface-1); border:1px solid var(--border-strong); border-radius:16px; padding:22px; max-width:440px; width:100%; }
+  .modal h3 { margin:0 0 4px; font-size:18px; }
+  .modal .q { font-size:20px; margin:12px 0 4px; }
+  .modal .q b { color:var(--series-2); }
+  .modal .tense { font-size:12.5px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em; }
+  .accents { display:flex; gap:6px; margin:10px 0; flex-wrap:wrap; }
+  .accents button { padding:7px 12px; font-size:15px; }
+  .modal .fb { min-height:20px; font-size:14px; margin-top:8px; }
+
+  textarea.code { width:100%; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px; padding:11px;
+    border-radius:10px; border:1px solid var(--border-strong); background:var(--surface-2); color:var(--text-primary);
+    resize:vertical; min-height:74px; word-break:break-all; }
+  .steps { font-size:13.5px; color:var(--text-secondary); padding-left:20px; }
+  .steps li { margin:5px 0; }
+  ol.rules { font-size:13.5px; color:var(--text-secondary); padding-left:20px; margin:8px 0 0;}
+  ol.rules li{ margin:4px 0; }
+  .pill { display:inline-block; font-size:11px; padding:2px 9px; border-radius:20px; border:1px solid var(--border);
+    color:var(--text-muted); margin-left:6px; }
+  footer { margin-top:26px; color:var(--text-muted); font-size:12px; text-align:center; }
+  .center { text-align:center; }
+  .big-msg { font-size:19px; font-weight:700; margin:6px 0 14px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Batalla de <span class="es">Barco</span> <span class="pill">verb conjugation battleship</span></h1>
+  <p class="sub">Hide your fleet on a grid of Spanish verbs &amp; pronouns. To fire, conjugate the verb correctly. Miss the conjugation and you miss your turn.</p>
+
+  <!-- ─────────── HOME ─────────── -->
+  <section id="s-home" class="screen active">
+    <div class="row">
+      <div class="col panel">
+        <div style="font-weight:700;margin-bottom:10px;">1 · Choose how to play</div>
+        <div class="mode-grid">
+          <button class="big" onclick="start('cpu')"><b>vs Computer</b><span>Practice solo against the CPU.</span></button>
+          <button class="big" onclick="start('pass')"><b>Two Players</b><span>Share one device, pass &amp; play.</span></button>
+          <button class="big" onclick="start('code')"><b>Play by Code</b><span>Two devices — share a code/link.</span></button>
+        </div>
+
+        <label class="field">2 · Tense to practice</label>
+        <select id="tense">
+          <option value="imperfect" selected>Imperfecto — imperfect (¡the worksheet default!)</option>
+          <option value="present">Presente — present</option>
+          <option value="preterite">Pretérito — preterite</option>
+          <option value="future">Futuro — future</option>
+          <option value="conditional">Condicional — conditional</option>
+          <option value="random">🎲 Random — mix all five tenses</option>
+        </select>
+
+        <label class="toggle"><input type="checkbox" id="irr"> Include <b>irregular verbs</b></label>
+        <div class="hint" id="irrHint"></div>
+      </div>
+
+      <div class="col panel">
+        <div style="font-weight:700;margin-bottom:8px;">How it works</div>
+        <ol class="rules">
+          <li>The grid rows are <b>verbs</b> (chosen at random) and the columns are <b>pronouns</b>.</li>
+          <li>Hide your <b>6 ships</b> across neighbouring cells — horizontally or vertically.</li>
+          <li>On your turn, pick an enemy cell and <b>conjugate that verb</b> for that pronoun. Get it right and the shot fires; get it wrong and you forfeit the turn (the answer is shown).</li>
+          <li>A ship sinks when every one of its cells is hit. Sink the whole enemy fleet to win.</li>
+        </ol>
+        <div style="margin-top:16px; border-top:1px solid var(--border); padding-top:14px;">
+          <div style="font-weight:700;margin-bottom:6px;">Got a code or link?</div>
+          <textarea class="code" id="joinCode" placeholder="Paste the code your opponent sent you…"></textarea>
+          <div class="toolbar"><button class="primary" onclick="joinFromBox()">Join game</button></div>
+        </div>
+      </div>
+    </div>
+    <footer>Inspired by Profa. Diaz's <i>Batalla de Barco</i> worksheet. Runs entirely in your browser — no accounts, no server.</footer>
+  </section>
+
+  <!-- ─────────── PLACEMENT ─────────── -->
+  <section id="s-place" class="screen">
+    <div class="panel">
+      <div id="placeBanner"></div>
+      <div class="board-title" id="placeTitle">Place your fleet</div>
+      <div class="board-sub">Select a ship, set its direction, then click a cell to drop it. Click a placed ship to pick it back up.</div>
+      <div class="fleet" id="placeFleet"></div>
+      <div class="board-wrap"><div id="placeBoard"></div></div>
+      <div class="toolbar">
+        <button id="rotBtn" onclick="toggleOrient()">Direction: Horizontal ▸</button>
+        <button onclick="autoFill()">🎲 Random</button>
+        <button onclick="resetPlace()">Reset</button>
+        <div class="spacer"></div>
+        <button class="primary" id="readyBtn" onclick="finishPlacement()" disabled>Ready ✓</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── PLAY ─────────── -->
+  <section id="s-play" class="screen">
+    <div class="log" id="log"></div>
+    <div class="row" style="margin-top:14px;">
+      <div class="col panel">
+        <div class="board-title">🎯 Enemy waters</div>
+        <div class="board-sub" id="enemySub">Click a cell &amp; conjugate to fire</div>
+        <div class="board-wrap"><div id="enemyBoard"></div></div>
+        <div class="fleet" id="enemyFleet"></div>
+      </div>
+      <div class="col panel">
+        <div class="board-title">🚢 Your fleet</div>
+        <div class="board-sub" id="myShipsSub">Incoming fire shown here</div>
+        <div class="board-wrap"><div id="myBoard"></div></div>
+        <div class="fleet" id="myFleet"></div>
+      </div>
+    </div>
+    <div class="toolbar">
+      <label class="playtense">Tense
+        <select id="playTense" onchange="changeTense(this.value)">
+          <option value="imperfect">Imperfecto</option>
+          <option value="present">Presente</option>
+          <option value="preterite">Pretérito</option>
+          <option value="future">Futuro</option>
+          <option value="conditional">Condicional</option>
+          <option value="random">🎲 Random (mixed)</option>
+        </select>
+      </label>
+      <div class="spacer"></div>
+      <button class="ghost" onclick="quitToHome()">↩ New game</button>
+    </div>
+  </section>
+
+  <!-- ─────────── PASS INTERSTITIAL ─────────── -->
+  <section id="s-pass" class="screen">
+    <div class="panel center" style="padding:44px 18px;">
+      <div class="big-msg" id="passMsg"></div>
+      <div id="passNote" style="color:var(--text-secondary); margin-bottom:20px;"></div>
+      <button class="primary" onclick="passContinue()">I'm ready ▸</button>
+    </div>
+  </section>
+
+  <!-- ─────────── CODE OUT (share) ─────────── -->
+  <section id="s-codeout" class="screen">
+    <div class="panel">
+      <div class="big-msg" id="codeoutTitle"></div>
+      <div id="codeoutNote" style="color:var(--text-secondary);margin-bottom:14px;"></div>
+      <ol class="steps" id="codeoutSteps"></ol>
+      <label class="field">Share link</label>
+      <textarea class="code" id="shareLink" readonly></textarea>
+      <div class="toolbar"><button class="primary" onclick="copyEl('shareLink',this)">Copy link</button></div>
+      <label class="field">…or share the raw code</label>
+      <textarea class="code" id="shareCode" readonly></textarea>
+      <div class="toolbar"><button onclick="copyEl('shareCode',this)">Copy code</button>
+        <div class="spacer"></div>
+        <button class="ghost" onclick="quitToHome()">↩ New game</button></div>
+      <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px;">
+        <div style="font-weight:700;margin-bottom:6px;">Their reply</div>
+        <div class="hint" style="margin:0 0 8px;">When your opponent sends a code back, paste it here to continue.</div>
+        <textarea class="code" id="replyCode" placeholder="Paste your opponent's reply…"></textarea>
+        <div class="toolbar"><button class="primary" onclick="joinFromReply()">Continue ▸</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── GAME OVER ─────────── -->
+  <section id="s-over" class="screen">
+    <div class="panel center" style="padding:40px 18px;">
+      <div style="font-size:46px;line-height:1;">🏆</div>
+      <div class="big-msg" id="overMsg"></div>
+      <div id="overNote" style="color:var(--text-secondary);margin-bottom:20px;"></div>
+      <button class="primary" onclick="quitToHome()">Play again</button>
+    </div>
+  </section>
+</main>
+
+<!-- fire modal -->
+<div class="overlay" id="fireOverlay">
+  <div class="modal">
+    <h3>Fire! 🎯</h3>
+    <div class="tense" id="fireTense"></div>
+    <div class="q" id="fireQ"></div>
+    <input type="text" id="fireInput" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="type the conjugation…">
+    <div class="accents" id="accentRow"></div>
+    <div class="fb" id="fireFb"></div>
+    <div class="toolbar"><button class="primary" onclick="submitFire()">Fire ▸</button><button class="ghost" onclick="closeFire()">Cancel</button></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+//  CONJUGATION ENGINE  (regular algorithm + curated irregular table)
+//  Persons: 0=yo 1=tú 2=él/ella/usted 3=nosotros 4=vosotros 5=ellos/ustedes
+// ═══════════════════════════════════════════════════════════════════════════
+const REG_ENDINGS = {
+  present:   { ar:['o','as','a','amos','áis','an'], er:['o','es','e','emos','éis','en'], ir:['o','es','e','imos','ís','en'] },
+  preterite: { ar:['é','aste','ó','amos','asteis','aron'], er:['í','iste','ió','imos','isteis','ieron'], ir:['í','iste','ió','imos','isteis','ieron'] },
+  imperfect: { ar:['aba','abas','aba','ábamos','abais','aban'], er:['ía','ías','ía','íamos','íais','ían'], ir:['ía','ías','ía','íamos','íais','ían'] },
+  future:      ['é','ás','á','emos','éis','án'],
+  conditional: ['ía','ías','ía','íamos','íais','ían'],
+};
+const VERBS = [
+  {inf:'hablar',en:'to speak',reg:true},{inf:'viajar',en:'to travel',reg:true},{inf:'trabajar',en:'to work',reg:true},
+  {inf:'estudiar',en:'to study',reg:true},{inf:'cantar',en:'to sing',reg:true},{inf:'bailar',en:'to dance',reg:true},
+  {inf:'cocinar',en:'to cook',reg:true},{inf:'nadar',en:'to swim',reg:true},{inf:'caminar',en:'to walk',reg:true},
+  {inf:'mirar',en:'to watch',reg:true},{inf:'escuchar',en:'to listen',reg:true},{inf:'ayudar',en:'to help',reg:true},
+  {inf:'limpiar',en:'to clean',reg:true},{inf:'visitar',en:'to visit',reg:true},{inf:'tomar',en:'to take/drink',reg:true},
+  {inf:'comprar',en:'to buy',reg:true},{inf:'llevar',en:'to carry/wear',reg:true},{inf:'preguntar',en:'to ask',reg:true},
+  {inf:'descansar',en:'to rest',reg:true},{inf:'cenar',en:'to dine',reg:true},
+  {inf:'comer',en:'to eat',reg:true},{inf:'beber',en:'to drink',reg:true},{inf:'aprender',en:'to learn',reg:true},
+  {inf:'comprender',en:'to understand',reg:true},{inf:'correr',en:'to run',reg:true},{inf:'deber',en:'to owe/must',reg:true},
+  {inf:'vender',en:'to sell',reg:true},{inf:'prometer',en:'to promise',reg:true},
+  {inf:'vivir',en:'to live',reg:true},{inf:'escribir',en:'to write',reg:true},{inf:'compartir',en:'to share',reg:true},
+  {inf:'recibir',en:'to receive',reg:true},{inf:'abrir',en:'to open',reg:true},{inf:'subir',en:'to go up',reg:true},
+  {inf:'asistir',en:'to attend',reg:true},{inf:'decidir',en:'to decide',reg:true},{inf:'permitir',en:'to permit',reg:true},
+  {inf:'ser',en:'to be',reg:false,present:['soy','eres','es','somos','sois','son'],preterite:['fui','fuiste','fue','fuimos','fuisteis','fueron'],imperfect:['era','eras','era','éramos','erais','eran']},
+  {inf:'ir',en:'to go',reg:false,present:['voy','vas','va','vamos','vais','van'],preterite:['fui','fuiste','fue','fuimos','fuisteis','fueron'],imperfect:['iba','ibas','iba','íbamos','ibais','iban']},
+  {inf:'ver',en:'to see',reg:false,present:['veo','ves','ve','vemos','veis','ven'],preterite:['vi','viste','vio','vimos','visteis','vieron'],imperfect:['veía','veías','veía','veíamos','veíais','veían']},
+  {inf:'tener',en:'to have',reg:false,present:['tengo','tienes','tiene','tenemos','tenéis','tienen'],preterite:['tuve','tuviste','tuvo','tuvimos','tuvisteis','tuvieron'],futStem:'tendr'},
+  {inf:'hacer',en:'to do/make',reg:false,present:['hago','haces','hace','hacemos','hacéis','hacen'],preterite:['hice','hiciste','hizo','hicimos','hicisteis','hicieron'],futStem:'har'},
+  {inf:'estar',en:'to be',reg:false,present:['estoy','estás','está','estamos','estáis','están'],preterite:['estuve','estuviste','estuvo','estuvimos','estuvisteis','estuvieron']},
+  {inf:'dar',en:'to give',reg:false,present:['doy','das','da','damos','dais','dan'],preterite:['di','diste','dio','dimos','disteis','dieron']},
+  {inf:'poder',en:'to be able',reg:false,present:['puedo','puedes','puede','podemos','podéis','pueden'],preterite:['pude','pudiste','pudo','pudimos','pudisteis','pudieron'],futStem:'podr'},
+  {inf:'poner',en:'to put',reg:false,present:['pongo','pones','pone','ponemos','ponéis','ponen'],preterite:['puse','pusiste','puso','pusimos','pusisteis','pusieron'],futStem:'pondr'},
+  {inf:'querer',en:'to want',reg:false,present:['quiero','quieres','quiere','queremos','queréis','quieren'],preterite:['quise','quisiste','quiso','quisimos','quisisteis','quisieron'],futStem:'querr'},
+  {inf:'venir',en:'to come',reg:false,present:['vengo','vienes','viene','venimos','venís','vienen'],preterite:['vine','viniste','vino','vinimos','vinisteis','vinieron'],futStem:'vendr'},
+  {inf:'decir',en:'to say',reg:false,present:['digo','dices','dice','decimos','decís','dicen'],preterite:['dije','dijiste','dijo','dijimos','dijisteis','dijeron'],futStem:'dir'},
+  {inf:'saber',en:'to know',reg:false,present:['sé','sabes','sabe','sabemos','sabéis','saben'],preterite:['supe','supiste','supo','supimos','supisteis','supieron'],futStem:'sabr'},
+  {inf:'jugar',en:'to play',reg:false,present:['juego','juegas','juega','jugamos','jugáis','juegan'],preterite:['jugué','jugaste','jugó','jugamos','jugasteis','jugaron']},
+  {inf:'buscar',en:'to look for',reg:false,preterite:['busqué','buscaste','buscó','buscamos','buscasteis','buscaron']},
+  {inf:'pensar',en:'to think',reg:false,present:['pienso','piensas','piensa','pensamos','pensáis','piensan']},
+  {inf:'dormir',en:'to sleep',reg:false,present:['duermo','duermes','duerme','dormimos','dormís','duermen'],preterite:['dormí','dormiste','durmió','dormimos','dormisteis','durmieron']},
+  {inf:'pedir',en:'to ask for',reg:false,present:['pido','pides','pide','pedimos','pedís','piden'],preterite:['pedí','pediste','pidió','pedimos','pedisteis','pidieron']},
+];
+const BYINF = Object.fromEntries(VERBS.map(v=>[v.inf,v]));
+function conjugate(verb,tense,person){
+  if(!verb) return '';
+  if(verb[tense]) return verb[tense][person];
+  const g = verb.inf.slice(-2), stem = verb.inf.slice(0,-2);
+  if(tense==='future'||tense==='conditional'){ return (verb.futStem||verb.inf)+REG_ENDINGS[tense][person]; }
+  return stem+REG_ENDINGS[tense][g][person];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  GAME CONSTANTS & STATE
+// ═══════════════════════════════════════════════════════════════════════════
+const ROWS=8, COLS=7;
+const PRONOUNS=['Ellos','Tú','Usted','Nosotros','Ella','Yo','Ustedes'];
+const COL_PERSON=[5,1,2,3,2,0,5];
+const SHIP_SIZES=[4,3,3,2,2,2];
+const TENSE_LABEL={present:'Presente',preterite:'Pretérito',imperfect:'Imperfecto',future:'Futuro',conditional:'Condicional'};
+const TENSES=['present','preterite','imperfect','future','conditional'];
+function tenseLabel(t){ return t==='random'?'Mixed tenses':(TENSE_LABEL[t]||t); }
+function randomTense(){ return TENSES[Math.floor(Math.random()*TENSES.length)]; }
+function shotTense(){ return G.tense==='random'?randomTense():G.tense; }
+let G=null;                 // full serialisable game state
+let placeSel=0, placeOrient='h', placeShips=[]; // placement scratch
+let fireTarget=null;
+
+const key=(r,c)=>r+','+c;
+const other=p=>p==='p1'?'p2':'p1';
+const strip=s=>s.normalize('NFD').replace(/[̀-ͯ]/g,'');
+function sample(arr,n){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a.slice(0,n); }
+function conjRC(r,c,tense){ return conjugate(BYINF[G.verbs[r]],tense||G.tense,COL_PERSON[c]); }
+function name(p){ return G.names[p]; }
+
+function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); window.scrollTo(0,0); }
+document.getElementById('irr').addEventListener('change',updateIrrHint);
+function updateIrrHint(){
+  const on=document.getElementById('irr').checked;
+  const t=document.getElementById('tense').value;
+  let msg = on ? 'Verbs like ser, ir, tener, hacer, jugar… will appear.'
+              : 'Only regular verbs — safe conjugations everywhere.';
+  if(on && t==='imperfect') msg += ' (In the imperfect only ser, ir & ver are actually irregular!)';
+  if(t==='random') msg += ' Every shot draws a different tense.';
+  document.getElementById('irrHint').textContent=msg;
+}
+updateIrrHint();
+document.getElementById('tense').addEventListener('change',updateIrrHint);
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  NEW GAME / START
+// ═══════════════════════════════════════════════════════════════════════════
+function newGame(mode,tense,irr){
+  const pool = VERBS.filter(v=> irr ? true : v.reg);
+  let verbs;
+  if(irr){ // guarantee a couple of irregulars for flavour
+    const irrs=sample(pool.filter(v=>!v.reg),Math.min(3,ROWS));
+    const rest=sample(pool.filter(v=>!irrs.includes(v)),ROWS-irrs.length);
+    verbs=sample(irrs.concat(rest),ROWS).map(v=>v.inf);
+  } else { verbs=sample(pool,ROWS).map(v=>v.inf); }
+  G={ v:1, mode, tense, irr, verbs, sizes:SHIP_SIZES.slice(),
+      p1:{ships:[],ready:false}, p2:{ships:[],ready:false},
+      shots:{p1:{},p2:{}}, turn:'p1', phase:'place', last:null,
+      names:{p1:'Player 1', p2: mode==='cpu'?'Computer':'Player 2'} };
+}
+function start(mode){
+  newGame(mode, document.getElementById('tense').value, document.getElementById('irr').checked);
+  beginPlacement();
+}
+function beginPlacement(){
+  placeShips = G[G.turn].ships.length ? deepCells(G[G.turn].ships) : [];
+  placeSel = placeShips.length; placeOrient='h';
+  document.getElementById('rotBtn').textContent='Direction: Horizontal ▸';
+  const banner=document.getElementById('placeBanner');
+  if(G.mode==='code' && G.turn==='p2'){
+    banner.innerHTML='<div class="log big" style="margin-bottom:12px;">📨 You\'ve been challenged! Tense: <b>'+tenseLabel(G.tense)+'</b>'+(G.irr?' · irregulars on':'')+'. Place your fleet, then send a code back.</div>';
+  } else banner.innerHTML='';
+  document.getElementById('placeTitle').textContent = name(G.turn)+' — place your fleet ('+tenseLabel(G.tense)+')';
+  renderPlacement();
+  showScreen('s-place');
+}
+function deepCells(ships){ return ships.map(s=>({size:s.cells.length, cells:s.cells.map(c=>c.slice())})); }
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  PLACEMENT
+// ═══════════════════════════════════════════════════════════════════════════
+function occSet(ships){ const s=new Set(); ships.forEach(sh=>sh.cells.forEach(c=>s.add(key(c[0],c[1])))); return s; }
+function shipCells(anchor,size,orient){
+  const [r,c]=anchor, cells=[];
+  for(let i=0;i<size;i++) cells.push(orient==='h'?[r,c+i]:[r+i,c]);
+  return cells;
+}
+function cellsValid(cells,occ){
+  return cells.every(([r,c])=> r>=0&&r<ROWS&&c>=0&&c<COLS && !occ.has(key(r,c)));
+}
+function renderPlacement(){
+  const occ=occSet(placeShips);
+  const t=document.createElement('table'); t.className='board';
+  const hr=document.createElement('tr'); hr.appendChild(document.createElement('th'));
+  PRONOUNS.forEach(p=>{const th=document.createElement('th');th.textContent=p;hr.appendChild(th);});
+  t.appendChild(hr);
+  for(let r=0;r<ROWS;r++){
+    const tr=document.createElement('tr');
+    const vh=document.createElement('th'); vh.className='verb'; vh.textContent=G.verbs[r]; tr.appendChild(vh);
+    for(let c=0;c<COLS;c++){
+      const td=document.createElement('td'); td.className='cell';
+      if(occ.has(key(r,c))) td.classList.add('ship');
+      td.onclick=()=>placeClick(r,c);
+      td.onmouseenter=()=>hoverPreview(r,c);
+      td.onmouseleave=clearPreview;
+      td.dataset.rc=key(r,c);
+      tr.appendChild(td);
+    }
+    t.appendChild(tr);
+  }
+  const box=document.getElementById('placeBoard'); box.innerHTML=''; box.appendChild(t);
+  renderPlaceFleet();
+  document.getElementById('readyBtn').disabled = placeShips.length<G.sizes.length;
+}
+function renderPlaceFleet(){
+  const box=document.getElementById('placeFleet'); box.innerHTML='';
+  G.sizes.forEach((sz,i)=>{
+    const placed = i<placeShips.length;
+    const pip=document.createElement('div');
+    pip.className='ship-pip selectable'+(placed?' placed':'')+(i===placeSel?' sel':'');
+    for(let k=0;k<sz;k++){const s=document.createElement('i');pip.appendChild(s);}
+    pip.title = placed?'Placed — click to pick up':'Click to select';
+    pip.onclick=()=>{ if(placed){ pickUp(i); } else { placeSel=i; renderPlaceFleet(); } };
+    box.appendChild(pip);
+  });
+}
+function pickUp(i){ // remove ship i and everything after (simplest consistent model)
+  placeShips = placeShips.slice(0,i); placeSel=placeShips.length; renderPlacement();
+}
+function placeClick(r,c){
+  if(placeSel>=G.sizes.length) return;
+  if(placeShips.length!==placeSel) placeSel=placeShips.length; // always place next unplaced
+  const size=G.sizes[placeSel];
+  const cells=shipCells([r,c],size,placeOrient);
+  if(!cellsValid(cells,occSet(placeShips))) return;
+  placeShips.push({size,cells});
+  placeSel=placeShips.length;
+  renderPlacement();
+}
+function hoverPreview(r,c){
+  if(placeShips.length>=G.sizes.length) return;
+  const size=G.sizes[placeShips.length];
+  const cells=shipCells([r,c],size,placeOrient);
+  const ok=cellsValid(cells,occSet(placeShips));
+  cells.forEach(([rr,cc])=>{ if(rr<ROWS&&cc<COLS){ const td=cellEl('placeBoard',rr,cc); if(td) td.classList.add(ok?'preview':'badprev'); }});
+}
+function clearPreview(){ document.querySelectorAll('#placeBoard .preview,#placeBoard .badprev').forEach(e=>e.classList.remove('preview','badprev')); }
+function cellEl(boxId,r,c){ return document.querySelector('#'+boxId+' td[data-rc="'+key(r,c)+'"]'); }
+function toggleOrient(){ placeOrient=placeOrient==='h'?'v':'h'; document.getElementById('rotBtn').textContent='Direction: '+(placeOrient==='h'?'Horizontal ▸':'Vertical ▾'); }
+function resetPlace(){ placeShips=[]; placeSel=0; renderPlacement(); }
+function autoFill(){ placeShips=randomShips(G.sizes); placeSel=G.sizes.length; renderPlacement(); }
+function randomShips(sizes){
+  const ships=[]; const occ=new Set();
+  sizes.forEach(size=>{
+    let ok=false,guard=0;
+    while(!ok && guard++<2000){
+      const h=Math.random()<0.5;
+      const r=Math.floor(Math.random()*(h?ROWS:ROWS-size+1));
+      const c=Math.floor(Math.random()*(h?COLS-size+1:COLS));
+      const cells=shipCells([r,c],size,h?'h':'v');
+      if(cells.every(([rr,cc])=>!occ.has(key(rr,cc)))){ cells.forEach(([rr,cc])=>occ.add(key(rr,cc))); ships.push({size,cells}); ok=true; }
+    }
+  });
+  return ships;
+}
+function finishPlacement(){
+  if(placeShips.length<G.sizes.length) return;
+  G[G.turn].ships = placeShips; G[G.turn].ready=true;
+  if(G.mode==='cpu'){
+    G.p2.ships=randomShips(G.sizes); G.p2.ready=true;
+    G.phase='play'; G.turn='p1'; renderPlay(); return;
+  }
+  if(G.p1.ready && G.p2.ready){
+    G.phase='play'; G.turn='p1';
+    if(G.mode==='pass') passGate('Pass the device to '+name('p1'),'You fire first. Keep your fleet hidden!',renderPlay);
+    else renderCodeOut(); // p2 sends first-fire rights back to p1
+  } else {
+    G.turn = other(G.turn);
+    if(G.mode==='pass') passGate('Pass the device to '+name(G.turn),'Place your fleet — don\'t peek at the other board!',beginPlacement);
+    else renderCodeOut(); // p1 sends invite to p2
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  PLAY
+// ═══════════════════════════════════════════════════════════════════════════
+function shipAt(player,k){ return G[player].ships.find(s=>s.cells.some(([r,c])=>key(r,c)===k)); }
+function isSunk(defender,ship,attacker){ return ship.cells.every(([r,c])=>G.shots[attacker][key(r,c)]); }
+function allSunk(attacker){ const d=other(attacker); return G[d].ships.every(s=>isSunk(d,s,attacker)); }
+function shipsLeft(defender,attacker){ return G[defender].ships.filter(s=>!isSunk(defender,s,attacker)).length; }
+
+function renderPlay(){
+  showScreen('s-play');
+  const me=G.turn, opp=other(me);
+  // enemy waters — fire grid
+  buildGrid('enemyBoard', (r,c,td)=>{
+    const k=key(r,c), fired=G.shots[me][k];
+    if(fired){
+      const hit=!!shipAt(opp,k);
+      if(hit){ const s=shipAt(opp,k); if(isSunk(opp,s,me)){td.classList.add('sunk');td.textContent='☠';} else {td.classList.add('hit');td.textContent='✸';} }
+      else { td.classList.add('miss'); td.textContent='·'; }
+    } else if(!cpuThinking){
+      td.classList.add('fireable'); td.onclick=()=>openFire(r,c);
+    }
+  });
+  // my fleet — defence grid
+  buildGrid('myBoard', (r,c,td)=>{
+    const k=key(r,c), mine=!!shipAt(me,k), fired=G.shots[opp][k];
+    if(mine) td.classList.add('ship');
+    if(fired){ if(mine){ const s=shipAt(me,k); if(isSunk(me,s,opp)){td.classList.add('sunk');td.textContent='☠';} else {td.classList.add('hit');td.textContent='✸';} } else {td.classList.add('miss');td.textContent='·';} }
+  });
+  renderFleetPips('enemyFleet', opp, me);
+  renderFleetPips('myFleet', me, opp);
+  document.getElementById('playTense').value = G.tense;
+  updateEnemySub();
+  drawLog();
+}
+function buildGrid(boxId,decorate){
+  const t=document.createElement('table'); t.className='board';
+  const hr=document.createElement('tr'); hr.appendChild(document.createElement('th'));
+  PRONOUNS.forEach(p=>{const th=document.createElement('th');th.textContent=p;hr.appendChild(th);});
+  t.appendChild(hr);
+  for(let r=0;r<ROWS;r++){
+    const tr=document.createElement('tr');
+    const vh=document.createElement('th'); vh.className='verb'; vh.textContent=G.verbs[r]; tr.appendChild(vh);
+    for(let c=0;c<COLS;c++){ const td=document.createElement('td'); td.className='cell'; td.dataset.rc=key(r,c); decorate(r,c,td); tr.appendChild(td); }
+    t.appendChild(tr);
+  }
+  const box=document.getElementById(boxId); box.innerHTML=''; box.appendChild(t);
+}
+function renderFleetPips(boxId,defender,attacker){
+  const box=document.getElementById(boxId); box.innerHTML='';
+  const label=document.createElement('span'); label.style.cssText='font-size:12px;color:var(--text-muted);align-self:center;margin-right:4px;';
+  label.textContent = boxId==='enemyFleet' ? 'to sink:' : 'afloat:';
+  box.appendChild(label);
+  G[defender].ships.slice().sort((a,b)=>b.size-a.size).forEach(s=>{
+    const sunk=isSunk(defender,s,attacker);
+    const pip=document.createElement('div'); pip.className='ship-pip'+(sunk?' sunk':'');
+    for(let k=0;k<s.size;k++){const i=document.createElement('i');pip.appendChild(i);}
+    box.appendChild(pip);
+  });
+}
+function drawLog(){
+  const el=document.getElementById('log'); const L=G.last;
+  let turnLine='<span class="big">'+name(G.turn)+"'s turn</span> — fire on the enemy grid.";
+  if(G.mode==='cpu' && G.turn==='p1') turnLine='<span class="big">Your turn</span> — pick a target and conjugate!';
+  let hist='';
+  if(L){
+    const who = L.by===G.turn ? 'You' : name(L.by);
+    const shooterIsViewer = (G.mode!=='cpu') ? (L.by===G.turn) : (L.by==='p1');
+    const verbStr = L.verb+' · '+L.pron+(G.tense==='random'&&L.tense?' · '+tenseLabel(L.tense):'');
+    if(L.forfeit){
+      hist='<div class="bad">✗ '+name(L.by)+' misconjugated <b>'+verbStr+'</b> → the answer was <b>'+L.answer+'</b>. Turn forfeited.</div>';
+    } else {
+      const res = L.sunk ? '<span class="bad">¡Hundido! sank a ship ☠</span>' : (L.hit?'<span class="bad">Direct hit! ✸</span>':'splashed — miss ·');
+      hist='<div>'+ (L.by===G.turn?'Incoming: '+name(L.by):name(L.by))+' fired <b>'+L.answer+'</b> ('+verbStr+') → '+res+'</div>';
+    }
+  }
+  el.innerHTML = hist + '<div style="margin-top:'+(hist?'6px':'0')+'">'+turnLine+'</div>';
+}
+
+// ── firing ────────────────────────────────────────────────────────────────
+let cpuThinking=false, CPU_DELAY=850;
+function openFire(r,c){
+  if(G.shots[G.turn][key(r,c)]) return;
+  fireTarget={r,c,tense:shotTense()};
+  document.getElementById('fireTense').textContent=(G.tense==='random'?'🎲 ':'')+tenseLabel(fireTarget.tense)+' · '+(BYINF[G.verbs[r]]?BYINF[G.verbs[r]].en:'');
+  document.getElementById('fireQ').innerHTML='Conjugate <b>'+G.verbs[r]+'</b> for <b>'+PRONOUNS[c]+'</b>';
+  const inp=document.getElementById('fireInput'); inp.value=''; document.getElementById('fireFb').textContent='';
+  document.getElementById('fireOverlay').classList.add('active');
+  setTimeout(()=>inp.focus(),30);
+}
+function closeFire(){ document.getElementById('fireOverlay').classList.remove('active'); fireTarget=null; }
+function buildAccents(){
+  const row=document.getElementById('accentRow'); row.innerHTML='';
+  ['á','é','í','ó','ú','ñ'].forEach(ch=>{ const b=document.createElement('button'); b.type='button'; b.textContent=ch; b.onmousedown=e=>{e.preventDefault();insertAccent(ch);}; row.appendChild(b); });
+}
+function insertAccent(ch){ const inp=document.getElementById('fireInput'); const s=inp.selectionStart,e=inp.selectionEnd; inp.value=inp.value.slice(0,s)+ch+inp.value.slice(e); inp.focus(); inp.selectionStart=inp.selectionEnd=s+1; }
+document.getElementById('fireInput').addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();submitFire();} });
+
+function submitFire(){
+  if(!fireTarget) return;
+  const {r,c,tense}=fireTarget;
+  const answer=conjRC(r,c,tense);
+  const val=document.getElementById('fireInput').value.trim().toLowerCase();
+  if(!val){ document.getElementById('fireFb').innerHTML='<span class="bad">Type an answer to fire.</span>'; return; }
+  const exact = val===answer.toLowerCase();
+  const loose = strip(val)===strip(answer.toLowerCase());
+  if(exact||loose){
+    const res=resolveShot(G.turn,r,c,tense);
+    if(!exact) res.accentNote=true;
+    closeFire();
+    afterShot(res);
+  } else {
+    document.getElementById('fireFb').innerHTML='<span class="bad">✗ Not quite — it\'s <b>'+answer+'</b>. Turn forfeited.</span>';
+    G.last={by:G.turn,verb:G.verbs[r],pron:PRONOUNS[c],answer,tense,forfeit:true};
+    setTimeout(()=>{ closeFire(); endTurn(); }, 1400);
+  }
+}
+function resolveShot(attacker,r,c,tense){
+  tense=tense||shotTense();
+  const def=other(attacker), k=key(r,c);
+  G.shots[attacker][k]=true;
+  const ship=shipAt(def,k), hit=!!ship;
+  const sunk=hit && isSunk(def,ship,attacker);
+  G.last={by:attacker,r,c,hit,sunk,verb:G.verbs[r],pron:PRONOUNS[c],tense,answer:conjRC(r,c,tense)};
+  return {hit,sunk};
+}
+function afterShot(res){
+  if(allSunk(G.turn)){ G.phase='over'; G.winner=G.turn; renderOver(); return; }
+  endTurn();
+}
+function endTurn(){
+  G.turn=other(G.turn);
+  if(G.mode==='cpu'){
+    renderPlay();
+    if(G.turn==='p2'){ cpuThinking=true; renderPlay(); setTimeout(cpuMove,CPU_DELAY); }
+  } else if(G.mode==='pass'){
+    passGate('Pass the device to '+name(G.turn), lastSummary(), renderPlay);
+  } else { // code
+    renderCodeOut();
+  }
+}
+function lastSummary(){
+  const L=G.last; if(!L) return '';
+  const tx=(G.tense==='random'&&L.tense)?' ['+tenseLabel(L.tense)+']':'';
+  if(L.forfeit) return name(L.by)+' misconjugated '+L.verb+' ('+L.pron+tx+') — correct answer: '+L.answer+'.';
+  return name(L.by)+' fired '+L.answer+tx+' — '+(L.sunk?'sank a ship!':(L.hit?'a hit!':'a miss.'));
+}
+function changeTense(v){ if(!G) return; G.tense=v; updateEnemySub(); drawLog(); }
+function updateEnemySub(){
+  const el=document.getElementById('enemySub');
+  if(!el) return;
+  el.textContent = cpuThinking ? 'The computer is taking aim…'
+    : (G.tense==='random' ? 'Each shot is a random tense — conjugate to fire' : 'Click a cell & conjugate to fire');
+}
+
+// ── CPU ─────────────────────────────────────────────────────────────────────
+function cpuMove(){
+  const me='p2', def='p1', shots=G.shots.p2;
+  const liveHits=[];
+  Object.keys(shots).forEach(k=>{ const s=shipAt(def,k); if(s && !isSunk(def,s,me)) liveHits.push(k); });
+  let target=null;
+  if(liveHits.length){
+    const set=new Set(liveHits), pri=[], cand=[];
+    liveHits.forEach(k=>{ const [r,c]=k.split(',').map(Number);
+      [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dc])=>{ const nr=r+dr,nc=c+dc;
+        if(nr<0||nr>=ROWS||nc<0||nc>=COLS) return; const nk=key(nr,nc); if(shots[nk]) return;
+        if(set.has(key(r-dr,c-dc))) pri.push(nk); else cand.push(nk); }); });
+    const list=pri.length?pri:cand; target=list[Math.floor(Math.random()*list.length)];
+  }
+  if(!target){
+    const un=[],par=[];
+    for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){ const k=key(r,c); if(!shots[k]){ un.push(k); if((r+c)%2===0) par.push(k); } }
+    const list=par.length?par:un; if(!list.length){cpuThinking=false;return;} target=list[Math.floor(Math.random()*list.length)];
+  }
+  const [r,c]=target.split(',').map(Number);
+  resolveShot('p2',r,c);
+  cpuThinking=false;
+  if(allSunk('p2')){ G.phase='over'; G.winner='p2'; renderOver(); return; }
+  G.turn='p1'; renderPlay();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  PASS-AND-PLAY GATE
+// ═══════════════════════════════════════════════════════════════════════════
+let passCb=null;
+function passGate(msg,note,cb){ document.getElementById('passMsg').textContent=msg; document.getElementById('passNote').textContent=note||''; passCb=cb; showScreen('s-pass'); }
+function passContinue(){ const cb=passCb; passCb=null; if(cb)cb(); }
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  CODE / LINK EXCHANGE  (play-by-code, two devices)
+// ═══════════════════════════════════════════════════════════════════════════
+function encodeState(){
+  const packShips=p=>G[p].ships.map(s=>s.cells);
+  const o={v:1,m:'code',t:G.tense,ir:G.irr,vb:G.verbs,sz:G.sizes,
+    s1:packShips('p1'),r1:G.p1.ready,s2:packShips('p2'),r2:G.p2.ready,
+    f1:Object.keys(G.shots.p1),f2:Object.keys(G.shots.p2),tn:G.turn,ph:G.phase,
+    lt:G.last,wn:G.winner||null};
+  return btoa(unescape(encodeURIComponent(JSON.stringify(o))));
+}
+function decodeState(code){
+  code=code.trim();
+  const m=code.match(/[#&?]g=([^&]+)/); if(m) code=m[1];        // accept a full link
+  const o=JSON.parse(decodeURIComponent(escape(atob(code))));
+  if(o.v!==1||o.m!=='code') throw new Error('bad');
+  const unpack=cells=>cells.map(c=>({size:c.length,cells:c}));
+  const shots=arr=>{const x={};arr.forEach(k=>x[k]=true);return x;};
+  G={ v:1, mode:'code', tense:o.t, irr:o.ir, verbs:o.vb, sizes:o.sz,
+      p1:{ships:unpack(o.s1),ready:o.r1}, p2:{ships:unpack(o.s2),ready:o.r2},
+      shots:{p1:shots(o.f1),p2:shots(o.f2)}, turn:o.tn, phase:o.ph, last:o.lt||null,
+      winner:o.wn||null, names:{p1:'Player 1',p2:'Player 2'} };
+}
+function renderCodeOut(){
+  const code=encodeState();
+  const link=location.href.split('#')[0]+'#g='+code;
+  document.getElementById('shareCode').value=code;
+  document.getElementById('shareLink').value=link;
+  const T=document.getElementById('codeoutTitle'), N=document.getElementById('codeoutNote'), S=document.getElementById('codeoutSteps');
+  const recipient = name(G.turn);
+  if(G.phase==='place' && !G.p2.ready){
+    T.textContent='Invite sent! 🚀';
+    N.innerHTML='Your fleet is hidden. Send this to your opponent so they can join and place theirs.';
+  } else if(G.phase==='play'){
+    T.textContent='Your move is locked in.';
+    N.innerHTML=(G.last?'<b>'+lastSummary()+'</b> ':'')+'Send this to <b>'+recipient+'</b> — it\'s their turn.';
+  } else {
+    T.textContent='Fleet ready — pass the turn.';
+    N.innerHTML='Send this to <b>'+recipient+'</b> to start firing.';
+  }
+  S.innerHTML='<li>Copy the link (or code) and send it to your opponent.</li><li>They open it, take their turn, and send one back.</li><li>Paste their reply below to continue.</li>';
+  showScreen('s-codeout');
+}
+function joinFromBox(){ tryJoin(document.getElementById('joinCode').value); }
+function joinFromReply(){ tryJoin(document.getElementById('replyCode').value); }
+function tryJoin(code){
+  if(!code.trim()){ alert('Paste a code or link first.'); return; }
+  try{ decodeState(code); } catch(e){ alert('That code could not be read. Make sure you copied all of it.'); return; }
+  routeLoaded();
+}
+function routeLoaded(){
+  if(G.phase==='over'){ renderOver(); return; }
+  if(G.phase==='place'){ beginPlacement(); return; }
+  renderPlay();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  GAME OVER
+// ═══════════════════════════════════════════════════════════════════════════
+function renderOver(){
+  const w=G.winner;
+  let title, note;
+  if(G.mode==='cpu'){ title = w==='p1'?'¡Ganaste! You win! 🎉':'The computer wins.'; note = w==='p1'?'You sank the entire enemy fleet.':'Better conjugating next time — la práctica hace al maestro.'; }
+  else { title='¡'+name(w)+' wins! 🎉'; note=name(w)+' sank the whole enemy fleet.'; }
+  document.getElementById('overMsg').textContent=title;
+  document.getElementById('overNote').textContent=note;
+  showScreen('s-over');
+}
+function renderOverCode(){ renderOver(); }
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  MISC
+// ═══════════════════════════════════════════════════════════════════════════
+function copyEl(id,btn){ const el=document.getElementById(id); el.select(); el.setSelectionRange(0,99999);
+  navigator.clipboard.writeText(el.value).then(()=>{ const t=btn.textContent; btn.textContent='Copied ✓'; setTimeout(()=>btn.textContent=t,1400); })
+  .catch(()=>{ try{document.execCommand('copy');btn.textContent='Copied ✓';}catch(e){} }); }
+function quitToHome(){ if(location.hash){ history.replaceState(null,'',location.pathname+location.search); } G=null; showScreen('s-home'); }
+
+// deep-link entry
+window.addEventListener('load',()=>{
+  buildAccents();
+  const m=location.hash.match(/g=([^&]+)/);
+  if(m){ try{ decodeState(m[1]); routeLoaded(); }catch(e){ /* ignore bad hash */ } }
+});
+</script>
+</body>
+</html>
