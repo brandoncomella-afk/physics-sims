@@ -9,7 +9,34 @@ Interactive, quantitative physics labs for high school and AP / intro-college co
 | `pv-cycle-lab.html` | Thermodynamic cycles | Draggable PV diagram, Carnot/Otto/rectangle presets, per-leg W/Q/ΔU table, piston animation, efficiency vs. Carnot limit, copy-data button |
 | `relativity-lab.html` | Special relativity | Light clock, length contraction, muon survival lab (with data export), relativity of simultaneity |
 | `dune-buggy-challenge.html` | Projectile motion | Ramp → table → moving target. Predict-then-test with the answer hidden, randomised setups, worked solution on reveal, trial log with data export |
+| `battleship-verbos.html` | Spanish verbs | Verb-conjugation Battleship (*Batalla de Barco*). Random verb pool, irregular toggle, five tenses, vs-computer / pass-and-play / play-by-code |
 | `index.html` | Landing page | Card grid linking all sims |
+
+### Batalla de Barco — verb-conjugation Battleship
+
+A language game built on the same single-file, no-dependency principles as the physics
+sims. Adapted from Profa. Diaz's *Batalla de Barco* worksheet: the board rows are Spanish
+verbs and the columns are subject pronouns (Ellos, Tú, Usted, Nosotros, Ella, Yo, Ustedes),
+exactly as on the worksheet. You hide six ships across neighbouring cells and, on your turn,
+must **conjugate a verb correctly to fire** at that square — a wrong conjugation forfeits the
+turn and shows you the right answer.
+
+- **Verb pool** — eight verbs are drawn at random each game from a curated pool.
+- **Irregular toggle** — off = only fully-regular verbs (the algorithm is always correct);
+  on = adds common irregulars (ser, ir, ver, tener, hacer, jugar, buscar, dormir, …) whose
+  forms are hand-verified. In the *imperfecto* only ser/ir/ver are actually irregular, matching
+  the worksheet.
+- **Five tenses** — presente, pretérito, imperfecto (default), futuro, condicional.
+- **Three ways to play** — **vs Computer** (a hunt/target AI), **Two Players** on one device
+  (pass-and-play with a hide-screen between turns), and **Play by Code** for two devices:
+  each turn produces a short code — and a shareable `#g=…` link — that the opponent pastes to
+  continue, so people can play from their own computers with no server involved.
+- Conjugation checking is accent-lenient (with á/é/í/ó/ú/ñ helper buttons) so a missing accent
+  still fires but the properly-accented form is shown.
+
+The conjugation engine (regular endings + curated irregular tables) is isolated in a clearly
+marked script block so it can be pulled into Node for unit testing; it was verified against 137
+known forms, including the worksheet's own examples (*asistían, asistías, viajaba, bebía*).
 
 ### Dune Buggy Challenge — physics notes
 
