@@ -98,6 +98,8 @@
   .good { color:var(--ok); } .bad { color:var(--hit); }
   .toolbar { display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; align-items:center; }
   .spacer { flex:1; }
+  .playtense { display:flex; gap:8px; align-items:center; font-size:13px; color:var(--text-secondary); }
+  .playtense select { width:auto; display:inline-block; padding:7px 10px; }
 
   /* modal */
   .overlay { position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; align-items:center; justify-content:center; padding:16px; z-index:10; }
@@ -148,6 +150,7 @@
           <option value="preterite">Pretérito — preterite</option>
           <option value="future">Futuro — future</option>
           <option value="conditional">Condicional — conditional</option>
+          <option value="random">🎲 Random — mix all five tenses</option>
         </select>
 
         <label class="toggle"><input type="checkbox" id="irr"> Include <b>irregular verbs</b></label>
@@ -207,7 +210,20 @@
         <div class="fleet" id="myFleet"></div>
       </div>
     </div>
-    <div class="toolbar"><button class="ghost" onclick="quitToHome()">↩ New game</button></div>
+    <div class="toolbar">
+      <label class="playtense">Tense
+        <select id="playTense" onchange="changeTense(this.value)">
+          <option value="imperfect">Imperfecto</option>
+          <option value="present">Presente</option>
+          <option value="preterite">Pretérito</option>
+          <option value="future">Futuro</option>
+          <option value="conditional">Condicional</option>
+          <option value="random">🎲 Random (mixed)</option>
+        </select>
+      </label>
+      <div class="spacer"></div>
+      <button class="ghost" onclick="quitToHome()">↩ New game</button>
+    </div>
   </section>
 
   <!-- ─────────── PASS INTERSTITIAL ─────────── -->
@@ -328,6 +344,10 @@ const PRONOUNS=['Ellos','Tú','Usted','Nosotros','Ella','Yo','Ustedes'];
 const COL_PERSON=[5,1,2,3,2,0,5];
 const SHIP_SIZES=[4,3,3,2,2,2];
 const TENSE_LABEL={present:'Presente',preterite:'Pretérito',imperfect:'Imperfecto',future:'Futuro',conditional:'Condicional'};
+const TENSES=['present','preterite','imperfect','future','conditional'];
+function tenseLabel(t){ return t==='random'?'Mixed tenses':(TENSE_LABEL[t]||t); }
+function randomTense(){ return TENSES[Math.floor(Math.random()*TENSES.length)]; }
+function shotTense(){ return G.tense==='random'?randomTense():G.tense; }
 let G=null;                 // full serialisable game state
 let placeSel=0, placeOrient='h', placeShips=[]; // placement scratch
 let fireTarget=null;
@@ -336,7 +356,7 @@ const key=(r,c)=>r+','+c;
 const other=p=>p==='p1'?'p2':'p1';
 const strip=s=>s.normalize('NFD').replace(/[̀-ͯ]/g,'');
 function sample(arr,n){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a.slice(0,n); }
-function conjRC(r,c){ return conjugate(BYINF[G.verbs[r]],G.tense,COL_PERSON[c]); }
+function conjRC(r,c,tense){ return conjugate(BYINF[G.verbs[r]],tense||G.tense,COL_PERSON[c]); }
 function name(p){ return G.names[p]; }
 
 function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); window.scrollTo(0,0); }
@@ -347,6 +367,7 @@ function updateIrrHint(){
   let msg = on ? 'Verbs like ser, ir, tener, hacer, jugar… will appear.'
               : 'Only regular verbs — safe conjugations everywhere.';
   if(on && t==='imperfect') msg += ' (In the imperfect only ser, ir & ver are actually irregular!)';
+  if(t==='random') msg += ' Every shot draws a different tense.';
   document.getElementById('irrHint').textContent=msg;
 }
 updateIrrHint();
@@ -378,9 +399,9 @@ function beginPlacement(){
   document.getElementById('rotBtn').textContent='Direction: Horizontal ▸';
   const banner=document.getElementById('placeBanner');
   if(G.mode==='code' && G.turn==='p2'){
-    banner.innerHTML='<div class="log big" style="margin-bottom:12px;">📨 You\'ve been challenged! Tense: <b>'+TENSE_LABEL[G.tense]+'</b>'+(G.irr?' · irregulars on':'')+'. Place your fleet, then send a code back.</div>';
+    banner.innerHTML='<div class="log big" style="margin-bottom:12px;">📨 You\'ve been challenged! Tense: <b>'+tenseLabel(G.tense)+'</b>'+(G.irr?' · irregulars on':'')+'. Place your fleet, then send a code back.</div>';
   } else banner.innerHTML='';
-  document.getElementById('placeTitle').textContent = name(G.turn)+' — place your fleet ('+TENSE_LABEL[G.tense]+')';
+  document.getElementById('placeTitle').textContent = name(G.turn)+' — place your fleet ('+tenseLabel(G.tense)+')';
   renderPlacement();
   showScreen('s-place');
 }
@@ -521,7 +542,8 @@ function renderPlay(){
   });
   renderFleetPips('enemyFleet', opp, me);
   renderFleetPips('myFleet', me, opp);
-  document.getElementById('enemySub').textContent = cpuThinking?'The computer is taking aim…':'Click a cell & conjugate to fire';
+  document.getElementById('playTense').value = G.tense;
+  updateEnemySub();
   drawLog();
 }
 function buildGrid(boxId,decorate){
@@ -557,7 +579,7 @@ function drawLog(){
   if(L){
     const who = L.by===G.turn ? 'You' : name(L.by);
     const shooterIsViewer = (G.mode!=='cpu') ? (L.by===G.turn) : (L.by==='p1');
-    const verbStr = L.verb+' · '+L.pron;
+    const verbStr = L.verb+' · '+L.pron+(G.tense==='random'&&L.tense?' · '+tenseLabel(L.tense):'');
     if(L.forfeit){
       hist='<div class="bad">✗ '+name(L.by)+' misconjugated <b>'+verbStr+'</b> → the answer was <b>'+L.answer+'</b>. Turn forfeited.</div>';
     } else {
@@ -572,8 +594,8 @@ function drawLog(){
 let cpuThinking=false, CPU_DELAY=850;
 function openFire(r,c){
   if(G.shots[G.turn][key(r,c)]) return;
-  fireTarget={r,c};
-  document.getElementById('fireTense').textContent=TENSE_LABEL[G.tense]+' · '+(BYINF[G.verbs[r]]?BYINF[G.verbs[r]].en:'');
+  fireTarget={r,c,tense:shotTense()};
+  document.getElementById('fireTense').textContent=(G.tense==='random'?'🎲 ':'')+tenseLabel(fireTarget.tense)+' · '+(BYINF[G.verbs[r]]?BYINF[G.verbs[r]].en:'');
   document.getElementById('fireQ').innerHTML='Conjugate <b>'+G.verbs[r]+'</b> for <b>'+PRONOUNS[c]+'</b>';
   const inp=document.getElementById('fireInput'); inp.value=''; document.getElementById('fireFb').textContent='';
   document.getElementById('fireOverlay').classList.add('active');
@@ -589,29 +611,30 @@ document.getElementById('fireInput').addEventListener('keydown',e=>{ if(e.key===
 
 function submitFire(){
   if(!fireTarget) return;
-  const {r,c}=fireTarget;
-  const answer=conjRC(r,c);
+  const {r,c,tense}=fireTarget;
+  const answer=conjRC(r,c,tense);
   const val=document.getElementById('fireInput').value.trim().toLowerCase();
   if(!val){ document.getElementById('fireFb').innerHTML='<span class="bad">Type an answer to fire.</span>'; return; }
   const exact = val===answer.toLowerCase();
   const loose = strip(val)===strip(answer.toLowerCase());
   if(exact||loose){
-    const res=resolveShot(G.turn,r,c);
+    const res=resolveShot(G.turn,r,c,tense);
     if(!exact) res.accentNote=true;
     closeFire();
     afterShot(res);
   } else {
     document.getElementById('fireFb').innerHTML='<span class="bad">✗ Not quite — it\'s <b>'+answer+'</b>. Turn forfeited.</span>';
-    G.last={by:G.turn,verb:G.verbs[r],pron:PRONOUNS[c],answer,forfeit:true};
+    G.last={by:G.turn,verb:G.verbs[r],pron:PRONOUNS[c],answer,tense,forfeit:true};
     setTimeout(()=>{ closeFire(); endTurn(); }, 1400);
   }
 }
-function resolveShot(attacker,r,c){
+function resolveShot(attacker,r,c,tense){
+  tense=tense||shotTense();
   const def=other(attacker), k=key(r,c);
   G.shots[attacker][k]=true;
   const ship=shipAt(def,k), hit=!!ship;
   const sunk=hit && isSunk(def,ship,attacker);
-  G.last={by:attacker,r,c,hit,sunk,verb:G.verbs[r],pron:PRONOUNS[c],answer:conjRC(r,c)};
+  G.last={by:attacker,r,c,hit,sunk,verb:G.verbs[r],pron:PRONOUNS[c],tense,answer:conjRC(r,c,tense)};
   return {hit,sunk};
 }
 function afterShot(res){
@@ -631,8 +654,16 @@ function endTurn(){
 }
 function lastSummary(){
   const L=G.last; if(!L) return '';
-  if(L.forfeit) return name(L.by)+' misconjugated '+L.verb+' ('+L.pron+') — correct answer: '+L.answer+'.';
-  return name(L.by)+' fired '+L.answer+' — '+(L.sunk?'sank a ship!':(L.hit?'a hit!':'a miss.'));
+  const tx=(G.tense==='random'&&L.tense)?' ['+tenseLabel(L.tense)+']':'';
+  if(L.forfeit) return name(L.by)+' misconjugated '+L.verb+' ('+L.pron+tx+') — correct answer: '+L.answer+'.';
+  return name(L.by)+' fired '+L.answer+tx+' — '+(L.sunk?'sank a ship!':(L.hit?'a hit!':'a miss.'));
+}
+function changeTense(v){ if(!G) return; G.tense=v; updateEnemySub(); drawLog(); }
+function updateEnemySub(){
+  const el=document.getElementById('enemySub');
+  if(!el) return;
+  el.textContent = cpuThinking ? 'The computer is taking aim…'
+    : (G.tense==='random' ? 'Each shot is a random tense — conjugate to fire' : 'Click a cell & conjugate to fire');
 }
 
 // ── CPU ─────────────────────────────────────────────────────────────────────
