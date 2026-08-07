@@ -100,6 +100,13 @@
   .spacer { flex:1; }
   .playtense { display:flex; gap:8px; align-items:center; font-size:13px; color:var(--text-secondary); }
   .playtense select { width:auto; display:inline-block; padding:7px 10px; }
+  .rtense { margin-top:12px; }
+  .rtense-label { font-size:13px; color:var(--text-secondary); font-weight:600; margin-bottom:6px; }
+  .rtense-opts { display:flex; flex-wrap:wrap; gap:8px 16px; }
+  .rtense-opts label { display:flex; align-items:center; gap:6px; font-size:13.5px; cursor:pointer; }
+  .rtense-opts input { width:16px; height:16px; }
+  #playRtense { display:flex; align-items:center; gap:12px; margin-top:10px; flex-wrap:wrap; }
+  #playRtense .rtense-label { margin-bottom:0; }
 
   /* modal */
   .overlay { position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; align-items:center; justify-content:center; padding:16px; z-index:10; }
@@ -150,8 +157,19 @@
           <option value="preterite">Pretérito — preterite</option>
           <option value="future">Futuro — future</option>
           <option value="conditional">Condicional — conditional</option>
-          <option value="random">🎲 Random — mix all five tenses</option>
+          <option value="random">🎲 Random — mix selected tenses</option>
         </select>
+
+        <div class="rtense" id="rtenseBox" style="display:none;">
+          <div class="rtense-label">Draw random shots from:</div>
+          <div class="rtense-opts" id="rtenseOpts">
+            <label><input type="checkbox" class="rt" value="present" checked> Presente</label>
+            <label><input type="checkbox" class="rt" value="preterite" checked> Pretérito</label>
+            <label><input type="checkbox" class="rt" value="imperfect" checked> Imperfecto</label>
+            <label><input type="checkbox" class="rt" value="future" checked> Futuro</label>
+            <label><input type="checkbox" class="rt" value="conditional" checked> Condicional</label>
+          </div>
+        </div>
 
         <label class="toggle"><input type="checkbox" id="irr"> Include <b>irregular verbs</b></label>
         <div class="hint" id="irrHint"></div>
@@ -223,6 +241,10 @@
       </label>
       <div class="spacer"></div>
       <button class="ghost" onclick="quitToHome()">↩ New game</button>
+    </div>
+    <div id="playRtense" style="display:none;">
+      <span class="rtense-label">Random draws from:</span>
+      <span class="rtense-opts" id="playRtenseOpts"></span>
     </div>
   </section>
 
@@ -346,8 +368,8 @@ const SHIP_SIZES=[4,3,3,2,2,2];
 const TENSE_LABEL={present:'Presente',preterite:'Pretérito',imperfect:'Imperfecto',future:'Futuro',conditional:'Condicional'};
 const TENSES=['present','preterite','imperfect','future','conditional'];
 function tenseLabel(t){ return t==='random'?'Mixed tenses':(TENSE_LABEL[t]||t); }
-function randomTense(){ return TENSES[Math.floor(Math.random()*TENSES.length)]; }
-function shotTense(){ return G.tense==='random'?randomTense():G.tense; }
+function randomPool(){ return (G.rtenses && G.rtenses.length) ? G.rtenses : TENSES; }
+function shotTense(){ if(G.tense!=='random') return G.tense; const p=randomPool(); return p[Math.floor(Math.random()*p.length)]; }
 let G=null;                 // full serialisable game state
 let placeSel=0, placeOrient='h', placeShips=[]; // placement scratch
 let fireTarget=null;
@@ -367,16 +389,22 @@ function updateIrrHint(){
   let msg = on ? 'Verbs like ser, ir, tener, hacer, jugar… will appear.'
               : 'Only regular verbs — safe conjugations everywhere.';
   if(on && t==='imperfect') msg += ' (In the imperfect only ser, ir & ver are actually irregular!)';
-  if(t==='random') msg += ' Every shot draws a different tense.';
+  if(t==='random') msg += ' Each shot draws from the tenses you tick below.';
   document.getElementById('irrHint').textContent=msg;
+  document.getElementById('rtenseBox').style.display = t==='random' ? 'block' : 'none';
 }
+// keep at least one home tense ticked
+document.getElementById('rtenseOpts').addEventListener('change',e=>{
+  const boxes=[...document.querySelectorAll('#rtenseOpts .rt')];
+  if(!boxes.some(b=>b.checked)) e.target.checked=true;
+});
 updateIrrHint();
 document.getElementById('tense').addEventListener('change',updateIrrHint);
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  NEW GAME / START
 // ═══════════════════════════════════════════════════════════════════════════
-function newGame(mode,tense,irr){
+function newGame(mode,tense,irr,rtenses){
   const pool = VERBS.filter(v=> irr ? true : v.reg);
   let verbs;
   if(irr){ // guarantee a couple of irregulars for flavour
@@ -384,13 +412,16 @@ function newGame(mode,tense,irr){
     const rest=sample(pool.filter(v=>!irrs.includes(v)),ROWS-irrs.length);
     verbs=sample(irrs.concat(rest),ROWS).map(v=>v.inf);
   } else { verbs=sample(pool,ROWS).map(v=>v.inf); }
-  G={ v:1, mode, tense, irr, verbs, sizes:SHIP_SIZES.slice(),
+  rtenses = (rtenses && rtenses.length) ? TENSES.filter(t=>rtenses.includes(t)) : TENSES.slice();
+  G={ v:1, mode, tense, irr, rtenses, verbs, sizes:SHIP_SIZES.slice(),
       p1:{ships:[],ready:false}, p2:{ships:[],ready:false},
       shots:{p1:{},p2:{}}, turn:'p1', phase:'place', last:null,
       names:{p1:'Player 1', p2: mode==='cpu'?'Computer':'Player 2'} };
 }
 function start(mode){
-  newGame(mode, document.getElementById('tense').value, document.getElementById('irr').checked);
+  const tense=document.getElementById('tense').value;
+  const rtenses=[...document.querySelectorAll('#rtenseOpts .rt:checked')].map(x=>x.value);
+  newGame(mode, tense, document.getElementById('irr').checked, rtenses);
   beginPlacement();
 }
 function beginPlacement(){
@@ -543,6 +574,7 @@ function renderPlay(){
   renderFleetPips('enemyFleet', opp, me);
   renderFleetPips('myFleet', me, opp);
   document.getElementById('playTense').value = G.tense;
+  renderPlayRtense();
   updateEnemySub();
   drawLog();
 }
@@ -658,7 +690,28 @@ function lastSummary(){
   if(L.forfeit) return name(L.by)+' misconjugated '+L.verb+' ('+L.pron+tx+') — correct answer: '+L.answer+'.';
   return name(L.by)+' fired '+L.answer+tx+' — '+(L.sunk?'sank a ship!':(L.hit?'a hit!':'a miss.'));
 }
-function changeTense(v){ if(!G) return; G.tense=v; updateEnemySub(); drawLog(); }
+function changeTense(v){ if(!G) return; G.tense=v; if(v==='random' && !(G.rtenses&&G.rtenses.length)) G.rtenses=TENSES.slice(); renderPlayRtense(); updateEnemySub(); drawLog(); }
+function renderPlayRtense(){
+  const box=document.getElementById('playRtense'), opts=document.getElementById('playRtenseOpts');
+  if(G.tense!=='random'){ box.style.display='none'; return; }
+  box.style.display='flex';
+  const on=new Set(randomPool());
+  opts.innerHTML='';
+  TENSES.forEach(t=>{
+    const lab=document.createElement('label');
+    const cb=document.createElement('input'); cb.type='checkbox'; cb.checked=on.has(t);
+    cb.onchange=()=>togglePlayRtense(t,cb.checked);
+    lab.appendChild(cb); lab.appendChild(document.createTextNode(' '+TENSE_LABEL[t]));
+    opts.appendChild(lab);
+  });
+}
+function togglePlayRtense(t,checked){
+  const set=new Set(randomPool());
+  if(checked) set.add(t); else set.delete(t);
+  if(set.size===0) set.add(t);                 // never allow zero
+  G.rtenses=TENSES.filter(x=>set.has(x));
+  renderPlayRtense(); updateEnemySub();
+}
 function updateEnemySub(){
   const el=document.getElementById('enemySub');
   if(!el) return;
@@ -704,7 +757,7 @@ function passContinue(){ const cb=passCb; passCb=null; if(cb)cb(); }
 // ═══════════════════════════════════════════════════════════════════════════
 function encodeState(){
   const packShips=p=>G[p].ships.map(s=>s.cells);
-  const o={v:1,m:'code',t:G.tense,ir:G.irr,vb:G.verbs,sz:G.sizes,
+  const o={v:1,m:'code',t:G.tense,rt:G.rtenses,ir:G.irr,vb:G.verbs,sz:G.sizes,
     s1:packShips('p1'),r1:G.p1.ready,s2:packShips('p2'),r2:G.p2.ready,
     f1:Object.keys(G.shots.p1),f2:Object.keys(G.shots.p2),tn:G.turn,ph:G.phase,
     lt:G.last,wn:G.winner||null};
@@ -717,7 +770,7 @@ function decodeState(code){
   if(o.v!==1||o.m!=='code') throw new Error('bad');
   const unpack=cells=>cells.map(c=>({size:c.length,cells:c}));
   const shots=arr=>{const x={};arr.forEach(k=>x[k]=true);return x;};
-  G={ v:1, mode:'code', tense:o.t, irr:o.ir, verbs:o.vb, sizes:o.sz,
+  G={ v:1, mode:'code', tense:o.t, rtenses:(o.rt&&o.rt.length?o.rt:TENSES.slice()), irr:o.ir, verbs:o.vb, sizes:o.sz,
       p1:{ships:unpack(o.s1),ready:o.r1}, p2:{ships:unpack(o.s2),ready:o.r2},
       shots:{p1:shots(o.f1),p2:shots(o.f2)}, turn:o.tn, phase:o.ph, last:o.lt||null,
       winner:o.wn||null, names:{p1:'Player 1',p2:'Player 2'} };

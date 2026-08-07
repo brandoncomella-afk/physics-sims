@@ -27,8 +27,9 @@ turn and shows you the right answer.
   forms are hand-verified. In the *imperfecto* only ser/ir/ver are actually irregular, matching
   the worksheet.
 - **Five tenses + Random** — presente, pretérito, imperfecto (default), futuro, condicional, or
-  a **Random (mixed)** mode that draws a fresh tense for every single shot. The tense can also be
-  changed mid-game from a switcher on the play screen.
+  a **Random (mixed)** mode that draws a fresh tense for every single shot. In random mode you can
+  **tick exactly which tenses to draw from** (all of them, or just the two you're reviewing). The
+  tense (and the random subset) can also be changed mid-game from controls on the play screen.
 - **Three ways to play** — **vs Computer** (a hunt/target AI), **Two Players** on one device
   (pass-and-play with a hide-screen between turns), and **Play by Code** for two devices:
   each turn produces a short code — and a shareable `#g=…` link — that the opponent pastes to
