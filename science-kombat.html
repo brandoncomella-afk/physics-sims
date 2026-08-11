@@ -46,10 +46,30 @@
   .btn small { font-size: 1.5vh; font-weight: 700; opacity: .8; }
   .btn.press { transform: scale(0.9); background: rgba(255,255,255,0.28); }
   /* left cluster: move + jump */
-  #dpad { left: 2.5vh; bottom: 2.5vh; width: 34vh; height: 22vh; }
-  #b-left  { position:absolute; left: 0;    bottom: 0;    width: 11vh; height: 11vh; }
-  #b-right { position:absolute; left: 12vh; bottom: 0;    width: 11vh; height: 11vh; }
-  #b-jump  { position:absolute; left: 6vh;  bottom: 11.5vh; width: 11vh; height: 11vh; }
+  /* floating joystick — whole lower-left is the touch zone */
+  #joyzone { position:absolute; left:0; bottom:0; width:46%; height:80%; pointer-events:auto; }
+  #joybase {
+    position:absolute; width:26vh; height:26vh; border-radius:50%;
+    left:3vh; bottom:3vh; opacity:0; transition:opacity .12s;
+    border:2px solid rgba(255,255,255,0.28); background:rgba(255,255,255,0.06);
+  }
+  #joybase.on { opacity:1; }
+  #joythumb {
+    position:absolute; left:50%; top:50%; width:11vh; height:11vh; margin:-5.5vh 0 0 -5.5vh;
+    border-radius:50%; background:rgba(255,255,255,0.22); border:2px solid rgba(255,255,255,0.5);
+    box-shadow:0 2px 10px rgba(0,0,0,.4);
+  }
+  #joyjump {
+    position:absolute; left:50%; top:8%; transform:translateX(-50%);
+    font-size:1.5vh; font-weight:800; color:#cfe0ff; text-shadow:0 1px 2px #000; letter-spacing:.5px;
+  }
+  #padhint {
+    position:absolute; left:50%; bottom:1.5vh; transform:translateX(-50%);
+    font-size:1.6vh; font-weight:700; color:#9be07a; background:rgba(0,0,0,.4);
+    padding:.5vh 1.6vh; border-radius:999px; display:none;
+  }
+  #controls.gamepad #joyzone, #controls.gamepad #abtns { opacity:.25; }
+  #controls.gamepad #padhint { display:block; }
   /* right cluster: attacks */
   #abtns { right: 2.5vh; bottom: 2.5vh; width: 34vh; height: 24vh; }
   #b-punch  { position:absolute; right: 12vh; bottom: 0;     width: 11.5vh; height: 11.5vh; background: rgba(90,170,255,0.20); border-color: rgba(120,190,255,.6);}
@@ -116,10 +136,9 @@
 
     <!-- On-screen touch controls -->
     <div id="controls">
-      <div id="dpad" class="pad">
-        <div class="btn" id="b-left">◀</div>
-        <div class="btn" id="b-right">▶</div>
-        <div class="btn" id="b-jump">▲<small></small></div>
+      <!-- floating joystick zone: touch the left area, slide to move, push up (or up-diagonal) to jump -->
+      <div id="joyzone">
+        <div id="joybase"><div id="joythumb"></div><div id="joyjump">JUMP ▲</div></div>
       </div>
       <div id="abtns" class="pad">
         <div class="btn" id="b-special">★<small>SCI</small></div>
@@ -127,6 +146,7 @@
         <div class="btn" id="b-kick">K<small></small></div>
         <div class="btn" id="b-block">⛊</div>
       </div>
+      <div id="padhint">🎮 controller connected</div>
     </div>
 
     <div class="credit">Original fan game · single-file · runs offline</div>
@@ -192,142 +212,286 @@ const FIGHTERS = [
     special:{ name:'EVENT HORIZON', color:'#b487ff', kind:'hole', dmg:15, speed:4.4, label:'∞' } },
 ];
 
-/* ---------------- Pixel-art fighter drawing ----------------
-   Draw a ~30x60 humanoid centered at (x = feet center, y = feet/GROUND).
-   Pose derived from state; facing flips horizontally.            */
-function px(x,y,w,h,c){ ctx.fillStyle=c; ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h)); }
+/* ================= SNES-style articulated fighter renderer =================
+   Fighters are drawn in a LOCAL space: origin at the feet midpoint, +x points
+   in the facing direction, +y points UP. A ctx transform handles the flip, so
+   pose math never has to branch on facing. Limbs are two-segment (upper+fore)
+   capsules with outline + shading; heads carry per-scientist hair & features. */
+
+function shade(hex, f){                       // multiply an #rrggbb toward dark/light
+  const n = parseInt(hex.slice(1),16);
+  let r=(n>>16)&255, g=(n>>8)&255, b=n&255;
+  r=Math.max(0,Math.min(255,r*f))|0; g=Math.max(0,Math.min(255,g*f))|0; b=Math.max(0,Math.min(255,b*f))|0;
+  return 'rgb('+r+','+g+','+b+')';
+}
+// palette cache per fighter
+function pal(S){
+  if(S._pal) return S._pal;
+  S._pal = {
+    skin:S.skin, skinD:shade(S.skin,0.82), skinL:shade(S.skin,1.12),
+    hair:S.hair, hairD:shade(S.hair,0.72), hairL:shade(S.hair,1.18),
+    coat:S.coat, coatD:shade(S.coat,0.74), coatL:shade(S.coat,1.16),
+    pants:S.pants, pantsD:shade(S.pants,0.74),
+    accent:S.accent, shoe:'#1b1b24', shoeD:'#0e0e14',
+    ink:'#14121c'
+  };
+  return S._pal;
+}
+
+// two-segment forward kinematics. angle 0 = straight down; +angle swings forward(+x)
+function fk(sx,sy,a1,l1,a2,l2){
+  const ex=sx+Math.sin(a1)*l1, ey=sy-Math.cos(a1)*l1;
+  const a=a1+a2;
+  const hx=ex+Math.sin(a)*l2, hy=ey-Math.cos(a)*l2;
+  return {ex,ey,hx,hy};
+}
 
 function drawFighter(f, dctx){
-  const c = dctx || ctx;
-  const fill=(x,y,w,h,col)=>{ c.fillStyle=col; c.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h)); };
-  const F = f.facing;                 // 1 = faces right, -1 = faces left
-  const bx = f.x;                     // feet center x
-  const feet = f.y;                   // feet y (ground contact)
-  const P = f.pose;                   // pose object {armR, legs, crouch, lean}
-  const S = f.data;
-  const crouch = P.crouch||0;
+  const g = dctx || ctx;
+  const S = f.data, P = pal(S);
+  const t = (typeof gameFrame==='number')?gameFrame:0;
 
-  // dimensions
-  const bodyH = 26 - crouch;          // torso height
-  const headR = 7;
-  const hipY = feet - 14;             // top of legs / bottom of torso
-  const torsoTop = hipY - bodyH;
-  const headY = torsoTop - headR*2 + 2;
-  const cx = bx;
+  // ---- pose (all in local space, y-up) ----
+  const st = f.state||'idle';
+  const grounded = f.onGround!==false;
+  const moving = Math.abs(f.vx||0) > 0.3;
+  const af = f.attackFrame||0;
 
-  // ---- LEGS ----
-  const legSpread = P.legSpread!==undefined ? P.legSpread : 4;
-  const legLift = P.legLift||0;       // for kicks
-  // back leg
-  fill(cx - legSpread - 3, hipY, 6, 14 - legLift*0.3, S.pants);
-  fill(cx - legSpread - 4, feet-3, 8, 3, '#20202a');           // shoe
-  // front leg (may kick out)
-  if(legLift>0){
-    // kicking leg extends forward
-    fill(cx + legSpread -2, hipY, 6, 6, S.pants);
-    fill(cx + legSpread*F + 4*F, hipY+3, 14*F, 6, S.pants);    // extended shin
-    fill(cx + legSpread*F + 14*F, hipY+3, 6*F, 6, '#20202a');  // shoe
-  } else {
-    fill(cx + legSpread - 3, hipY, 6, 14, S.pants);
-    fill(cx + legSpread - 4, feet-3, 8, 3, '#20202a');
+  // defaults: relaxed fighting stance
+  let lean = 3, headDX = 1.2, headDY = 0, crouch = 0, breathe = Math.sin(t*0.08)*0.4;
+  let bArm={a1:0.30,a2:0.55}, fArm={a1:-0.22,a2:0.62};      // back / front arm
+  let bLeg={a1:0.20,a2:0.14}, fLeg={a1:-0.20,a2:0.14};      // back / front leg
+  let fists=false, blockPose=false, chargeK=0;
+
+  if(st==='walk' || (grounded && moving && st==='idle')){
+    const ph=Math.sin(t*0.32);
+    bLeg={a1:0.34*ph, a2:0.16+Math.max(0,-ph)*0.3};
+    fLeg={a1:-0.34*ph, a2:0.16+Math.max(0,ph)*0.3};
+    bArm={a1:-0.42*ph+0.12, a2:0.5};
+    fArm={a1:0.42*ph+0.12, a2:0.5};
+    lean=4;
+  } else if(!grounded){
+    crouch=2; lean=6;
+    bLeg={a1:0.55,a2:0.7}; fLeg={a1:-0.35,a2:0.7};
+    bArm={a1:0.9,a2:0.3}; fArm={a1:-0.85,a2:0.4};
+  } else if(st==='attack' && f.attackType==='punch'){
+    const A=ATTACKS.punch; const k=Math.min(1,Math.max(0,(af-A.startup+2)/(A.active+2)));
+    const ext=k<0.5?k*2:1-(k-0.5)*1.3;                     // thrust out then recoil
+    fArm={a1:1.35*(0.25+0.75*ext), a2:0.06}; bArm={a1:-0.55,a2:0.5};
+    lean=7; fists=true; headDX=2;
+  } else if(st==='attack' && f.attackType==='kick'){
+    const A=ATTACKS.kick; const k=Math.min(1,Math.max(0,(af-A.startup+2)/(A.active+2)));
+    const ext=k<0.5?k*2:1-(k-0.5)*1.2;
+    fLeg={a1:1.4*(0.3+0.7*ext), a2:0.05}; bLeg={a1:0.15,a2:0.1};
+    lean=-3; bArm={a1:0.6,a2:0.5}; fArm={a1:-0.7,a2:0.5}; fists=true;
+  } else if(st==='special'){
+    chargeK=Math.min(1, af/12);
+    fArm={a1:1.25,a2:0.12}; bArm={a1:1.05,a2:0.2};
+    lean=6; fists=true; headDX=2;
+  } else if(st==='hitstun'){
+    lean=-9; headDX=-2.5; crouch=1;
+    bArm={a1:-0.7,a2:0.4}; fArm={a1:-0.5,a2:0.5};
+    bLeg={a1:0.1,a2:0.1}; fLeg={a1:-0.45,a2:0.2};
+  }
+  if(f.blockHold && st!=='attack' && st!=='special' && st!=='hitstun'){
+    fArm={a1:0.12,a2:1.55}; bArm={a1:0.12,a2:1.45};
+    blockPose=true; lean=2; fists=true;
   }
 
-  // ---- WHEELCHAIR (Hawking) ----
-  if(S.head==='hawking'){
-    fill(cx-12, feet-16, 24, 14, '#33343f');
-    fill(cx-13, feet-2, 3, 2, '#111');
-    // wheels
-    c.strokeStyle='#8a8a92'; c.lineWidth=2;
-    c.beginPath(); c.arc(cx-8, feet-4, 7, 0, Math.PI*2); c.stroke();
-    c.beginPath(); c.arc(cx+9, feet-4, 4, 0, Math.PI*2); c.stroke();
+  // ---- geometry (local, y-up from feet) ----
+  const hipY = 20 - crouch, shoulderY = 37 - crouch, neckY = 39 - crouch;
+  const headCy = 46 - crouch + headDY + breathe, headR = 7.4;
+  const leanX = lean*0.14;                                  // torso tips toward facing
+  const hipX = 0, shoulderX = leanX;
+
+  g.save();
+  g.translate(f.x, f.y);
+  g.scale(f.facing, 1);
+
+  // capsule limb with outline + directional shading (y-up input; converts to canvas)
+  function limb(x1,y1,x2,y2,w,col,dark,light){
+    const X1=x1,Y1=-y1,X2=x2,Y2=-y2;
+    const ang=Math.atan2(Y2-Y1,X2-X1), len=Math.hypot(X2-X1,Y2-Y1);
+    g.save(); g.translate(X1,Y1); g.rotate(ang);
+    g.fillStyle=P.ink; g.fillRect(-w/2-1,-w/2-1,len+w+2,w+2);      // outline
+    g.fillStyle=col;   g.fillRect(-w/2,-w/2,len+w,w);              // fill
+    if(light){ g.fillStyle=light; g.fillRect(-w/2, -w/2, len+w, Math.max(1,w*0.28)); } // top highlight
+    if(dark){  g.fillStyle=dark;  g.fillRect(-w/2, w/2-Math.max(1,w*0.3), len+w, Math.max(1,w*0.3)); } // underside
+    g.restore();
   }
+  function ball(x,y,r,col,dark){ g.fillStyle=P.ink; disc(x,-y,r+1); g.fillStyle=col; disc(x,-y,r);
+    if(dark){ g.fillStyle=dark; g.beginPath(); g.arc(x,-y+r*0.35,r*0.7,0,Math.PI*2); g.fill(); } }
+  function disc(cx,cy,r){ g.beginPath(); g.arc(cx,cy,r,0,Math.PI*2); g.fill(); }
+  function rectL(x,y,w,h,col){ g.fillStyle=col; g.fillRect(x,-y-h,w,h); }   // y-up rect (y=bottom)
 
-  // ---- TORSO / COAT ----
-  fill(cx-8, torsoTop, 16, bodyH, S.coat);
-  // lapel / shirt accent
-  fill(cx-2, torsoTop, 4, bodyH-2, '#efeee9');
-  // arm (back) — behind torso, tucked
-  fill(cx-8-2*F, torsoTop+3, 5, 12, S.coat);
+  // ---- shadow-side (back) limbs first ----
+  const bl=fk(hipX-1.5, hipY, bLeg.a1, 11, bLeg.a2, 11);
+  limb(hipX-1.5,hipY, bl.ex,bl.ey, 6.5, P.pantsD, shade(S.pants,0.6));
+  limb(bl.ex,bl.ey, bl.hx,bl.hy, 6, P.pantsD, shade(S.pants,0.6));
+  foot(bl.hx,bl.hy, P.shoeD, P.ink);
 
-  // ---- HEAD ----
-  fill(cx-headR, headY, headR*2, headR*2, S.skin);
-  // eyes
-  fill(cx + 1*F, headY+5, 2, 2, '#20202a');
-  fill(cx + 4*F, headY+5, 2, 2, '#20202a');
+  const ba=fk(shoulderX-1, shoulderY, bArm.a1, 8.5, bArm.a2, 8, );
+  limb(shoulderX-1,shoulderY, ba.ex,ba.ey, 5, P.coatD, shade(S.coat,0.6));
+  limb(ba.ex,ba.ey, ba.hx,ba.hy, 4.6, P.coatD, shade(S.coat,0.6));
+  ball(ba.hx,ba.hy, 2.6, P.skinD);
 
-  drawHead(c, S, cx, headY, headR, F);
+  // wheelchair (Hawking) sits between back and front layers
+  if(S.head==='hawking') drawChair(g,P);
 
-  // ---- FRONT ARM (attack pose) ----
-  const armY = torsoTop+4;
-  if(P.punch){
-    // extended punching arm
-    fill(cx+6*F, armY, 12*F, 5, S.coat);
-    fill(cx+16*F, armY-1, 6, 7, S.skin);      // fist
-  } else if(P.special){
-    // both hands forward, charging
-    fill(cx+6*F, armY-1, 11*F, 5, S.coat);
-    fill(cx+16*F, armY-2, 7, 8, S.skin);
-  } else {
-    // idle / guard arm
-    const gx = P.block ? cx+2*F : cx+6*F;
-    fill(gx, armY, 6*F, 12, S.coat);
-    fill(gx+4*F, armY+9, 6, 6, S.skin);       // hand
+  // ---- torso / lab coat ----
+  torso();
+
+  // ---- head ----
+  head();
+
+  // ---- front leg ----
+  const fl=fk(hipX+1.5, hipY, fLeg.a1, 11, fLeg.a2, 11);
+  limb(hipX+1.5,hipY, fl.ex,fl.ey, 7, P.pants, P.pantsD, shade(S.pants,1.15));
+  limb(fl.ex,fl.ey, fl.hx,fl.hy, 6.4, P.pants, P.pantsD, shade(S.pants,1.15));
+  foot(fl.hx,fl.hy, P.shoe, P.shoeD);
+
+  // ---- front arm ----
+  const fa=fk(shoulderX+1, shoulderY, fArm.a1, 8.5, fArm.a2, 8);
+  limb(shoulderX+1,shoulderY, fa.ex,fa.ey, 5.4, P.coat, P.coatD, P.coatL);
+  limb(fa.ex,fa.ey, fa.hx,fa.hy, 5, P.coat, P.coatD, P.coatL);
+  if(fists){ ball(fa.hx,fa.hy, 3.1, P.skin, P.skinD); }
+  else { ball(fa.hx,fa.hy, 2.9, P.skin, P.skinD); }
+
+  // charging glow at hands during special
+  if(chargeK>0){
+    g.fillStyle=S.special.color; g.globalAlpha=0.35+0.3*Math.sin(t*0.6);
+    disc(fa.hx,-fa.hy, 4+chargeK*4); g.globalAlpha=1;
   }
+  if(blockPose){ g.fillStyle='rgba(150,200,255,0.16)'; g.fillRect(-2,-headCy-headR-2, 14, headCy+headR+6); }
 
-  // ---- BLOCK shimmer ----
-  if(P.block){
-    c.fillStyle='rgba(150,200,255,0.18)';
-    c.fillRect(cx-12, headY-3, 24, bodyH+22);
-  }
-  // ---- HIT flash ----
+  g.restore();
+
+  // hit flash (screen-space, unflipped)
   if(f.hitFlash>0){
-    c.fillStyle='rgba(255,80,80,'+(0.35*f.hitFlash/8)+')';
-    c.fillRect(cx-11, headY-2, 22, (feet-headY)+2);
+    g.save(); g.globalCompositeOperation='lighter';
+    g.fillStyle='rgba(255,120,120,'+(0.5*f.hitFlash/8)+')';
+    g.fillRect(f.x-13, f.y-56, 26, 58); g.restore();
+  }
+
+  // ---------- inner drawers ----------
+  function foot(x,y,col,dark){
+    g.fillStyle=P.ink; g.fillRect(x-2, -y-1, 9, 5);
+    g.fillStyle=col;   g.fillRect(x-1.5, -y-0.5, 8, 3.5);
+    g.fillStyle=dark;  g.fillRect(x-1.5, -y+2, 8, 1.4);
+  }
+  function torso(){
+    const topY=shoulderY+2, botY=hipY-1, h=topY-botY, w=15;
+    const x=shoulderX-w/2 + (leanX>0? -1:0);
+    // outline + coat body (slight trapezoid via two rects)
+    g.fillStyle=P.ink; g.fillRect(x-1, -topY-1, w+2, h+2);
+    g.fillStyle=P.coat; g.fillRect(x, -topY, w, h);
+    // shaded back half
+    g.fillStyle=P.coatD; g.fillRect(x, -topY, w*0.42, h);
+    // shirt / lapel V
+    g.fillStyle='#efece4'; g.beginPath();
+    g.moveTo(shoulderX-3.5,-topY); g.lineTo(shoulderX+3.5,-topY);
+    g.lineTo(shoulderX, -botY-3); g.closePath(); g.fill();
+    // tie / accent placket
+    g.fillStyle=S.accent; g.fillRect(shoulderX-1.4, -topY+1, 2.8, h-3);
+    // buttons
+    g.fillStyle=P.coatD; for(let i=0;i<3;i++) g.fillRect(shoulderX+2.5, -topY+3+i*3.4, 1.3,1.3);
+    // collar
+    g.fillStyle=P.coatL; g.fillRect(x, -topY, w, 1.6);
+    // belt
+    g.fillStyle='#221c16'; g.fillRect(x, -botY-2, w, 2);
+  }
+  function head(){
+    const cx=shoulderX+headDX, cy=headCy, r=headR;
+    // neck
+    g.fillStyle=P.skinD; g.fillRect(cx-2.4, -neckY-1, 4.8, 4);
+    // skull outline + skin
+    g.fillStyle=P.ink; disc(cx,-cy,r+1);
+    g.fillStyle=P.skin; disc(cx,-cy,r);
+    // face shading (back third darker)
+    g.fillStyle=P.skinD; g.beginPath(); g.arc(cx,-cy,r,Math.PI*0.55,Math.PI*1.15); g.fill();
+    // cheek highlight
+    g.fillStyle=P.skinL; g.beginPath(); g.arc(cx+2,-cy-1,r*0.5,0,Math.PI*2); g.fill();
+    // ear
+    g.fillStyle=P.skinD; disc(cx-r*0.7,-cy, 1.7);
+    // nose (forward)
+    g.fillStyle=P.skinD; g.fillRect(cx+r-1.5, -cy+0.5, 2.4, 2);
+    // brow + eyes
+    g.fillStyle=P.ink; g.fillRect(cx+0.5,-cy-2.2, 4.6,1.2);          // brow
+    g.fillStyle='#fff'; g.fillRect(cx+1.2,-cy-0.6, 3.6,2.2);         // eye white
+    g.fillStyle='#20202a'; g.fillRect(cx+ (st==='hitstun'?2.6:3.0),-cy-0.4, 1.4,1.8); // pupil
+    // mouth
+    g.fillStyle=P.skinD; g.fillRect(cx+1.6, -cy+3.2, 3.2, 1);
+    drawHair(g,S,P,cx,cy,r, st);
   }
 }
 
-// distinctive heads / hair — the fun part
-function drawHead(c, S, cx, headY, r, F){
-  const fill=(x,y,w,h,col)=>{ c.fillStyle=col; c.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h)); };
+// per-scientist hair + facial hair + eyewear (local space, y-up; cx,cy head center)
+function drawHair(g,S,P,cx,cy,r, st){
+  const F=(x,y,w,h,c)=>{ g.fillStyle=c; g.fillRect(x,-y-h,w,h); };  // y=bottom edge
+  const cap=(x,y,rr,c)=>{ g.fillStyle=c; g.beginPath(); g.arc(x,-y,rr,0,Math.PI*2); g.fill(); };
   switch(S.head){
-    case 'einstein': // wild white hair + mustache
-      fill(cx-r-2, headY-4, r*2+4, 6, S.hair);
-      fill(cx-r-3, headY-1, 4, 8, S.hair);
-      fill(cx+r-1, headY-1, 4, 8, S.hair);
-      fill(cx-r-4, headY+1, 3, 4, S.hair);
-      fill(cx+r+1, headY+1, 3, 4, S.hair);
-      fill(cx-3, headY+r*2-4, 6, 2, '#dddde2'); // mustache
-      break;
-    case 'tesla': // slick dark hair, center part, thin mustache
-      fill(cx-r, headY-3, r*2, 5, S.hair);
-      fill(cx-r-1, headY-1, 3, 6, S.hair);
-      fill(cx+r-1, headY-1, 3, 6, S.hair);
-      fill(cx-1, headY-3, 2, 4, '#000');       // part
-      fill(cx-2, headY+r*2-3, 4, 1, S.hair);   // mustache
-      break;
-    case 'curie': // hair bun, pulled back
-      fill(cx-r, headY-3, r*2, 5, S.hair);
-      fill(cx-r-1, headY, 3, 7, S.hair);
-      fill(cx+r-1, headY, 3, 7, S.hair);
-      fill(cx-3+ (F<0? -6:6), headY-5, 6, 6, S.hair); // bun behind
-      break;
-    case 'newton': // long curled wig
-      fill(cx-r-1, headY-3, r*2+2, 5, S.hair);
-      fill(cx-r-3, headY-1, 4, 14, S.hair);
-      fill(cx+r-1, headY-1, 4, 14, S.hair);
-      break;
-    case 'darwin': // bald top + big beard
-      fill(cx-r, headY-2, r*2, 3, S.hair);     // side hair
-      fill(cx-r-1, headY+2, 3, 5, S.hair);
-      fill(cx+r-1, headY+2, 3, 5, S.hair);
-      fill(cx-r, headY+r*2-3, r*2, 7, S.hair); // beard
-      fill(cx-r-1, headY+r*2-1, r*2+2, 4, S.hair);
-      break;
-    case 'hawking': // thin hair, glasses
-      fill(cx-r, headY-2, r*2, 3, S.hair);
-      fill(cx+ (F>0?0:-2), headY+4, 5, 2, '#20303a'); // glasses
-      break;
+    case 'einstein': { // wild electrified white hair + bushy mustache
+      g.fillStyle=P.hair;
+      cap(cx-r*0.5, cy+r*0.5, r*0.95, P.hair);
+      cap(cx+r*0.4, cy+r*0.6, r*0.8, P.hair);
+      for(let i=0;i<9;i++){ const a=Math.PI*(0.15+0.72*i/8); const rr=r+2.5+ (i%2?2.2:0.5);
+        g.fillStyle= i%2?P.hairL:P.hair;
+        g.beginPath(); g.arc(cx+Math.cos(a)*rr, -(cy+Math.sin(a)*rr), 2.1,0,Math.PI*2); g.fill(); }
+      F(cx-r*0.5, cy-r*0.35, r, 1.6, P.hairD);          // brow shadow of hair
+      g.fillStyle='#e8e8ee'; g.fillRect(cx+1.4,-cy+4.2, 4.6,1.8);  // mustache
+      break; }
+    case 'tesla': { // sleek black hair, sharp center part
+      cap(cx, cy+r*0.55, r*0.98, P.hair);
+      g.fillStyle=P.hair; g.fillRect(cx-r, -cy-1, r*2, r);
+      g.fillStyle=P.hairL; g.fillRect(cx-r*0.2, -cy-r*0.9, 1.3, r*0.9); // part sheen
+      g.fillStyle=P.hairD; g.fillRect(cx-r, -cy-1, r*0.7, r);
+      g.fillStyle=P.hair; g.fillRect(cx+1.4,-cy+4.4, 4,1); // thin mustache
+      break; }
+    case 'curie': { // hair swept into a bun
+      cap(cx-r*0.2, cy+r*0.5, r*0.98, P.hair);
+      g.fillStyle=P.hair; g.fillRect(cx-r, -cy-1, r*2, r*0.9);
+      cap(cx-r*0.95, cy+0.5, 3.1, P.hairD);                // bun at back
+      cap(cx-r*0.95, cy+0.5, 2.0, P.hair);
+      g.fillStyle=P.hairD; g.fillRect(cx-r, -cy-1, r*0.8, r*0.9);
+      break; }
+    case 'newton': { // long baroque curls to the shoulders
+      cap(cx, cy+r*0.5, r*1.02, P.hair);
+      for(let s=-1;s<=1;s+=1){ for(let j=0;j<3;j++){
+        cap(cx + s*(r*0.8) , cy - j*3.2 - 1, 2.6 - j*0.2, j%2?P.hairD:P.hair); } }
+      g.fillStyle=P.hairD; g.fillRect(cx-r, -cy-1, r*0.7, r);
+      break; }
+    case 'darwin': { // bald pate + big full beard
+      g.fillStyle=P.hair; g.beginPath(); g.arc(cx,-cy,r*0.55, Math.PI, Math.PI*2); g.fill(); // side fringe
+      F(cx-r, cy-1.5, r*2, 1.6, P.hair);
+      // beard wraps lower face
+      g.fillStyle=P.ink; g.beginPath(); g.arc(cx+1,-cy+r*0.5, r*0.98, -0.2, Math.PI+0.2); g.fill();
+      g.fillStyle=P.hair; g.beginPath(); g.arc(cx+1,-cy+r*0.5, r*0.9, -0.2, Math.PI+0.2); g.fill();
+      g.fillStyle=P.hairD; g.beginPath(); g.arc(cx+1,-cy+r*0.5, r*0.9, Math.PI*0.55, Math.PI+0.2); g.fill();
+      break; }
+    case 'hawking': { // thin combed hair + rounded glasses
+      cap(cx, cy+r*0.6, r*0.92, P.hair);
+      g.fillStyle=P.hair; g.fillRect(cx-r, -cy-1, r*2, r*0.5);
+      g.fillStyle=P.hairD; g.fillRect(cx-r, -cy-1, r*0.8, r*0.5);
+      // glasses
+      g.strokeStyle='#20303a'; g.lineWidth=1;
+      g.beginPath(); g.arc(cx+2.4,-cy+0.4,2.1,0,Math.PI*2); g.stroke();
+      g.beginPath(); g.moveTo(cx+4.5,-cy+0.4); g.lineTo(cx+5.6,-cy+0.4); g.stroke();
+      break; }
   }
+}
+
+function drawChair(g,P){
+  // simple motorized wheelchair in local space (y-up)
+  g.fillStyle=P.ink; g.fillRect(-11,-18,22,15);
+  g.fillStyle='#31333f'; g.fillRect(-10,-17,20,13);
+  g.fillStyle='#3d4150'; g.fillRect(-10,-17,20,3);        // headrest bar
+  // wheels
+  g.strokeStyle='#9aa0ad'; g.lineWidth=2;
+  g.beginPath(); g.arc(-6,-4,6.5,0,Math.PI*2); g.stroke();
+  g.beginPath(); g.arc(8,-3,3.5,0,Math.PI*2); g.stroke();
+  g.fillStyle='#5a6070'; g.beginPath(); g.arc(-6,-4,2,0,Math.PI*2); g.fill();
+  // control panel
+  g.fillStyle=P.accent; g.fillRect(9,-12,2,3);
 }
 
 /* ---------------- Game state ---------------- */
@@ -387,7 +551,7 @@ addEventListener('keyup', e=>{ const k=KEYMAP[e.key]; if(k){ KEYS[k]=false; e.pr
 
 function queueEdge(k){ if(k==='punch')pressed.punch=true; if(k==='kick')pressed.kick=true; if(k==='special')pressed.special=true; if(k==='up')pressed.up=true; }
 
-// Touch buttons
+// Touch attack buttons
 const touchState = { left:false,right:false,up:false,punch:false,kick:false,special:false,block:false };
 function bindBtn(id, key){
   const el = document.getElementById(id);
@@ -400,17 +564,111 @@ function bindBtn(id, key){
   el.addEventListener('mouseup', off);
   el.addEventListener('mouseleave', off);
 }
-bindBtn('b-left','left'); bindBtn('b-right','right'); bindBtn('b-jump','up');
 bindBtn('b-punch','punch'); bindBtn('b-kick','kick'); bindBtn('b-special','special'); bindBtn('b-block','block');
 
+// ---- Floating analog joystick (left side) ----
+// Touch anywhere in the zone: that point becomes the stick centre. Slide to steer;
+// push up (or up-diagonal) past the jump threshold to jump — solves one-thumb diagonal jumps.
+const joy = { active:false, id:null, cx:0, cy:0, upWas:false };
+const joyzone = document.getElementById('joyzone');
+const joybase = document.getElementById('joybase');
+const joythumb = document.getElementById('joythumb');
+const DEAD = 14;      // px dead-zone for left/right
+let JUMP_THRESH = 30; // px upward to trigger a jump (scaled to screen at runtime)
+
+function joyStart(e){
+  const t = e.changedTouches ? e.changedTouches[0] : e;
+  joy.active=true; joy.id = t.identifier!==undefined ? t.identifier : 'mouse';
+  const r = joyzone.getBoundingClientRect();
+  joy.cx = t.clientX; joy.cy = t.clientY;
+  JUMP_THRESH = Math.max(26, r.height*0.16);
+  joybase.style.left = (t.clientX - r.left - joybase.offsetWidth/2)+'px';
+  joybase.style.bottom = (r.bottom - t.clientY - joybase.offsetHeight/2)+'px';
+  joybase.classList.add('on');
+  joyMove(e);
+}
+function joyMove(e){
+  if(!joy.active) return;
+  let t = null;
+  if(e.changedTouches){ for(const c of e.changedTouches) if(c.identifier===joy.id) t=c; }
+  else t = e;
+  if(!t) return;
+  const dx = t.clientX - joy.cx, dy = t.clientY - joy.cy;
+  touchState.left  = dx < -DEAD;
+  touchState.right = dx >  DEAD;
+  const up = dy < -JUMP_THRESH;
+  if(up && !joy.upWas) queueEdge('up');   // edge-trigger jump
+  joy.upWas = up;
+  touchState.up = up;
+  // clamp thumb visual
+  const mag = Math.min(1, Math.hypot(dx,dy)/ (JUMP_THRESH*1.6));
+  const ang = Math.atan2(dy,dx);
+  const rad = joybase.offsetWidth*0.32;
+  joythumb.style.left = 'calc(50% + '+(Math.cos(ang)*rad*mag)+'px)';
+  joythumb.style.top  = 'calc(50% + '+(Math.sin(ang)*rad*mag)+'px)';
+}
+function joyEnd(e){
+  if(e && e.changedTouches){ let match=false; for(const c of e.changedTouches) if(c.identifier===joy.id) match=true; if(!match) return; }
+  joy.active=false; joy.id=null; joy.upWas=false;
+  touchState.left=touchState.right=touchState.up=false;
+  joybase.classList.remove('on');
+  joythumb.style.left='50%'; joythumb.style.top='50%';
+}
+joyzone.addEventListener('touchstart', e=>{ e.preventDefault(); joyStart(e); }, {passive:false});
+joyzone.addEventListener('touchmove',  e=>{ e.preventDefault(); joyMove(e); }, {passive:false});
+joyzone.addEventListener('touchend',   e=>{ e.preventDefault(); joyEnd(e); }, {passive:false});
+joyzone.addEventListener('touchcancel',e=>{ e.preventDefault(); joyEnd(e); }, {passive:false});
+joyzone.addEventListener('mousedown', e=>{ joyStart(e); });
+addEventListener('mousemove', e=>{ if(joy.id==='mouse') joyMove(e); });
+addEventListener('mouseup',   e=>{ if(joy.id==='mouse') joyEnd(e); });
+
+// ---- Gamepad (AYN Thor, Xbox/USB/BT controllers) ----
+// Standard mapping: A=punch B=kick X=special Y/RB=jump; D-pad or stick = move; Up/Y = jump; LB/RB=block.
+const padState = { left:false,right:false,up:false,punch:false,kick:false,special:false,block:false };
+const padPrev = {};
+let gamepadOn = false;
+addEventListener('gamepadconnected', ()=>{ gamepadOn=true; controlsEl.classList.add('gamepad'); });
+addEventListener('gamepaddisconnected', ()=>{ if(!navigator.getGamepads || ![...navigator.getGamepads()].some(Boolean)){ gamepadOn=false; controlsEl.classList.remove('gamepad'); } });
+
+function pollGamepad(){
+  if(!navigator.getGamepads) return;
+  const pads = navigator.getGamepads();
+  let gp=null; for(const p of pads){ if(p){ gp=p; break; } }
+  if(!gp){ padState.left=padState.right=padState.up=padState.punch=padState.kick=padState.special=padState.block=false; return; }
+  if(!gamepadOn){ gamepadOn=true; controlsEl.classList.add('gamepad'); }
+  const b = gp.buttons, ax = gp.axes;
+  const B = i => b[i] && b[i].pressed;
+  const axX = ax[0]||0, axY = ax[1]||0;
+  padState.left  = B(14) || axX < -0.45;
+  padState.right = B(15) || axX >  0.45;
+  const jump = B(12) || B(3) || axY < -0.6;   // dpad-up, Y, or stick up
+  padState.up = jump;
+  padState.block = B(4) || B(5) || B(6) || B(7);   // shoulders/triggers
+  // edge-triggered actions
+  const edge = (idx,val,key)=>{ if(val && !padPrev[idx]) queueEdge(key); padPrev[idx]=val; };
+  edge('A', B(0), 'punch');
+  edge('B', B(1), 'kick');
+  edge('X', B(2), 'special');
+  edge('J', jump, 'up');
+  // held state for punch/kick lets the AI-style repeat feel; keep them momentary via edges only
+  padState.punch = false; padState.kick = false; padState.special = false;
+  // menu navigation with the pad
+  if(mode!=='fight'){
+    if((B(0)||B(9)) && !padPrev._start){ advanceScreenClick(); if(mode==='select') padSelectConfirm(); }
+    padPrev._start = B(0)||B(9);
+    const lr = (B(15)||axX>0.45?1:0) - (B(14)||axX<-0.45?1:0);
+    if(lr && !padPrev._lr){ padSelectMove(lr); } padPrev._lr = lr;
+  }
+}
+
 function resolveInput(){
-  input.left = KEYS.left||touchState.left;
-  input.right= KEYS.right||touchState.right;
-  input.up   = KEYS.up||touchState.up;
-  input.punch= KEYS.punch||touchState.punch;
-  input.kick = KEYS.kick||touchState.kick;
-  input.special=KEYS.special||touchState.special;
-  input.block= KEYS.block||touchState.block;
+  input.left   = KEYS.left||touchState.left||padState.left;
+  input.right  = KEYS.right||touchState.right||padState.right;
+  input.up     = KEYS.up||touchState.up||padState.up;
+  input.punch  = KEYS.punch||touchState.punch;
+  input.kick   = KEYS.kick||touchState.kick;
+  input.special= KEYS.special||touchState.special;
+  input.block  = KEYS.block||touchState.block||padState.block;
 }
 
 /* ---------------- Screens (menu / select / results) ---------------- */
@@ -424,7 +682,7 @@ function showMenu(){
     <h1 class="title">SCIENCE<br>BRAWL</h1>
     <p class="sub">Six legendary scientists. One arena. Each fights with a special move drawn from their greatest discovery. A fan tribute to <i>Science Kombat</i> — built to play on your phone.</p>
     <button class="big-btn" id="startBtn">TAP TO FIGHT</button>
-    <div class="hint">Turn your phone sideways · Left thumb moves &amp; jumps · Right thumb punches, kicks, blocks, and fires your ★ Science special.</div>
+    <div class="hint">📱 <b>Phone:</b> hold the phone sideways. Left thumb = floating joystick (slide up or up-diagonal to jump). Right thumb = Punch / Kick / Block / ★ Science.<br>🎮 <b>Controller / AYN Thor:</b> D-pad or stick to move, Up or Y to jump, A=Punch, B=Kick, X=Special, shoulder=Block.</div>
   `;
   document.getElementById('startBtn').onclick = ()=> showSelect();
 }
@@ -457,8 +715,8 @@ function showSelect(){
   selCanvases = [...screensEl.querySelectorAll('.fighter-card canvas')];
   selCanvases.forEach((cv,i)=>{
     const cc = cv.getContext('2d'); cc.imageSmoothingEnabled=false;
-    const dummy = { data:FIGHTERS[i], x:38, y:92, facing:1, pose:{legSpread:5}, hitFlash:0 };
-    cc.save(); cc.scale(1.55,1.55);
+    const dummy = { data:FIGHTERS[i], x:25, y:61, facing:1, state:'idle', onGround:true, attackFrame:0, vx:0, hitFlash:0, blockHold:false };
+    cc.save(); cc.scale(2.4,2.4);
     drawFighter(dummy, cc);
     cc.restore();
   });
@@ -527,6 +785,19 @@ function showMatchOver(){
 }
 function advanceScreenClick(){
   if(mode==='menu') showSelect();
+  else if(mode==='matchover'){ const b=document.getElementById('againBtn'); if(b) b.click(); }
+}
+// gamepad menu navigation helpers
+let padCard = 0;
+function padSelectMove(dir){
+  const cards=[...document.querySelectorAll('.fighter-card')];
+  if(!cards.length) return;
+  padCard=(padCard+dir+cards.length)%cards.length;
+  cards[padCard].click();
+}
+function padSelectConfirm(){
+  const go=document.getElementById('goBtn');
+  if(go && go.textContent==='FIGHT!') go.click();
 }
 
 /* ---------------- Combat helpers ---------------- */
@@ -891,6 +1162,7 @@ function drawAnnounce(){
 function loop(){
   requestAnimationFrame(loop);
   gameFrame++;
+  pollGamepad();
   resolveInput();
 
   if(mode==='fight' || mode==='roundover'){
