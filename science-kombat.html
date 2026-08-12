@@ -112,6 +112,20 @@
     padding: 1vh; transition: transform .1s, border-color .1s, background .1s;
   }
   .fighter-card.sel { border-color: #ffd34a; background: rgba(255,211,74,.14); transform: translateY(-3px); }
+  .fighter-card.locked { cursor: not-allowed; opacity: .9; }
+  .fighter-card.locked .fc-name { color: #7a7a90; letter-spacing: 2px; }
+  .fighter-card .lock { color: #c48bff; font-weight: 800; }
+  .fighter-card.shake { animation: shk .35s; }
+  @keyframes shk { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-5px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+  .unlock-banner {
+    font-size: 2.2vh; font-weight: 800; color: #0a0a12; line-height: 1.35;
+    background: linear-gradient(180deg,#ffe36b,#ffb44a); border-radius: 12px;
+    padding: 1.4vh 2.6vh; margin: 0 0 2vh; box-shadow: 0 0 22px rgba(255,200,80,.5);
+    animation: pop .4s;
+  }
+  .unlock-banner b { font-size: 2.6vh; }
+  @keyframes pop { 0%{transform:scale(.7);opacity:0} 100%{transform:scale(1);opacity:1} }
+  #gameTitle { cursor: pointer; }
   .fighter-card canvas { position: static; width: 100%; height: 13vh; image-rendering: pixelated; background: linear-gradient(180deg,#20203a,#12121f); border-radius: 8px; }
   .fc-name { font-size: 1.9vh; font-weight: 800; margin-top: .5vh; }
   .fc-move { font-size: 1.35vh; color: #b9c6ff; }
@@ -191,7 +205,7 @@ const FIGHTERS = [
     head:'tesla',
     special:{ name:'ARC LIGHTNING', color:'#c9b3ff', kind:'bolt', dmg:15, speed:7.5, label:'⚡' } },
 
-  { id:'curie', name:'M. CURIE', tagline:'Radioactivity',
+  { id:'curie', name:'M. CURIE', tagline:'Radioactivity', female:true,
     skin:'#e7b892', hair:'#2a211c', coat:'#3a3446', pants:'#241f2c', accent:'#8dff9e',
     head:'curie',
     special:{ name:'RADIUM BEAM', color:'#8dff9e', kind:'beam', dmg:13, speed:6.2, label:'Ra' } },
@@ -210,7 +224,55 @@ const FIGHTERS = [
     skin:'#e8bd95', hair:'#8a8a92', coat:'#2b2f3a', pants:'#20242c', accent:'#c48bff',
     head:'hawking',
     special:{ name:'EVENT HORIZON', color:'#b487ff', kind:'hole', dmg:15, speed:4.4, label:'∞' } },
+
+  // ---- secret / unlockable roster (unlocked by winning matches) ----
+  { id:'ada', name:'A. LOVELACE', tagline:'Computing', female:true, secret:true,
+    skin:'#e9bd98', hair:'#3a2a22', coat:'#3b2d55', pants:'#2a2038', accent:'#ffd36b',
+    head:'ada',
+    special:{ name:'PUNCH-CARD LOOP', color:'#ffd36b', kind:'cards', dmg:13, speed:5.4, label:'01' } },
+
+  { id:'franklin', name:'R. FRANKLIN', tagline:'DNA / X-ray', female:true, secret:true,
+    skin:'#e7b892', hair:'#2b211d', coat:'#c9ccd6', pants:'#3a3a44', accent:'#ff5ea8',
+    head:'franklin',
+    special:{ name:'DOUBLE HELIX', color:'#ff5ea8', kind:'helix', dmg:14, speed:5.6, label:'DNA' } },
+
+  { id:'johnson', name:'K. JOHNSON', tagline:'Orbital math', female:true, secret:true,
+    skin:'#8a5a3c', hair:'#241a16', coat:'#3f5a7a', pants:'#26313f', accent:'#eaf2ff',
+    head:'johnson',
+    special:{ name:'ORBITAL SLINGSHOT', color:'#8fd6ff', kind:'orbit', dmg:14, speed:5.0, label:'∮' } },
+
+  { id:'galileo', name:'GALILEO', tagline:'Astronomy', secret:true,
+    skin:'#e3b089', hair:'#b8b2a4', coat:'#6a4a2c', pants:'#3e2a18', accent:'#ffcf6b',
+    head:'galileo',
+    special:{ name:'COSMIC SPYGLASS', color:'#ffd98a', kind:'star', dmg:15, speed:6.4, label:'★' } },
+
+  { id:'turing', name:'A. TURING', tagline:'Codebreaking', secret:true,
+    skin:'#e8bd95', hair:'#4a3a2c', coat:'#42505a', pants:'#2b333a', accent:'#8dff9e',
+    head:'turing',
+    special:{ name:'ENIGMA CIPHER', color:'#8dff9e', kind:'cipher', dmg:13, speed:6.0, label:'⊕' } },
+
+  { id:'archimedes', name:'ARCHIMEDES', tagline:'Mechanics', secret:true,
+    skin:'#d99f74', hair:'#e6e2d6', coat:'#d8d2c0', pants:'#b8b2a0', accent:'#ffcf5a',
+    head:'archimedes',
+    special:{ name:'BURNING MIRROR', color:'#ffd24a', kind:'deathray', dmg:16, speed:7.2, label:'☀' } },
 ];
+
+/* ---------------- Unlock system (persisted in localStorage) ---------------- */
+const SECRET_ORDER = ['ada','franklin','johnson','galileo','turing','archimedes'];
+function lsGet(k,d){ try{ const v=localStorage.getItem(k); return v==null?d:v; }catch(e){ return d; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+function careerWins(){ return parseInt(lsGet('sb_wins','0'),10)||0; }
+function cheatOn(){ return lsGet('sb_cheat','0')==='1'; }
+function secretsUnlockedCount(){ return cheatOn()?SECRET_ORDER.length:Math.min(SECRET_ORDER.length, careerWins()); }
+function isUnlocked(f){ if(!f.secret) return true; return SECRET_ORDER.indexOf(f.id) < secretsUnlockedCount(); }
+function recordWinAndCheckUnlock(){
+  const before = careerWins();
+  lsSet('sb_wins', before+1);
+  if(!cheatOn() && before < SECRET_ORDER.length){
+    return FIGHTERS.find(f=>f.id===SECRET_ORDER[before]) || null;  // newly revealed fighter
+  }
+  return null;
+}
 
 /* ================= SNES-style articulated fighter renderer =================
    Fighters are drawn in a LOCAL space: origin at the feet midpoint, +x points
@@ -350,6 +412,9 @@ function drawFighter(f, dctx){
   limb(fl.ex,fl.ey, fl.hx,fl.hy, 6.4, P.pants, P.pantsD, shade(S.pants,1.15));
   foot(fl.hx,fl.hy, P.shoe, P.shoeD);
 
+  // ---- skirt (women) draws over the upper legs ----
+  if(S.female) skirt();
+
   // ---- front arm ----
   const fa=fk(shoulderX+1, shoulderY, fArm.a1, 8.5, fArm.a2, 8);
   limb(shoulderX+1,shoulderY, fa.ex,fa.ey, 5.4, P.coat, P.coatD, P.coatL);
@@ -379,6 +444,23 @@ function drawFighter(f, dctx){
     g.fillStyle=col;   g.fillRect(x-1.5, -y-0.5, 8, 3.5);
     g.fillStyle=dark;  g.fillRect(x-1.5, -y+2, 8, 1.4);
   }
+  function skirt(){
+    const topY=hipY+2, botY=hipY-9, wTop=13, wBot=22;   // y-up: A-line flare
+    const p=(a,b)=>{ g.lineTo(shoulderX*0.4 + a, -b); };
+    g.fillStyle=P.ink;
+    g.beginPath(); g.moveTo(shoulderX*0.4-wTop/2-1,-topY);
+    p(wTop/2+1,topY); p(wBot/2+1,botY-0.5); p(-wBot/2-1,botY-0.5); g.closePath(); g.fill();
+    g.fillStyle=P.coat;
+    g.beginPath(); g.moveTo(shoulderX*0.4-wTop/2,-topY);
+    p(wTop/2,topY); p(wBot/2,botY); p(-wBot/2,botY); g.closePath(); g.fill();
+    // back-half shade + pleat lines + hem highlight
+    g.fillStyle=P.coatD;
+    g.beginPath(); g.moveTo(shoulderX*0.4-wTop/2,-topY);
+    p(0,topY); p(0,botY); p(-wBot/2,botY); g.closePath(); g.fill();
+    g.fillStyle=shade(S.coat,0.85);
+    for(let i=-1;i<=1;i++){ g.fillRect(shoulderX*0.4+i*5, -topY+1, 0.8, (topY-botY)); }
+    g.fillStyle=P.coatL; g.fillRect(shoulderX*0.4-wBot/2, -botY, wBot, 1.4);
+  }
   function torso(){
     const topY=shoulderY+2, botY=hipY-1, h=topY-botY, w=15;
     const x=shoulderX-w/2 + (leanX>0? -1:0);
@@ -387,18 +469,21 @@ function drawFighter(f, dctx){
     g.fillStyle=P.coat; g.fillRect(x, -topY, w, h);
     // shaded back half
     g.fillStyle=P.coatD; g.fillRect(x, -topY, w*0.42, h);
-    // shirt / lapel V
+    // collar / neckline V
     g.fillStyle='#efece4'; g.beginPath();
     g.moveTo(shoulderX-3.5,-topY); g.lineTo(shoulderX+3.5,-topY);
     g.lineTo(shoulderX, -botY-3); g.closePath(); g.fill();
-    // tie / accent placket
-    g.fillStyle=S.accent; g.fillRect(shoulderX-1.4, -topY+1, 2.8, h-3);
-    // buttons
-    g.fillStyle=P.coatD; for(let i=0;i<3;i++) g.fillRect(shoulderX+2.5, -topY+3+i*3.4, 1.3,1.3);
-    // collar
-    g.fillStyle=P.coatL; g.fillRect(x, -topY, w, 1.6);
-    // belt
-    g.fillStyle='#221c16'; g.fillRect(x, -botY-2, w, 2);
+    if(S.female){
+      // blouse neckline + brooch (no necktie)
+      g.fillStyle=S.accent; g.fillRect(shoulderX-1.3, -topY+2, 2.6, 2.6);      // brooch
+      g.fillStyle=P.coatL; g.fillRect(x, -topY, w, 1.6);                        // collar highlight
+    } else {
+      // necktie + buttons
+      g.fillStyle=S.accent; g.fillRect(shoulderX-1.4, -topY+1, 2.8, h-3);
+      g.fillStyle=P.coatD; for(let i=0;i<3;i++) g.fillRect(shoulderX+2.5, -topY+3+i*3.4, 1.3,1.3);
+      g.fillStyle=P.coatL; g.fillRect(x, -topY, w, 1.6);
+      g.fillStyle='#221c16'; g.fillRect(x, -botY-2, w, 2);                      // belt
+    }
   }
   function head(){
     const cx=shoulderX+headDX, cy=headCy, r=headR;
@@ -476,6 +561,49 @@ function drawHair(g,S,P,cx,cy,r, st){
       g.strokeStyle='#20303a'; g.lineWidth=1;
       g.beginPath(); g.arc(cx+2.4,-cy+0.4,2.1,0,Math.PI*2); g.stroke();
       g.beginPath(); g.moveTo(cx+4.5,-cy+0.4); g.lineTo(cx+5.6,-cy+0.4); g.stroke();
+      break; }
+    case 'ada': { // Victorian centre-part with side ringlets
+      cap(cx-r*0.1, cy+r*0.5, r*0.98, P.hair);
+      g.fillStyle=P.hair; g.fillRect(cx-r, -cy-1, r*2, r*0.8);
+      g.fillStyle=P.hairL; g.fillRect(cx-0.6,-cy-r*0.9,1.2,r*0.8);      // centre-part sheen
+      cap(cx-r*0.95, cy-1.5, 2.4, P.hairD); cap(cx-r*0.95, cy-4.2, 2.2, P.hair); // ringlets
+      cap(cx-r*0.6, cy+r*0.9, 2.0, P.hairD);                            // small updo top
+      break; }
+    case 'franklin': { // 1950s wavy side-parted bob
+      cap(cx, cy+r*0.55, r*1.0, P.hair);
+      g.fillStyle=P.hair; g.fillRect(cx-r-1, -cy-1, r*2+2, r*0.9);
+      for(let i=-1;i<=1;i++) cap(cx+i*r*0.7, cy+r*0.3, 2.2, i<0?P.hairD:P.hair); // waves
+      g.fillStyle=P.hairD; g.fillRect(cx-r-1,-cy+1, 2.2, r*0.9);        // side volume
+      break; }
+    case 'johnson': { // short curls + cat-eye glasses
+      for(let i=-2;i<=2;i++) cap(cx+i*2.4, cy+r*0.55, 2.3, i%2?P.hairD:P.hair);
+      g.fillStyle=P.hair; g.fillRect(cx-r, -cy-1, r*2, r*0.5);
+      g.strokeStyle='#20303a'; g.lineWidth=1;
+      g.beginPath(); g.arc(cx+2.6,-cy+0.4,2.0,0,Math.PI*2); g.stroke();
+      g.fillStyle='#20303a'; g.fillRect(cx+4.2,-cy-1.4,1.6,1.2);        // cat-eye flick
+      break; }
+    case 'galileo': { // skull-cap, long grey hair, full beard
+      g.fillStyle=P.hair; g.fillRect(cx-r,-cy+1,r*0.7,r+1); g.fillRect(cx+r*0.4,-cy+1,r*0.7,r+1); // long sides
+      g.fillStyle=shade(S.coat,0.7); g.beginPath(); g.arc(cx,-cy-1,r*0.85,Math.PI,Math.PI*2); g.fill(); // cap
+      g.fillStyle=P.ink; g.beginPath(); g.arc(cx+1,-cy+r*0.5,r*0.95,-0.1,Math.PI+0.1); g.fill();
+      g.fillStyle=P.hair; g.beginPath(); g.arc(cx+1,-cy+r*0.5,r*0.86,-0.1,Math.PI+0.1); g.fill(); // beard
+      g.fillStyle=P.hairD; g.beginPath(); g.arc(cx+1,-cy+r*0.5,r*0.86,Math.PI*0.55,Math.PI+0.1); g.fill();
+      break; }
+    case 'turing': { // neat short side-parted hair
+      cap(cx, cy+r*0.6, r*0.95, P.hair);
+      g.fillStyle=P.hair; g.fillRect(cx-r, -cy-1, r*2, r*0.55);
+      g.fillStyle=P.hairD; g.fillRect(cx-r,-cy-1, r*0.55, r*0.55);
+      g.fillStyle=P.hairL; g.fillRect(cx+r*0.1,-cy-r*0.5,1,r*0.5);      // part
+      break; }
+    case 'archimedes': { // laurel wreath + curly crown + big white beard
+      for(let i=-2;i<=2;i++) cap(cx+i*2.3, cy+r*0.55, 2.2, i%2?P.hairD:P.hair); // curls
+      g.fillStyle=P.ink; g.beginPath(); g.arc(cx+1,-cy+r*0.55,r*1.0,-0.15,Math.PI+0.15); g.fill();
+      g.fillStyle=P.hair; g.beginPath(); g.arc(cx+1,-cy+r*0.55,r*0.9,-0.15,Math.PI+0.15); g.fill();  // beard
+      g.fillStyle=P.hairD; g.beginPath(); g.arc(cx+1,-cy+r*0.55,r*0.9,Math.PI*0.55,Math.PI+0.15); g.fill();
+      // laurel wreath
+      g.fillStyle='#6fae4e';
+      for(let i=0;i<5;i++){ const a=Math.PI*(0.15+0.7*i/4); g.beginPath();
+        g.ellipse(cx+Math.cos(a)*(r+1), -(cy+Math.sin(a)*(r+1)), 1.8,1,a,0,Math.PI*2); g.fill(); }
       break; }
   }
 }
@@ -678,13 +806,21 @@ const controlsEl = document.getElementById('controls');
 function showMenu(){
   mode='menu'; controlsEl.style.display='none';
   screensEl.classList.remove('hidden');
+  const found = secretsUnlockedCount(), tot = SECRET_ORDER.length;
   screensEl.innerHTML = `
-    <h1 class="title">SCIENCE<br>BRAWL</h1>
-    <p class="sub">Six legendary scientists. One arena. Each fights with a special move drawn from their greatest discovery. A fan tribute to <i>Science Kombat</i> — built to play on your phone.</p>
+    <h1 class="title" id="gameTitle">SCIENCE<br>BRAWL</h1>
+    <p class="sub"><b>12 legendary scientists</b> — 6 to start, plus 6 secret fighters to unlock. Each battles with a special move drawn from their greatest discovery. A fan tribute to <i>Science Kombat</i>, built to play on your phone.</p>
     <button class="big-btn" id="startBtn">TAP TO FIGHT</button>
+    <div class="hint" style="margin-top:.5vh">🔒 Secret scientists revealed: ${found}/${tot}${found>=tot?' — all unlocked! 🎉':''}</div>
     <div class="hint">📱 <b>Phone:</b> hold the phone sideways. Left thumb = floating joystick (slide up or up-diagonal to jump). Right thumb = Punch / Kick / Block / ★ Science.<br>🎮 <b>Controller / AYN Thor:</b> D-pad or stick to move, Up or Y to jump, A=Punch, B=Kick, X=Special, shoulder=Block.</div>
   `;
   document.getElementById('startBtn').onclick = ()=> showSelect();
+  // secret cheat: tap the title 5 times to reveal all scientists
+  const titleEl = document.getElementById('gameTitle'); let taps=0, tapTimer=0;
+  if(titleEl) titleEl.onclick = ()=>{
+    taps++; clearTimeout(tapTimer); tapTimer=setTimeout(()=>{taps=0;}, 1200);
+    if(taps>=5){ lsSet('sb_cheat','1'); taps=0; showMenu(); }
+  };
 }
 
 let selCanvases = [];
@@ -692,12 +828,15 @@ function showSelect(){
   mode='select'; controlsEl.style.display='none';
   screensEl.classList.remove('hidden');
   pick.chooser='p1';
-  let cards = FIGHTERS.map((f,i)=>`
-    <div class="fighter-card" data-i="${i}">
+  const foundSecrets = secretsUnlockedCount(), totSecrets = SECRET_ORDER.length;
+  let cards = FIGHTERS.map((f,i)=>{
+    const locked = !isUnlocked(f);
+    return `
+    <div class="fighter-card${locked?' locked':''}" data-i="${i}">
       <canvas width="120" height="150"></canvas>
-      <div class="fc-name">${f.name}</div>
-      <div class="fc-move">★ ${f.special.name}</div>
-    </div>`).join('');
+      <div class="fc-name">${locked?'? ? ?':f.name}</div>
+      <div class="fc-move">${locked?'<span class=\"lock\">🔒 SECRET</span>':'★ '+f.special.name}</div>
+    </div>`; }).join('');
   screensEl.innerHTML = `
     <h1 class="title" style="font-size:5vh">CHOOSE FIGHTER</h1>
     <div class="selrow">
@@ -709,9 +848,9 @@ function showSelect(){
       <button class="big-btn" id="goBtn" style="opacity:.5">SELECT YOU FIRST</button>
       <button class="ghost-btn" id="backBtn">Menu</button>
     </div>
-    <div class="hint">Tap a scientist to pick your fighter. The CPU takes a random opponent.</div>
+    <div class="hint">Tap a scientist to pick your fighter. 🔒 <b>Secret scientists unlock as you win matches</b> — ${foundSecrets}/${totSecrets} revealed.</div>
   `;
-  // render mini previews
+  // render mini previews (locked ones drawn as dark silhouettes)
   selCanvases = [...screensEl.querySelectorAll('.fighter-card canvas')];
   selCanvases.forEach((cv,i)=>{
     const cc = cv.getContext('2d'); cc.imageSmoothingEnabled=false;
@@ -719,10 +858,21 @@ function showSelect(){
     cc.save(); cc.scale(2.4,2.4);
     drawFighter(dummy, cc);
     cc.restore();
+    if(!isUnlocked(FIGHTERS[i])){                 // silhouette overlay + "?"
+      cc.save(); cc.globalCompositeOperation='source-atop';
+      cc.fillStyle='#0c0c16'; cc.fillRect(0,0,cv.width,cv.height);
+      cc.restore();
+      cc.fillStyle='#555'; cc.font='bold 42px "Trebuchet MS",sans-serif'; cc.textAlign='center';
+      cc.fillText('?', cv.width/2, cv.height*0.62);
+    }
   });
   screensEl.querySelectorAll('.fighter-card').forEach(card=>{
     card.onclick = ()=>{
       const i = +card.dataset.i;
+      if(!isUnlocked(FIGHTERS[i])){
+        card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+        return;
+      }
       pick.p1 = i;
       screensEl.querySelectorAll('.fighter-card').forEach(c=>c.classList.remove('sel'));
       card.classList.add('sel');
@@ -733,10 +883,9 @@ function showSelect(){
   document.getElementById('backBtn').onclick = showMenu;
   document.getElementById('goBtn').onclick = ()=>{
     if(document.getElementById('pick1').textContent==='—') return;
-    // random CPU (different if possible)
-    let cpu = Math.floor(Math.random()*FIGHTERS.length);
-    if(FIGHTERS.length>1) while(cpu===pick.p1) cpu=Math.floor(Math.random()*FIGHTERS.length);
-    pick.p2 = cpu;
+    // CPU picks randomly from the UNLOCKED pool (different from you if possible)
+    const pool = FIGHTERS.map((f,i)=>i).filter(i=>isUnlocked(FIGHTERS[i]) && i!==pick.p1);
+    pick.p2 = pool.length ? pool[Math.floor(Math.random()*pool.length)] : pick.p1;
     startMatch();
   };
 }
@@ -774,9 +923,19 @@ function showMatchOver(){
   controlsEl.style.display='none';
   screensEl.classList.remove('hidden');
   const youWon = wins.p1>wins.p2;
+  let unlocked = null;
+  if(youWon) unlocked = recordWinAndCheckUnlock();
+  const remaining = SECRET_ORDER.length - secretsUnlockedCount();
+  let unlockHtml = '';
+  if(unlocked){
+    unlockHtml = `<div class="unlock-banner">🔓 NEW SECRET SCIENTIST UNLOCKED!<br><b>${unlocked.name}</b> — ★ ${unlocked.special.name}</div>`;
+  } else if(youWon && remaining>0){
+    unlockHtml = `<p class="sub" style="margin-top:0">Win ${remaining} more match${remaining>1?'es':''} to reveal the next secret scientist.</p>`;
+  }
   screensEl.innerHTML = `
     <h1 class="title" style="font-size:6.5vh">${youWon?'YOU WIN!':'YOU LOSE'}</h1>
     <p class="sub">${wins.p1} – ${wins.p2}. ${youWon?'Science prevails. 🧪':'The CPU out-experimented you. Try another fighter?'}</p>
+    ${unlockHtml}
     <button class="big-btn" id="againBtn">CHOOSE FIGHTER</button>
     <button class="ghost-btn" id="menuBtn">Main Menu</button>
   `;
@@ -1015,6 +1174,8 @@ function updateProjectiles(){
     pr.x+=pr.vx;
     if(pr.kind==='apple'){ pr.vy=(pr.vy||0)+0.12; pr.y+=pr.vy; }
     if(pr.kind==='hole'){ pr.vx*=0.985; }
+    if(pr.kind==='orbit'){ pr.y += Math.sin(pr.t*0.14)*0.9; }      // gentle orbital arc
+    if(pr.kind==='cards'){ pr.y += Math.sin(pr.t*0.2)*0.5; }       // fluttering cards
     pr.life--;
     // trail
     if(pr.t%2===0) particles.push({x:pr.x,y:pr.y,vx:0,vy:0,life:10,c:pr.color,fade:true});
@@ -1089,6 +1250,44 @@ function drawProjectiles(){
     } else if(pr.kind==='hole'){
       ctx.fillStyle='#000'; ctx.beginPath(); ctx.arc(pr.x,pr.y,pr.r,0,Math.PI*2); ctx.fill();
       ctx.strokeStyle=pr.color; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(pr.x,pr.y,pr.r+3+Math.sin(pr.t*0.3)*2,0,Math.PI*2); ctx.stroke();
+    } else if(pr.kind==='helix'){
+      // rotating DNA double helix
+      ctx.lineWidth=2;
+      for(let s=0;s<2;s++){
+        ctx.strokeStyle = s? '#8fd6ff' : pr.color; ctx.beginPath();
+        for(let i=0;i<=12;i++){ const xx=pr.x-7+i*1.2, ph=i*0.7+pr.t*0.35+s*Math.PI; if(i===0)ctx.moveTo(xx,pr.y+Math.sin(ph)*5); else ctx.lineTo(xx,pr.y+Math.sin(ph)*5); }
+        ctx.stroke();
+      }
+      ctx.strokeStyle='rgba(255,255,255,0.55)'; ctx.lineWidth=1;
+      for(let i=0;i<=12;i+=3){ const ph=i*0.7+pr.t*0.35; ctx.beginPath(); ctx.moveTo(pr.x-7+i*1.2,pr.y+Math.sin(ph)*5); ctx.lineTo(pr.x-7+i*1.2,pr.y+Math.sin(ph+Math.PI)*5); ctx.stroke(); }
+    } else if(pr.kind==='orbit'){
+      // planet slingshotting around a focus
+      ctx.strokeStyle='rgba(255,255,255,0.35)'; ctx.lineWidth=1; ctx.beginPath(); ctx.ellipse(pr.x,pr.y,10,5,0,0,Math.PI*2); ctx.stroke();
+      ctx.fillStyle='#ffd36b'; ctx.beginPath(); ctx.arc(pr.x,pr.y,2.2,0,Math.PI*2); ctx.fill();
+      const a=pr.t*0.45, ox=pr.x+Math.cos(a)*10, oy=pr.y+Math.sin(a)*5;
+      ctx.fillStyle=pr.color; ctx.beginPath(); ctx.arc(ox,oy,3,0,Math.PI*2); ctx.fill();
+    } else if(pr.kind==='cards'){
+      // stream of punch cards
+      for(let i=0;i<3;i++){ const yy=pr.y-5+i*4+Math.sin(pr.t*0.3+i)*1.5;
+        ctx.fillStyle=i%2?'#fff':pr.color; ctx.fillRect(pr.x-5-i*2, yy, 8, 4);
+        ctx.fillStyle='#333'; ctx.fillRect(pr.x-4-i*2,yy+1,1,1); ctx.fillRect(pr.x-1-i*2,yy+2,1,1); ctx.fillRect(pr.x+1-i*2,yy+1,1,1); }
+    } else if(pr.kind==='cipher'){
+      // scrolling cipher glyphs
+      const chars='01ΞΨΣ⊕Δ'; ctx.font='bold 8px monospace'; ctx.textAlign='center';
+      for(let i=0;i<4;i++){ ctx.fillStyle= i? 'rgba(141,255,158,0.75)' : pr.color;
+        ctx.fillText(chars[(pr.t+i)%chars.length], pr.x-5+i*3.3, pr.y+((pr.t*2+i*5)%12)-6); }
+      ctx.textAlign='left';
+    } else if(pr.kind==='star'){
+      // comet with tail
+      ctx.strokeStyle=pr.color; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(pr.x-pr.dir*13,pr.y); ctx.lineTo(pr.x,pr.y); ctx.stroke();
+      ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(pr.x,pr.y,3,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle=pr.color; ctx.lineWidth=1.5; ctx.beginPath();
+      ctx.moveTo(pr.x-5,pr.y); ctx.lineTo(pr.x+5,pr.y); ctx.moveTo(pr.x,pr.y-5); ctx.lineTo(pr.x,pr.y+5); ctx.stroke();
+    } else if(pr.kind==='deathray'){
+      // concentrated burning-mirror beam
+      ctx.fillStyle=pr.color; ctx.globalAlpha=0.5; ctx.fillRect(pr.x-9,pr.y-3,18,6); ctx.globalAlpha=1;
+      ctx.fillStyle=pr.color; ctx.fillRect(pr.x-9,pr.y-2,18,4);
+      ctx.fillStyle='#fff'; ctx.fillRect(pr.x-9,pr.y-1,18,2);
     } else {
       ctx.beginPath(); ctx.arc(pr.x,pr.y,pr.r,0,Math.PI*2); ctx.fill();
       ctx.fillStyle='#fff'; ctx.font='bold 9px monospace'; ctx.textAlign='center';
