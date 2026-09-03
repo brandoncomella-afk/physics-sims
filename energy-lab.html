@@ -1,0 +1,745 @@
+<title>The Energy Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f4f2ec;
+    --surface:#fffdf8;
+    --surface-2:#eae6d9;
+    --ink:#1d2233;
+    --muted:#666f60;
+    --line:#dcd6c4;
+    --accent:#2f5fda;
+    --accent-ink:#ffffff;
+    --eel:#dd7d17;
+    --ek:#2f5fda;
+    --eg:#3f8f4f;
+    --good:#2f8f5b;
+    --good-bg:#e5f3ea;
+    --bad:#c1443c;
+    --bad-bg:#fbe9e7;
+    --focus:#2f5fda;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#14171d;
+      --surface:#1b1f27;
+      --surface-2:#242a34;
+      --ink:#edeef2;
+      --muted:#9aa2ac;
+      --line:#333a47;
+      --accent:#7b9bff;
+      --eel:#f2984f;
+      --ek:#7b9bff;
+      --eg:#67c07d;
+      --good:#5fcf93;
+      --good-bg:#173226;
+      --bad:#f0837a;
+      --bad-bg:#3a1e1c;
+      --focus:#7b9bff;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#14171d;
+    --surface:#1b1f27;
+    --surface-2:#242a34;
+    --ink:#edeef2;
+    --muted:#9aa2ac;
+    --line:#333a47;
+    --accent:#7b9bff;
+    --eel:#f2984f;
+    --ek:#7b9bff;
+    --eg:#67c07d;
+    --good:#5fcf93;
+    --good-bg:#173226;
+    --bad:#f0837a;
+    --bad-bg:#3a1e1c;
+    --focus:#7b9bff;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Source Sans 3", ui-sans-serif, system-ui, sans-serif;
+    line-height:1.5;
+  }
+  h1,h2,h3{font-family:"Archivo", ui-sans-serif, system-ui, sans-serif; text-wrap:balance;}
+  .mono{font-family:"JetBrains Mono", ui-monospace, monospace;}
+  a{color:var(--accent);}
+
+  .wrap{max-width:840px; margin:0 auto; padding:0 20px 80px;}
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    position:sticky; top:0; z-index:20;
+    background:color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar-inner{
+    max-width:840px; margin:0 auto; padding:10px 20px;
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  }
+  .brand{font-family:"Archivo"; font-weight:800; font-size:15px; letter-spacing:.02em; white-space:nowrap;}
+  .brand span{color:var(--accent);}
+  .navlinks{display:flex; gap:2px; flex-wrap:wrap; margin-left:4px;}
+  .navlinks a{
+    font-size:12.5px; font-weight:600; text-decoration:none; color:var(--muted);
+    padding:5px 9px; border-radius:6px;
+  }
+  .navlinks a:hover{background:var(--surface-2); color:var(--ink);}
+  .score-pill{
+    margin-left:auto; display:flex; align-items:center; gap:8px;
+    background:var(--surface); border:1px solid var(--line); border-radius:999px;
+    padding:5px 12px 5px 6px; font-size:12.5px; font-weight:600;
+  }
+  .score-pill .dot{width:8px; height:8px; border-radius:50%; background:var(--accent);}
+  .score-pill .num{font-family:"JetBrains Mono"; font-variant-numeric:tabular-nums;}
+  .reset-btn{
+    border:1px solid var(--line); background:var(--surface); color:var(--muted);
+    font-size:12px; font-weight:600; padding:5px 10px; border-radius:999px; cursor:pointer;
+  }
+  .reset-btn:hover{color:var(--bad); border-color:var(--bad);}
+
+  /* ---------- header ---------- */
+  header.hero{padding:38px 0 8px;}
+  .eyebrow{
+    font-family:"JetBrains Mono"; font-size:11.5px; font-weight:600; letter-spacing:.09em;
+    text-transform:uppercase; color:var(--muted); display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow .swatch{display:inline-flex; gap:3px;}
+  .eyebrow .swatch i{width:9px; height:9px; border-radius:2px; display:inline-block;}
+  header.hero h1{font-size:clamp(28px,4.4vw,40px); font-weight:800; margin:8px 0 6px; letter-spacing:-.01em;}
+  header.hero p.lede{color:var(--muted); font-size:16px; max-width:60ch; margin:0 0 18px;}
+  .fields{display:flex; gap:22px; flex-wrap:wrap; font-size:13.5px; color:var(--muted); margin-bottom:6px;}
+  .fields label{display:flex; align-items:center; gap:6px;}
+  .fields input[type=text]{
+    border:none; border-bottom:1px solid var(--line); background:transparent; color:var(--ink);
+    font-size:13.5px; padding:2px 2px; width:150px; font-family:"Source Sans 3";
+  }
+  .fields input:focus{outline:none; border-color:var(--accent);}
+
+  /* ---------- section shell ---------- */
+  section.part{padding-top:46px; scroll-margin-top:64px;}
+  .part-head{display:flex; align-items:baseline; gap:12px; border-bottom:2px solid var(--ink); padding-bottom:10px; margin-bottom:20px;}
+  .part-num{font-family:"JetBrains Mono"; font-weight:600; font-size:13px; color:var(--accent); background:var(--surface-2); border-radius:5px; padding:3px 7px;}
+  .part-head h2{font-size:21px; margin:0; font-weight:700;}
+  .part-intro{color:var(--muted); font-size:14.5px; margin:-8px 0 20px; max-width:64ch;}
+
+  .item{
+    background:var(--surface); border:1px solid var(--line); border-radius:12px;
+    padding:16px 18px 18px; margin-bottom:16px;
+  }
+  .item-stem{font-size:15px; margin:0 0 10px; line-height:1.55;}
+  .item-stem b.q-num{font-family:"JetBrains Mono"; color:var(--accent); margin-right:4px;}
+
+  /* fill-in blank */
+  .blank-row{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:6px 0;}
+  .blank-row label{font-size:14px; color:var(--muted); white-space:nowrap;}
+  .blank-row input[type=text]{
+    flex:1; min-width:180px; border:1px solid var(--line); border-radius:7px;
+    padding:7px 10px; font-size:14px; background:var(--bg); color:var(--ink); font-family:"Source Sans 3";
+  }
+  .blank-row input:focus{outline:2px solid var(--focus); outline-offset:1px; border-color:var(--focus);}
+  .check-btn{
+    border:1px solid var(--accent); background:var(--accent); color:var(--accent-ink);
+    font-size:12.5px; font-weight:700; padding:7px 12px; border-radius:7px; cursor:pointer; white-space:nowrap;
+  }
+  .check-btn:hover{filter:brightness(1.08);}
+  .fb{
+    font-size:13px; margin-top:6px; padding:7px 10px; border-radius:7px; display:none; align-items:flex-start; gap:7px;
+  }
+  .fb.show{display:flex;}
+  .fb.good{background:var(--good-bg); color:var(--good);}
+  .fb.bad{background:var(--bad-bg); color:var(--bad);}
+  .fb b{font-weight:700;}
+
+  .reveal-toggle{
+    border:1px dashed var(--line); background:transparent; color:var(--muted);
+    font-size:12.5px; font-weight:600; padding:6px 11px; border-radius:7px; cursor:pointer; margin-top:4px;
+  }
+  .reveal-toggle:hover{border-color:var(--accent); color:var(--accent);}
+  .model-answer{
+    display:none; margin-top:10px; padding:10px 12px; border-left:3px solid var(--accent);
+    background:var(--surface-2); border-radius:0 8px 8px 0; font-size:13.5px; color:var(--ink);
+  }
+  .model-answer.show{display:block;}
+  .model-answer .lbl{font-family:"JetBrains Mono"; font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--accent); display:block; margin-bottom:4px;}
+
+  /* draw pad */
+  .drawpad-wrap{margin-top:8px;}
+  .drawpad-toolbar{display:flex; gap:8px; margin-bottom:6px;}
+  .tool-btn{
+    border:1px solid var(--line); background:var(--surface); color:var(--muted);
+    font-size:12px; font-weight:600; padding:5px 10px; border-radius:6px; cursor:pointer;
+  }
+  .tool-btn:hover{color:var(--ink); border-color:var(--ink);}
+  canvas.drawpad{
+    width:100%; height:220px; display:block; border:1.5px dashed var(--line); border-radius:10px;
+    background:
+      linear-gradient(var(--surface-2) 1px, transparent 1px),
+      linear-gradient(90deg, var(--surface-2) 1px, transparent 1px);
+    background-size:22px 22px; background-color:var(--surface); touch-action:none; cursor:crosshair;
+  }
+  .schema-svg{width:100%; max-width:420px; display:block; margin:0 auto;}
+  .schema-svg .node-circle{fill:var(--surface); stroke:var(--ink); stroke-width:2;}
+  .schema-svg .node-label{font:600 12px "Source Sans 3"; fill:var(--ink); text-anchor:middle;}
+  .schema-svg .boundary{fill:none; stroke:var(--accent); stroke-width:1.6; stroke-dasharray:5 4;}
+  .schema-svg .line-solid{stroke:var(--ink); stroke-width:1.6;}
+  .schema-svg .line-dashed{stroke:var(--muted); stroke-width:1.6; stroke-dasharray:4 3;}
+  .schema-svg .int-label{font:italic 500 9.5px "Source Sans 3"; fill:var(--muted); text-anchor:middle;}
+
+  /* pie builder */
+  .pie-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:8px;}
+  @media (max-width:560px){.pie-grid{grid-template-columns:1fr;}}
+  .pie-panel{background:var(--surface-2); border-radius:10px; padding:12px;}
+  .pie-panel h4{margin:0 0 8px; font-size:12.5px; font-family:"JetBrains Mono"; letter-spacing:.03em; color:var(--muted); font-weight:600; text-transform:uppercase;}
+  .pie-visual{display:flex; align-items:center; gap:14px;}
+  .pie-circle{
+    width:96px; height:96px; border-radius:50%; flex:none;
+    border:2px dashed var(--line);
+  }
+  .pie-sliders{flex:1; display:flex; flex-direction:column; gap:6px;}
+  .slider-row{display:flex; align-items:center; gap:7px;}
+  .slider-row .swatch{width:9px; height:9px; border-radius:2px; flex:none;}
+  .slider-row label{font-size:11.5px; width:38px; flex:none; font-family:"JetBrains Mono"; font-weight:600;}
+  .slider-row input[type=range]{flex:1; accent-color:var(--accent);}
+  .slider-row .val{width:32px; text-align:right; font-family:"JetBrains Mono"; font-size:11.5px; color:var(--muted); font-variant-numeric:tabular-nums;}
+  .pie-legend{display:flex; gap:12px; margin-top:10px; font-size:11px; color:var(--muted); flex-wrap:wrap;}
+  .pie-legend span{display:inline-flex; align-items:center; gap:5px;}
+  .pie-legend i{width:8px; height:8px; border-radius:2px; display:inline-block;}
+
+  /* mcq */
+  .choices{display:flex; flex-direction:column; gap:7px; margin-top:8px;}
+  .choice{
+    display:flex; gap:9px; align-items:flex-start; text-align:left; width:100%;
+    border:1px solid var(--line); background:var(--bg); color:var(--ink);
+    padding:9px 12px; border-radius:8px; font-size:14px; cursor:pointer; font-family:"Source Sans 3";
+  }
+  .choice:hover:not([disabled]){border-color:var(--accent);}
+  .choice .letter{font-family:"JetBrains Mono"; font-weight:700; color:var(--muted); flex:none;}
+  .choice.correct{background:var(--good-bg); border-color:var(--good); color:var(--good);}
+  .choice.correct .letter{color:var(--good);}
+  .choice.incorrect{background:var(--bad-bg); border-color:var(--bad); color:var(--bad);}
+  .choice.incorrect .letter{color:var(--bad);}
+  .choice[disabled]{cursor:default;}
+
+  footer{color:var(--muted); font-size:12.5px; text-align:center; padding-top:36px; border-top:1px solid var(--line); margin-top:50px;}
+
+  ::selection{background:var(--accent); color:var(--accent-ink);}
+</style>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">The <span>Energy</span> Lab</div>
+    <nav class="navlinks">
+      <a href="#p1">1 · Vocab</a>
+      <a href="#p2">2 · Schemas</a>
+      <a href="#p3">3 · Pie Charts</a>
+      <a href="#p4">4 · Quiz</a>
+    </nav>
+    <div class="score-pill"><span class="dot"></span>Quiz score <span class="num" id="scoreDisplay">0 / 8</span></div>
+    <button class="reset-btn" id="resetBtn" title="Clear all your answers">Reset</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow">
+      <span class="swatch"><i style="background:var(--eel)"></i><i style="background:var(--ek)"></i><i style="background:var(--eg)"></i></span>
+      Unit 1 &middot; Qualitative Introduction to Energy
+    </div>
+    <h1>Study for the energy exam by doing, not just reading.</h1>
+    <p class="lede">Four stations, same skills as the test: name the ideas, build a system schema, size up an energy pie, and take a scored quiz. Everything checks itself — work through it once, then again the night before.</p>
+    <div class="fields">
+      <label>Name <input type="text" id="studentName" placeholder="type your name"></label>
+      <label>Period <input type="text" id="studentPd" placeholder="—" style="width:50px"></label>
+    </div>
+  </header>
+
+  <!-- ============ PART 1 ============ -->
+  <section class="part" id="p1">
+    <div class="part-head"><span class="part-num">01</span><h2>Vocabulary &amp; Key Ideas</h2></div>
+    <p class="part-intro">Type your answer, then hit Check. Short-answer items get a model answer to compare against instead of a grade.</p>
+
+    <div class="item">
+      <p class="item-stem"><b class="q-num">1.</b>Energy is …</p>
+      <div class="blank-row">
+        <input type="text" id="b1" placeholder="finish the definition">
+        <button class="check-btn" data-check="b1" data-keywords="cause,capacity,make things happen">Check</button>
+      </div>
+      <div class="fb" id="fb-b1"></div>
+    </div>
+
+    <div class="item">
+      <p class="item-stem"><b class="q-num">2.</b>A change is something you can …</p>
+      <div class="blank-row">
+        <input type="text" id="b2" placeholder="finish the definition">
+        <button class="check-btn" data-check="b2" data-keywords="notice,observe,evidence,point to">Check</button>
+      </div>
+      <div class="fb" id="fb-b2"></div>
+    </div>
+
+    <div class="item">
+      <p class="item-stem"><b class="q-num">3.</b>Energy is stored in a system in only two ways. Name both.</p>
+      <div class="blank-row">
+        <label class="mono">a.</label>
+        <input type="text" id="b3a" placeholder="storage mode one">
+        <button class="check-btn" data-check="b3a" data-keywords="motion">Check</button>
+      </div>
+      <div class="fb" id="fb-b3a"></div>
+      <div class="blank-row">
+        <label class="mono">b.</label>
+        <input type="text" id="b3b" placeholder="storage mode two">
+        <button class="check-btn" data-check="b3b" data-keywords="arrangement">Check</button>
+      </div>
+      <div class="fb" id="fb-b3b"></div>
+    </div>
+
+    <div class="item">
+      <p class="item-stem"><b class="q-num">4.</b>In your own words — what's the difference between a <b>system</b> and its <b>surroundings</b>?</p>
+      <button class="reveal-toggle" data-reveal="m4">Show model answer</button>
+      <div class="model-answer" id="m4"><span class="lbl">Model answer</span>The system is the object(s) you choose to focus on / track energy for. The surroundings are everything else that can interact with the system.</div>
+    </div>
+
+    <div class="item">
+      <p class="item-stem"><b class="q-num">5.</b>On a system schema, when do you draw a <b>solid</b> line between two objects, and when do you draw a <b>dashed</b> line?</p>
+      <button class="reveal-toggle" data-reveal="m5">Show model answer</button>
+      <div class="model-answer" id="m5"><span class="lbl">Model answer</span>Solid line = internal interaction — both objects are inside the chosen system. Dashed line = external interaction — it crosses the system boundary, connecting to something outside the system.</div>
+    </div>
+
+    <div class="item">
+      <p class="item-stem"><b class="q-num">6.</b>What does the <b>size</b> of an energy pie (the whole circle, not a slice) represent? What happens to that size if energy is transferred into or out of the system?</p>
+      <button class="reveal-toggle" data-reveal="m6">Show model answer</button>
+      <div class="model-answer" id="m6"><span class="lbl">Model answer</span>The size of the whole pie represents the total amount of energy stored in the system. If energy is transferred OUT of the system, the pie gets SMALLER; if energy is transferred INTO the system, the pie gets BIGGER.</div>
+    </div>
+  </section>
+
+  <!-- ============ PART 2 ============ -->
+  <section class="part" id="p2">
+    <div class="part-head"><span class="part-num">02</span><h2>System Schema Practice</h2></div>
+    <p class="part-intro">For each situation: list the interactions, then sketch a schema in the pad — dashed boundary around the system, solid lines inside it, dashed lines crossing it. Compare against the model when you're done.</p>
+
+    <div class="item" id="schema1">
+      <p class="item-stem"><b class="q-num">1.</b>A ball rests on a table. The system is the <b>ball and the earth</b> (the table is NOT in the system).</p>
+      <div class="blank-row"><label>Interactions:</label><input type="text" id="s1int" placeholder="e.g. gravity, contact..."></div>
+      <div class="drawpad-wrap">
+        <div class="drawpad-toolbar"><button class="tool-btn" data-clear="cv1">Clear pad</button></div>
+        <canvas class="drawpad" id="cv1"></canvas>
+      </div>
+      <button class="reveal-toggle" data-reveal="sm1">Show model schema</button>
+      <div class="model-answer" id="sm1"><span class="lbl">Model schema</span>
+        <svg class="schema-svg" viewBox="0 0 420 200">
+          <ellipse class="boundary" cx="185" cy="120" rx="95" ry="58"/>
+          <circle class="node-circle" cx="150" cy="120" r="26"/><text class="node-label" x="150" y="124">Ball</text>
+          <circle class="node-circle" cx="240" cy="140" r="26"/><text class="node-label" x="240" y="144">Earth</text>
+          <line class="line-solid" x1="172" y1="128" x2="218" y2="136"/><text class="int-label" x="195" y="118">gravity</text>
+          <circle class="node-circle" cx="345" cy="55" r="24"/><text class="node-label" x="345" y="59">Table</text>
+          <line class="line-dashed" x1="167" y1="102" x2="322" y2="66"/><text class="int-label" x="255" y="72">contact (external)</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="item" id="schema2">
+      <p class="item-stem"><b class="q-num">2.</b>A skater at rest pushes off a wall and glides away. The system is the <b>skater ONLY</b> (not the wall, not the earth).</p>
+      <div class="blank-row"><label>Interactions:</label><input type="text" id="s2int" placeholder="e.g. gravity, contact..."></div>
+      <div class="drawpad-wrap">
+        <div class="drawpad-toolbar"><button class="tool-btn" data-clear="cv2">Clear pad</button></div>
+        <canvas class="drawpad" id="cv2"></canvas>
+      </div>
+      <button class="reveal-toggle" data-reveal="sm2">Show model schema</button>
+      <div class="model-answer" id="sm2"><span class="lbl">Model schema</span>
+        <svg class="schema-svg" viewBox="0 0 420 200">
+          <circle class="boundary" cx="210" cy="115" r="40"/>
+          <circle class="node-circle" cx="210" cy="115" r="26"/><text class="node-label" x="210" y="119">Skater</text>
+          <circle class="node-circle" cx="70" cy="55" r="24"/><text class="node-label" x="70" y="59">Wall</text>
+          <line class="line-dashed" x1="185" y1="95" x2="92" y2="68"/><text class="int-label" x="120" y="70">push (external)</text>
+          <circle class="node-circle" cx="350" cy="55" r="24"/><text class="node-label" x="350" y="59">Earth</text>
+          <line class="line-dashed" x1="235" y1="95" x2="328" y2="68"/><text class="int-label" x="300" y="70">gravity (external)</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="item" id="schema3">
+      <p class="item-stem"><b class="q-num">3.</b>A magnet pulls a paperclip across a table toward it. The system is the <b>magnet and the paperclip</b> (the table and the earth are NOT in the system).</p>
+      <div class="blank-row"><label>Interactions:</label><input type="text" id="s3int" placeholder="e.g. magnetic, contact..."></div>
+      <div class="drawpad-wrap">
+        <div class="drawpad-toolbar"><button class="tool-btn" data-clear="cv3">Clear pad</button></div>
+        <canvas class="drawpad" id="cv3"></canvas>
+      </div>
+      <button class="reveal-toggle" data-reveal="sm3">Show model schema</button>
+      <div class="model-answer" id="sm3"><span class="lbl">Model schema</span>
+        <svg class="schema-svg" viewBox="0 0 420 200">
+          <ellipse class="boundary" cx="210" cy="110" rx="88" ry="46"/>
+          <circle class="node-circle" cx="160" cy="110" r="24"/><text class="node-label" x="160" y="114">Magnet</text>
+          <circle class="node-circle" cx="260" cy="110" r="24"/><text class="node-label" x="260" y="114">Paperclip</text>
+          <line class="line-solid" x1="184" y1="110" x2="236" y2="110"/><text class="int-label" x="210" y="100">magnetic</text>
+          <circle class="node-circle" cx="95" cy="178" r="22"/><text class="node-label" x="95" y="182">Table</text>
+          <line class="line-dashed" x1="145" y1="128" x2="112" y2="160"/>
+          <line class="line-dashed" x1="248" y1="130" x2="130" y2="172"/>
+          <circle class="node-circle" cx="330" cy="178" r="22"/><text class="node-label" x="330" y="182">Earth</text>
+          <line class="line-dashed" x1="275" y1="128" x2="315" y2="160"/>
+          <line class="line-dashed" x1="172" y1="130" x2="295" y2="172"/>
+          <text class="int-label" x="210" y="196">table &amp; earth = external to both objects</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PART 3 ============ -->
+  <section class="part" id="p3">
+    <div class="part-head"><span class="part-num">03</span><h2>Energy Pie Chart Practice</h2></div>
+    <p class="part-intro">Drag the sliders to build each pie so the fractions match the situation. The dashed circle is the maximum possible size; an unfilled wedge means the pie hasn't grown that far yet. Reveal the model when you want a check.</p>
+
+    <div class="item">
+      <p class="item-stem"><b class="q-num">1.</b>A ball is thrown straight up. System = ball + earth. <b>Position A:</b> just after leaving your hand, low and moving fast. <b>Position B:</b> at the peak height, momentarily at rest.</p>
+      <div class="pie-grid" id="pie1"></div>
+      <button class="reveal-toggle" data-reveal-fn="pie1model">Show model answer</button>
+      <div class="model-answer" id="pie1model"><span class="lbl">Model answer</span>Position A: mostly Ek, a little Eg (already a bit off the ground). Position B: 100% Eg (all motion has become height). Same total pie size throughout — nothing leaves the ball+earth system.</div>
+    </div>
+
+    <div class="item">
+      <p class="item-stem"><b class="q-num">2.</b>A cart is released from rest at the top of a frictionless ramp. System = cart + earth + ramp. <b>Position A:</b> at the top, at rest. <b>Position B:</b> at the bottom, moving fastest.</p>
+      <div class="pie-grid" id="pie2"></div>
+      <button class="reveal-toggle" data-reveal-fn="pie2model">Show model answer</button>
+      <div class="model-answer" id="pie2model"><span class="lbl">Model answer</span>Position A: 100% Eg. Position B: 100% Ek. Same total pie size throughout.</div>
+    </div>
+
+    <div class="item">
+      <p class="item-stem"><b class="q-num">3.</b>A block sits against a compressed spring, then is launched up a frictionless incline. System = block + spring + incline + earth. <b>Position A:</b> block at rest against the fully compressed spring. <b>Position B:</b> block partway up the incline, still moving, no longer touching the spring.</p>
+      <div class="pie-grid" id="pie3"></div>
+      <button class="reveal-toggle" data-reveal-fn="pie3model">Show model answer</button>
+      <div class="model-answer" id="pie3model"><span class="lbl">Model answer</span>Position A: 100% Eel. Position B: a mix of Eg + Ek (Eel = 0 — the block has left the spring, and has gained both height and speed). Same total pie size as A.</div>
+    </div>
+
+    <div class="item">
+      <p class="item-stem"><b class="q-num">4.</b>Cart A (moving) collides with stationary Cart B and they stick together, moving off slower than Cart A's original speed (a perfectly inelastic collision). System = both carts. <b>Position A:</b> the instant before the collision. <b>Position B:</b> the instant after.</p>
+      <div class="pie-grid" id="pie4"></div>
+      <div class="item" style="margin-top:12px; background:var(--bg);">
+        <p class="item-stem" style="font-size:14px;">Reflection: is the total pie the same size in A and B? Why or why not?</p>
+        <button class="reveal-toggle" data-reveal="m-refl">Show model answer</button>
+        <div class="model-answer" id="m-refl"><span class="lbl">Model answer</span>No — the pie shrinks. This is a perfectly inelastic collision, so some of the kinetic energy converts to Etherm and Esound at the moment of impact and leaves the cart-and-cart system (unless those forms are explicitly included).</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PART 4 ============ -->
+  <section class="part" id="p4">
+    <div class="part-head"><span class="part-num">04</span><h2>Multiple Choice</h2></div>
+    <p class="part-intro">Click an answer. It locks in and shows the correct choice — your score tracks at the top of the page.</p>
+    <div id="mcqHost"></div>
+  </section>
+
+  <footer>Unit 1 &middot; Qualitative Introduction to Energy — built for exam review. Your answers save in this browser only.</footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- persistence ---------------- */
+  var STORE_KEY = "energy-lab-v1";
+  function loadState(){
+    try{ return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }catch(e){ return {}; }
+  }
+  function saveState(patch){
+    try{
+      var cur = loadState();
+      Object.assign(cur, patch);
+      localStorage.setItem(STORE_KEY, JSON.stringify(cur));
+    }catch(e){ /* storage unavailable — continue silently */ }
+  }
+  var state = loadState();
+
+  /* ---------------- name/period ---------------- */
+  var nameEl = document.getElementById("studentName"), pdEl = document.getElementById("studentPd");
+  if(state.name) nameEl.value = state.name;
+  if(state.pd) pdEl.value = state.pd;
+  nameEl.addEventListener("input", function(){ saveState({name:nameEl.value}); });
+  pdEl.addEventListener("input", function(){ saveState({pd:pdEl.value}); });
+
+  /* ---------------- fill-in blanks ---------------- */
+  var blanks = state.blanks || {};
+  document.querySelectorAll(".blank-row input[type=text]").forEach(function(inp){
+    if(blanks[inp.id]) inp.value = blanks[inp.id];
+    inp.addEventListener("input", function(){
+      blanks[inp.id] = inp.value; saveState({blanks:blanks});
+    });
+  });
+  document.querySelectorAll(".check-btn[data-check]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var id = btn.getAttribute("data-check");
+      var input = document.getElementById(id);
+      var kws = btn.getAttribute("data-keywords").split(",");
+      var val = (input.value || "").toLowerCase();
+      var hit = kws.some(function(k){ return val.indexOf(k.trim()) !== -1; });
+      var fb = document.getElementById("fb-" + id);
+      fb.classList.remove("good","bad"); fb.classList.add("show");
+      if(hit){
+        fb.classList.add("good");
+        fb.innerHTML = "<b>Looks right.</b> Matches the key idea.";
+      } else {
+        fb.classList.add("bad");
+        fb.innerHTML = "<b>Not quite —</b> look for: <i>" + kws.join(" / ") + "</i>";
+      }
+    });
+  });
+
+  /* ---------------- reveal toggles ---------------- */
+  document.querySelectorAll(".reveal-toggle").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var id = btn.getAttribute("data-reveal") || btn.getAttribute("data-reveal-fn");
+      var el = document.getElementById(id);
+      var show = !el.classList.contains("show");
+      el.classList.toggle("show", show);
+      btn.textContent = show ? "Hide model answer" : (btn.hasAttribute("data-reveal-fn") ? "Show model answer" : "Show model answer");
+    });
+  });
+
+  /* ---------------- draw pads ---------------- */
+  function setupPad(id){
+    var canvas = document.getElementById(id);
+    if(!canvas) return;
+    function fit(){
+      var rect = canvas.getBoundingClientRect();
+      var ratio = window.devicePixelRatio || 1;
+      canvas.width = rect.width * ratio;
+      canvas.height = rect.height * ratio;
+      var ctx = canvas.getContext("2d");
+      ctx.scale(ratio, ratio);
+      ctx.lineCap = "round"; ctx.lineJoin = "round";
+      var ink = getComputedStyle(document.documentElement).getPropertyValue("--ink").trim() || "#1d2233";
+      ctx.strokeStyle = ink; ctx.lineWidth = 2.2;
+    }
+    fit();
+    var drawing = false, last = null;
+    function pos(e){
+      var r = canvas.getBoundingClientRect();
+      var p = (e.touches && e.touches[0]) || e;
+      return {x:p.clientX - r.left, y:p.clientY - r.top};
+    }
+    function start(e){ drawing = true; last = pos(e); e.preventDefault(); }
+    function move(e){
+      if(!drawing) return;
+      var ctx = canvas.getContext("2d");
+      var p = pos(e);
+      ctx.beginPath(); ctx.moveTo(last.x,last.y); ctx.lineTo(p.x,p.y); ctx.stroke();
+      last = p; e.preventDefault();
+    }
+    function end(){ drawing = false; last = null; }
+    canvas.addEventListener("mousedown", start);
+    canvas.addEventListener("mousemove", move);
+    window.addEventListener("mouseup", end);
+    canvas.addEventListener("touchstart", start, {passive:false});
+    canvas.addEventListener("touchmove", move, {passive:false});
+    canvas.addEventListener("touchend", end);
+  }
+  ["cv1","cv2","cv3"].forEach(setupPad);
+  document.querySelectorAll("[data-clear]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var canvas = document.getElementById(btn.getAttribute("data-clear"));
+      var ctx = canvas.getContext("2d");
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+    });
+  });
+
+  /* ---------------- pie builders ---------------- */
+  function pieCSS(eel, ek, eg, total){
+    var totalDeg = 360 * Math.max(0, Math.min(1,total));
+    var parts = [["var(--eel)",eel],["var(--ek)",ek],["var(--eg)",eg]];
+    var a0 = 0, stops = [];
+    parts.forEach(function(p){
+      if(p[1] <= 0.0001) return;
+      var a1 = a0 + p[1]*totalDeg;
+      stops.push(p[0] + " " + a0.toFixed(1) + "deg " + a1.toFixed(1) + "deg");
+      a0 = a1;
+    });
+    if(a0 < 360) stops.push("transparent " + a0.toFixed(1) + "deg 360deg");
+    if(stops.length===0) return "none";
+    return "conic-gradient(" + stops.join(",") + ")";
+  }
+
+  function buildCompositionPanel(host, label, init){
+    var panel = document.createElement("div");
+    panel.className = "pie-panel";
+    panel.innerHTML =
+      '<h4>'+label+'</h4>'+
+      '<div class="pie-visual">'+
+        '<div class="pie-circle"></div>'+
+        '<div class="pie-sliders">'+
+          '<div class="slider-row"><span class="swatch" style="background:var(--eel)"></span><label class="mono">Eel</label><input type="range" min="0" max="100" data-k="eel"><span class="val mono">0%</span></div>'+
+          '<div class="slider-row"><span class="swatch" style="background:var(--ek)"></span><label class="mono">Ek</label><input type="range" min="0" max="100" data-k="ek"><span class="val mono">0%</span></div>'+
+          '<div class="slider-row"><span class="swatch" style="background:var(--eg)"></span><label class="mono">Eg</label><input type="range" min="0" max="100" data-k="eg"><span class="val mono">0%</span></div>'+
+        '</div>'+
+      '</div>';
+    host.appendChild(panel);
+    var circle = panel.querySelector(".pie-circle");
+    var sliders = {
+      eel: panel.querySelector('input[data-k="eel"]'),
+      ek: panel.querySelector('input[data-k="ek"]'),
+      eg: panel.querySelector('input[data-k="eg"]')
+    };
+    var vals = Object.assign({eel:0,ek:0,eg:0}, init);
+    function apply(){
+      var sum = vals.eel+vals.ek+vals.eg || 1;
+      circle.style.background = pieCSS(vals.eel/sum, vals.ek/sum, vals.eg/sum, 1);
+      ["eel","ek","eg"].forEach(function(k){
+        sliders[k].value = Math.round(vals[k]);
+        panel.querySelector('input[data-k="'+k+'"]').nextElementSibling.textContent = Math.round(vals[k]/sum*100) + "%";
+      });
+    }
+    function onChange(changedKey){
+      var keys = ["eel","ek","eg"];
+      var changed = parseFloat(sliders[changedKey].value);
+      vals[changedKey] = changed;
+      var others = keys.filter(function(k){ return k!==changedKey; });
+      var remaining = 100 - changed;
+      var sumOthers = vals[others[0]] + vals[others[1]];
+      if(sumOthers <= 0){
+        vals[others[0]] = remaining/2; vals[others[1]] = remaining/2;
+      } else {
+        vals[others[0]] = Math.max(0, remaining * (vals[others[0]]/sumOthers));
+        vals[others[1]] = Math.max(0, remaining * (vals[others[1]]/sumOthers));
+      }
+      apply();
+    }
+    ["eel","ek","eg"].forEach(function(k){
+      sliders[k].addEventListener("input", function(){ onChange(k); });
+    });
+    apply();
+    return { set: function(v){ vals = Object.assign({eel:0,ek:0,eg:0}, v); apply(); } };
+  }
+
+  function buildSizePanel(host, label, initTotal){
+    var panel = document.createElement("div");
+    panel.className = "pie-panel";
+    panel.innerHTML =
+      '<h4>'+label+'</h4>'+
+      '<div class="pie-visual">'+
+        '<div class="pie-circle"></div>'+
+        '<div class="pie-sliders">'+
+          '<div class="slider-row"><span class="swatch" style="background:var(--ek)"></span><label class="mono">size</label><input type="range" min="0" max="100" data-k="total"><span class="val mono">0%</span></div>'+
+        '</div>'+
+      '</div>';
+    host.appendChild(panel);
+    var circle = panel.querySelector(".pie-circle");
+    var slider = panel.querySelector('input[data-k="total"]');
+    var valLbl = panel.querySelector(".val");
+    function apply(t){
+      slider.value = t;
+      valLbl.textContent = Math.round(t) + "%";
+      circle.style.background = pieCSS(0,1,0, t/100);
+    }
+    slider.addEventListener("input", function(){ apply(parseFloat(slider.value)); });
+    apply(initTotal||0);
+    return { set: function(t){ apply(t); } };
+  }
+
+  function twoUp(hostId, kind, initA, initB, labelA, labelB){
+    var host = document.getElementById(hostId);
+    var a, b;
+    if(kind === "size"){
+      a = buildSizePanel(host, labelA||"Position A", initA);
+      b = buildSizePanel(host, labelB||"Position B", initB);
+    } else {
+      a = buildCompositionPanel(host, labelA||"Position A", initA);
+      b = buildCompositionPanel(host, labelB||"Position B", initB);
+    }
+    var legend = document.createElement("div");
+    legend.className = "pie-legend";
+    legend.style.gridColumn = "1 / -1";
+    legend.innerHTML = '<span><i style="background:var(--eel)"></i>Eel — elastic</span><span><i style="background:var(--ek)"></i>Ek — kinetic</span><span><i style="background:var(--eg)"></i>Eg — gravitational</span>';
+    host.appendChild(legend);
+    return {a:a, b:b};
+  }
+
+  var pie1 = twoUp("pie1","comp", {eel:0,ek:75,eg:25}, {eel:0,ek:0,eg:100});
+  var pie2 = twoUp("pie2","comp", {eel:0,ek:0,eg:100}, {eel:0,ek:100,eg:0});
+  var pie3 = twoUp("pie3","comp", {eel:100,ek:0,eg:0}, {eel:0,ek:50,eg:50});
+  var pie4 = twoUp("pie4","size", 100, 60, "Position A (before)", "Position B (after)");
+
+  document.querySelector('[data-reveal-fn="pie1model"]').addEventListener("click", function(){ pie1.a.set({eel:0,ek:85,eg:15}); pie1.b.set({eel:0,ek:0,eg:100}); });
+  document.querySelector('[data-reveal-fn="pie2model"]').addEventListener("click", function(){ pie2.a.set({eel:0,ek:0,eg:100}); pie2.b.set({eel:0,ek:100,eg:0}); });
+  document.querySelector('[data-reveal-fn="pie3model"]').addEventListener("click", function(){ pie3.a.set({eel:100,ek:0,eg:0}); pie3.b.set({eel:0,ek:50,eg:50}); });
+
+  /* ---------------- MCQ ---------------- */
+  var MCQS = [
+    ["Which of the following is the best operational definition of energy?",
+     ["Energy is heat.","Energy is the capacity of a system to cause change.","Energy is a force.","Energy is how fast something is moving."], 1],
+    ["A change is something you can...",
+     ["Feel but not measure.","Only observe using special equipment.","Notice or point to evidence of.","Only calculate mathematically."], 2],
+    ["Which pair correctly matches an energy storage mode with how it is stored?",
+     ["Eel — the arrangement of a system's parts (e.g., a stretched or compressed object)","Ek — the arrangement of a system's parts","Eg — the motion of a system's parts","Ek — the temperature of a system's parts"], 0],
+    ["On a system schema, a DASHED line connecting two objects means...",
+     ["The two objects do not interact at all.","The interaction is internal to the system.","The interaction crosses the system boundary (one object is outside the system).","The two objects are touching."], 2],
+    ["Earth must be included in a system schema whenever...",
+     ["The system includes any moving object.","Gravity is a relevant interaction with an object that has mass.","The object is elastic.","Never — Earth is always part of the surroundings."], 1],
+    ["If a system transfers energy to its surroundings, what happens to the size of its energy pie?",
+     ["It gets bigger.","It stays exactly the same size.","It gets smaller.","The size of a pie never changes."], 2],
+    ["Which of these is the best example of energy stored as Eel (elastic energy)?",
+     ["A ball rolling across the floor.","A book sitting on a shelf.","A stretched rubber band.","A cup of hot water."], 2],
+    ["A book is lifted from the floor onto a shelf, then sits there for an hour. Which best describes the two events?",
+     ["Both are changes — motion and arrangement both changed in each.","Lifting the book is a change (arrangement changed); the book sitting still is not a change.","Neither is a change, since the book doesn't move once it's up there.","Sitting on the shelf is a change because time is passing."], 1]
+  ];
+  var mcqHost = document.getElementById("mcqHost");
+  var mcqState = state.mcq || {};
+  var letters = ["A","B","C","D"];
+
+  function updateScore(){
+    var correct = 0, answered = 0;
+    MCQS.forEach(function(q,i){
+      if(mcqState[i] !== undefined){
+        answered++;
+        if(mcqState[i] === q[2]) correct++;
+      }
+    });
+    document.getElementById("scoreDisplay").textContent = correct + " / " + MCQS.length;
+  }
+
+  MCQS.forEach(function(q, i){
+    var item = document.createElement("div");
+    item.className = "item";
+    var stem = document.createElement("p");
+    stem.className = "item-stem";
+    stem.innerHTML = '<b class="q-num">'+(i+1)+'.</b>'+q[0];
+    item.appendChild(stem);
+    var choicesWrap = document.createElement("div");
+    choicesWrap.className = "choices";
+    q[1].forEach(function(choiceText, ci){
+      var b = document.createElement("button");
+      b.className = "choice";
+      b.innerHTML = '<span class="letter">'+letters[ci]+'.</span><span>'+choiceText+'</span>';
+      b.addEventListener("click", function(){ answer(i, ci, choicesWrap, q[2]); });
+      choicesWrap.appendChild(b);
+    });
+    item.appendChild(choicesWrap);
+    mcqHost.appendChild(item);
+    if(mcqState[i] !== undefined) renderLocked(choicesWrap, mcqState[i], q[2]);
+  });
+
+  function renderLocked(choicesWrap, chosen, correctIdx){
+    Array.prototype.forEach.call(choicesWrap.children, function(btn, ci){
+      btn.disabled = true;
+      if(ci === correctIdx) btn.classList.add("correct");
+      else if(ci === chosen) btn.classList.add("incorrect");
+    });
+  }
+  function answer(qIndex, choiceIndex, choicesWrap, correctIdx){
+    if(mcqState[qIndex] !== undefined) return;
+    mcqState[qIndex] = choiceIndex;
+    saveState({mcq:mcqState});
+    renderLocked(choicesWrap, choiceIndex, correctIdx);
+    updateScore();
+  }
+  updateScore();
+
+  /* ---------------- reset ---------------- */
+  document.getElementById("resetBtn").addEventListener("click", function(){
+    if(!confirm("Clear all your answers on this page?")) return;
+    try{ localStorage.removeItem(STORE_KEY); }catch(e){}
+    location.reload();
+  });
+})();
+</script>
