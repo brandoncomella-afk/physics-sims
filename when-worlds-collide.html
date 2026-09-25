@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>When Worlds Collide Virtual Lab</title>
+<style>
+:root{
+  --bg:#f3f6fa; --surface:#ffffff; --ink:#18212e; --muted:#586477; --line:#d3dae5; --field:#f8fafd;
+  --banner:#1f4e99; --banner-ink:#ffffff; --accent:#1f4e99;
+  --red:#d9362b; --blue:#1c6fd1; --ca:#d9480f; --cb:#0b7a8a;
+  --ok:#2b8a3e; --okbg:#e6f4ea; --bad:#c92a2a; --badbg:#fdecec;
+  --floor:#ece7de; --tape:#f3cf57; --tapeink:#2a2410; --mark:#2f6fe0; --grid:#dfe5ee; --grid2:#b9c4d4;
+  --sans:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark;
+  --bg:#0f141b; --surface:#171f2a; --ink:#e5eaf1; --muted:#9aa6b8; --line:#2b3646; --field:#111923;
+  --banner:#2c5cae; --banner-ink:#ffffff; --accent:#7fa8ec;
+  --red:#ff6b5e; --blue:#5ea4ff; --ca:#ff7b3f; --cb:#3cc3d6;
+  --ok:#5fd07a; --okbg:#15301d; --bad:#ff7070; --badbg:#3a1818;
+  --floor:#2a2721; --tape:#c9a53a; --tapeink:#1b1606; --mark:#6ea0ff; --grid:#243041; --grid2:#3a4a60;
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0f141b; --surface:#171f2a; --ink:#e5eaf1; --muted:#9aa6b8; --line:#2b3646; --field:#111923;
+  --banner:#2c5cae; --banner-ink:#ffffff; --accent:#7fa8ec;
+  --red:#ff6b5e; --blue:#5ea4ff; --ca:#ff7b3f; --cb:#3cc3d6;
+  --ok:#5fd07a; --okbg:#15301d; --bad:#ff7070; --badbg:#3a1818;
+  --floor:#2a2721; --tape:#c9a53a; --tapeink:#1b1606; --mark:#6ea0ff; --grid:#243041; --grid2:#3a4a60;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.5;padding-inline:16px;padding-block:24px 72px}
+.wrap{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+h1,h2,h3{text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:1.8rem}
+h3{font-size:1.02rem}
+p{margin:0;max-width:72ch}
+.eyebrow{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.sub{color:var(--muted)}
+.banner{background:var(--banner);color:var(--banner-ink);padding:8px 14px;border-radius:4px;font-size:1.08rem;font-weight:700}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.q{display:flex;flex-direction:column;gap:8px}
+.q>b:first-child{font-size:.98rem}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.frame{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-family:var(--mono);font-size:.95rem}
+.frame .t{font-family:var(--sans)}
+input[type=text],select,textarea{font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:4px;padding:5px 7px}
+input.n{width:5.6rem;font-family:var(--mono);text-align:center}
+input.w{width:min(100%,22rem)}
+textarea{width:100%;min-height:96px;resize:vertical}
+input:disabled{opacity:.75}
+input.ok,select.ok,textarea.ok{background:var(--okbg);border-color:var(--ok)}
+input.bad,select.bad{background:var(--badbg);border-color:var(--bad)}
+.ch.ok button[aria-pressed="true"]{outline:2px solid var(--ok);outline-offset:-2px}
+.ch.bad button[aria-pressed="true"]{outline:2px solid var(--bad);outline-offset:-2px}
+.mm.ok,.plot.ok{outline:2px solid var(--ok)} .mm.bad,.plot.bad{outline:2px solid var(--bad)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ch{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;vertical-align:middle}
+.ch button{font:inherit;font-size:.9rem;border:0;background:var(--field);color:var(--ink);padding:5px 11px;cursor:pointer;border-right:1px solid var(--line)}
+.ch button:last-child{border-right:0}
+.ch button[aria-pressed="true"]{background:var(--banner);color:var(--banner-ink)}
+.btn{font:inherit;font-weight:700;border:1px solid var(--banner);background:var(--banner);color:var(--banner-ink);border-radius:6px;padding:8px 15px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent);border-color:var(--line)}
+.btn.big{font-size:1.05rem;padding:10px 22px}
+.btn.stop{background:var(--bad);border-color:var(--bad)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;font-size:.9rem}
+th,td{border:1px solid var(--line);padding:5px 8px;text-align:center;vertical-align:middle}
+thead th,tbody th{background:var(--field)}
+td.given{font-family:var(--mono);color:var(--muted)}
+.hint{font-size:.88rem;color:var(--muted);border-left:3px solid var(--line);padding-left:10px}
+.key{border:1px solid var(--banner);border-radius:4px;padding:10px 12px}
+.stopbox{border:2px dashed var(--bad);border-radius:6px;padding:10px 12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.stopbox b{color:var(--bad)}
+.checkline{display:flex;flex-wrap:wrap;gap:10px;align-items:center;border-top:1px solid var(--line);padding-top:12px}
+.cmsg{font-size:.9rem}
+canvas{display:block;width:100%;border:1px solid var(--line);border-radius:4px;background:var(--field);touch-action:none}
+.floor{height:150px}
+.zoom{height:120px}
+.plotbox{max-width:520px;width:100%}
+.plot{aspect-ratio:1/1;height:auto;cursor:crosshair}
+.mm{height:150px;cursor:pointer}
+.sim{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:6px;padding:12px;background:var(--bg)}
+.watch{font-family:var(--mono);font-size:1.6rem;font-variant-numeric:tabular-nums;background:var(--ink);color:var(--bg);border-radius:6px;padding:4px 14px;min-width:8.5rem;text-align:right}
+.msg{font-size:.92rem;min-height:1.4em}
+.log{font-family:var(--mono);font-size:.88rem;color:var(--muted)}
+.card-info{border:1px solid var(--cb);border-radius:6px;padding:10px 12px}
+.lockline{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.locked{font-weight:700;color:var(--ok)}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:760px){.split{grid-template-columns:1fr}}
+ul.checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+ul.checks label{display:flex;gap:8px;align-items:flex-start}
+.plan{display:grid;grid-template-columns:auto 1fr;gap:4px 10px}
+.plan span:nth-child(odd){font-weight:700;color:var(--accent)}
+#fallback{width:100%;min-height:180px;font-family:var(--mono);font-size:.8rem}
+.legend{display:flex;gap:14px;font-size:.85rem;font-weight:700}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header style="display:flex;flex-direction:column;gap:8px">
+  <div class="eyebrow">Unit 2 · Lab · Virtual version</div>
+  <h1>When Worlds Collide</h1>
+  <p class="sub">Two buggies, two equations, one crash, predicted before it happens.</p>
+  <div class="row" style="margin-top:6px">
+    <label>Name <input type="text" class="w" data-k="name" style="width:14rem"></label>
+    <label>Period <input type="text" class="n" data-k="period"></label>
+  </div>
+</header>
+
+<section class="card">
+  <div class="banner">Today's goal</div>
+  <p>Two buggies start 4.0 m apart and drive toward each other. You will predict where and when they crash, before they move. Then you test it on the virtual floor.</p>
+  <div class="plan">
+    <span>Step 1</span><span>Find the rule (the equation) for a moving buggy.</span>
+    <span>Step 2</span><span>Practice a crash on paper, four ways.</span>
+    <span>Step 3</span><span>Measure how fast YOUR buggy goes.</span>
+    <span>Step 4</span><span>Test your equation on one buggy.</span>
+    <span>Step 5</span><span>Predict and test the real crash.</span>
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>Key word</th><th>What it means</th><th>Symbol</th><th>Unit</th></tr></thead>
+    <tbody>
+      <tr><td>position</td><td>where the buggy is, measured from the zero line</td><td>x</td><td>m</td></tr>
+      <tr><td>clock reading</td><td>what the stopwatch says</td><td>t</td><td>s</td></tr>
+      <tr><td>starting position</td><td>where the buggy is when the clock reads 0</td><td>xᵢ</td><td>m</td></tr>
+      <tr><td>velocity</td><td>how far it moves each second, + or − for direction</td><td>v</td><td>m/s</td></tr>
+      <tr><td>collide</td><td>two objects at the same position at the same time</td><td>—</td><td>—</td></tr>
+    </tbody></table></div>
+  <p class="hint">Your work saves in this browser as you go. Each step has a <b>Check</b> button that marks boxes green or red. At the end, press <b>Copy my lab</b> and paste it into the assignment.</p>
+</section>
+
+<!-- STEP 1 -->
+<section class="card" data-step="s1">
+  <div class="banner">Step 1 · Find the rule</div>
+  <p>A buggy's position was marked once every second.</p>
+  <div class="tw"><table>
+    <tbody><tr><th>Clock reading t (s)</th><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td></tr>
+    <tr><th>Position x (m)</th><td>0.30</td><td>0.50</td><td>0.70</td><td>0.90</td><td>1.10</td><td>1.30</td></tr></tbody></table></div>
+
+  <div class="q"><b>1a. Look at the table. Fill in the boxes.</b>
+    <div class="frame"><span class="t">The buggy moves</span><input class="n" data-k="1a_dx"><span class="t">m during each second.</span></div>
+    <div class="frame"><span class="t">When the clock read 0 s, the buggy was at</span><input class="n" data-k="1a_x0"><span class="t">m.</span></div>
+  </div>
+
+  <div class="q"><b>1b. Find the position at 10 s and at 47 s. Follow the example.</b>
+    <p class="hint">Example: at t = 3 s → 0.30 + (0.20)(3) = 0.90 m. Check the table: yes, 0.90 m.</p>
+    <div class="frame"><span class="t">At t = 10 s:</span><input class="n" data-k="1b_a1">+ (<input class="n" data-k="1b_a2">)(10) =<input class="n" data-k="1b_a3"><span class="t">m</span></div>
+    <div class="frame"><span class="t">At t = 47 s:</span><input class="n" data-k="1b_b1">+ (<input class="n" data-k="1b_b2">)(47) =<input class="n" data-k="1b_b3"><span class="t">m</span></div>
+  </div>
+
+  <div class="q"><b>1c. Turn the example into a rule in words. Use the word bank.</b>
+    <div class="frame"><span class="t">position =</span>
+      <select data-k="1c_a"><option value=""></option><option>starting position</option><option>clock reading</option><option>how far it moves each second</option></select> ×
+      <select data-k="1c_b"><option value=""></option><option>starting position</option><option>clock reading</option><option>how far it moves each second</option></select> +
+      <select data-k="1c_c"><option value=""></option><option>starting position</option><option>clock reading</option><option>how far it moves each second</option></select></div>
+  </div>
+
+  <div class="q"><b>1d. Now write the same rule with symbols. Use the Symbol column in the key-word table.</b>
+    <div class="frame">x =
+      <select data-k="1d_a"><option value=""></option><option>v t</option><option>xᵢ</option><option>x t</option><option>v xᵢ</option></select> +
+      <select data-k="1d_b"><option value=""></option><option>v t</option><option>xᵢ</option><option>x t</option><option>v xᵢ</option></select></div>
+  </div>
+
+  <div class="q"><b>1e. A second buggy starts at 4.0 m and moves toward zero, 0.20 m each second.</b>
+    <div class="row"><span>Moving toward zero, its position gets</span><span class="ch" data-k="1e_dir" data-o="BIGGER|SMALLER"></span></div>
+    <div class="row"><span>So its velocity is</span><span class="ch" data-k="1e_sign" data-o="POSITIVE|NEGATIVE"></span></div>
+    <div class="frame"><span class="t">Its equation:</span> x = (<input class="n" data-k="1e_v"> m/s) t + (<input class="n" data-k="1e_xi"> m)</div>
+    <div class="frame"><span class="t">At t = 6 s:</span> x = (<input class="n" data-k="1e_c1">)(6) +<input class="n" data-k="1e_c2">=<input class="n" data-k="1e_c3"> m</div>
+  </div>
+
+  <div class="q key"><b>Our class equation. Fill in the meanings.</b>
+    <div class="frame" style="font-size:1.25rem">x = v t + xᵢ</div>
+    <div class="tw"><table><thead><tr><th>Symbol</th><th>It means…</th><th>Unit</th></tr></thead><tbody>
+      <tr><td>x</td><td><input type="text" class="w" data-k="eq_x_m"></td><td><select data-k="eq_x_u"><option value=""></option><option>m</option><option>s</option><option>m/s</option></select></td></tr>
+      <tr><td>v</td><td><input type="text" class="w" data-k="eq_v_m"></td><td><select data-k="eq_v_u"><option value=""></option><option>m</option><option>s</option><option>m/s</option></select></td></tr>
+      <tr><td>t</td><td><input type="text" class="w" data-k="eq_t_m"></td><td><select data-k="eq_t_u"><option value=""></option><option>m</option><option>s</option><option>m/s</option></select></td></tr>
+      <tr><td>xᵢ</td><td><input type="text" class="w" data-k="eq_xi_m"></td><td><select data-k="eq_xi_u"><option value=""></option><option>m</option><option>s</option><option>m/s</option></select></td></tr>
+    </tbody></table></div>
+  </div>
+  <div class="checkline"><button class="btn ghost" data-check="s1">Check Step 1</button><span class="cmsg" id="cm-s1" role="status"></span></div>
+</section>
+
+<!-- STEP 2 -->
+<section class="card" data-step="s2">
+  <div class="banner">Step 2 · Practice crash on paper</div>
+  <div class="key"><b>The problem.</b> Two buggies start 4.0 m apart and drive toward each other. Red goes 0.30 m/s. Blue goes 0.10 m/s. Where and when do they crash?</div>
+  <canvas id="probpic" class="zoom" style="height:96px" aria-label="Red buggy at 0 m moving right, blue buggy at 4.0 m moving left"></canvas>
+
+  <div class="q"><b>2a. Set up. Choose, then fill in.</b>
+    <div class="tw"><table><thead><tr><th></th><th>Starts at (m)</th><th>Moves toward</th><th>Velocity sign</th><th>Velocity number (m/s)</th></tr></thead><tbody>
+      <tr><th style="color:var(--red)">Red car</th><td class="given">0</td><td><span class="ch" data-k="2a_rd" data-o="+ side|− side"></span></td><td><span class="ch" data-k="2a_rs" data-o="+|−"></span></td><td><input class="n" data-k="2a_rv"></td></tr>
+      <tr><th style="color:var(--blue)">Blue car</th><td class="given">4.0</td><td><span class="ch" data-k="2a_bd" data-o="+ side|− side"></span></td><td><span class="ch" data-k="2a_bs" data-o="+|−"></span></td><td><input class="n" data-k="2a_bv"></td></tr>
+    </tbody></table></div>
+    <p class="hint">A car moving toward zero has a NEGATIVE velocity.</p>
+    <div class="stopbox"><b>STOP. Check both velocity signs before you go on.</b><button class="btn ghost" data-check="s2a">Check 2a</button><span class="cmsg" id="cm-s2a" role="status"></span></div>
+  </div>
+
+  <div class="q"><b>2b. Method 1: Table.</b>
+    <p>Each row is 2 seconds later. The first three rows are done. Keep adding 0.6 for red and subtracting 0.2 for blue.</p>
+    <div class="tw"><table><thead><tr><th>t (s)</th><th>Red x (m)<br><small>add 0.6</small></th><th>Blue x (m)<br><small>subtract 0.2</small></th><th>Gap = Blue − Red (m)</th></tr></thead><tbody>
+      <tr><td>0</td><td class="given">0.0</td><td class="given">4.0</td><td class="given">4.0</td></tr>
+      <tr><td>2</td><td class="given">0.6</td><td class="given">3.8</td><td class="given">3.2</td></tr>
+      <tr><td>4</td><td class="given">1.2</td><td class="given">3.6</td><td class="given">2.4</td></tr>
+      <tr><td>6</td><td><input class="n" data-k="2b_r6"></td><td><input class="n" data-k="2b_b6"></td><td><input class="n" data-k="2b_g6"></td></tr>
+      <tr><td>8</td><td><input class="n" data-k="2b_r8"></td><td><input class="n" data-k="2b_b8"></td><td><input class="n" data-k="2b_g8"></td></tr>
+      <tr><td>10</td><td><input class="n" data-k="2b_r10"></td><td><input class="n" data-k="2b_b10"></td><td><input class="n" data-k="2b_g10"></td></tr>
+      <tr><td>12</td><td><input class="n" data-k="2b_r12"></td><td><input class="n" data-k="2b_b12"></td><td><input class="n" data-k="2b_g12"></td></tr>
+    </tbody></table></div>
+  </div>
+
+  <div class="q"><b>2c. Look for the row where the gap is 0.</b>
+    <div class="frame"><span class="t">They crash at t =</span><input class="n" data-k="2c_t"><span class="t">s and x =</span><input class="n" data-k="2c_x"><span class="t">m.</span></div>
+    <div class="frame"><span class="t">The gap gets smaller by</span><input class="n" data-k="2c_g"><span class="t">m every 2 seconds.</span></div>
+  </div>
+
+  <div class="q"><b>2d. Method 2: Motion map.</b>
+    <p>Use your table. Click the Red row to put a red dot at each red position, and the Blue row for each blue position. Click a dot again to remove it. Then choose the direction arrow for each row.</p>
+    <canvas id="mm" class="mm" data-k="mm" aria-label="Motion map with a red row and a blue row from 0 to 4.0 m"></canvas>
+    <div class="row"><span style="color:var(--red);font-weight:700">Red arrow</span><span class="ch" data-k="2d_ra" data-o="→|←"></span>
+      <span style="color:var(--blue);font-weight:700;margin-left:12px">Blue arrow</span><span class="ch" data-k="2d_ba" data-o="→|←"></span>
+      <button class="btn ghost" id="mmclear">Clear dots</button></div>
+  </div>
+
+  <div class="q"><b>2e. Use the word bank: position, time.</b>
+    <div class="frame"><span class="t">They crash where the dots are at the same</span>
+      <select data-k="2e_a"><option value=""></option><option>position</option><option>time</option></select><span class="t">at the same</span>
+      <select data-k="2e_b"><option value=""></option><option>position</option><option>time</option></select>.</div>
+  </div>
+
+  <div class="q"><b>2f. Method 3: Graph.</b>
+    <p>Pick a color, then click to plot each point from your table. The points connect in order. Click a point again to remove it.</p>
+    <p class="hint">Start with the t = 0 row: Red is at (0 s, 0 m). Blue is at (0 s, 4.0 m).</p>
+    <div class="row"><span class="ch" id="pencil" data-k="_pencil" data-o="Red pencil|Blue pencil"></span><button class="btn ghost" id="p2clear">Clear graph</button></div>
+    <div class="plotbox"><canvas id="plot2" class="plot" aria-label="Position versus time graph, 0 to 12.5 seconds and 0 to 5 meters"></canvas></div>
+  </div>
+
+  <div class="q"><b>2g. Read the crossing point.</b>
+    <div class="frame"><span class="t">The lines cross at t =</span><input class="n" data-k="2g_t"><span class="t">s and x =</span><input class="n" data-k="2g_x"><span class="t">m.</span></div>
+  </div>
+
+  <div class="q"><b>2h. Method 4: Equations.</b> <span>Use x = vt + xᵢ and your table from 2a.</span>
+    <div class="frame"><span class="t" style="color:var(--red);font-weight:700;width:3rem">Red:</span> x = (<input class="n" data-k="2h_rv"> m/s) t + (<input class="n" data-k="2h_rx"> m)</div>
+    <div class="frame"><span class="t" style="color:var(--blue);font-weight:700;width:3rem">Blue:</span> x = (<input class="n" data-k="2h_bv"> m/s) t + (<input class="n" data-k="2h_bx"> m)</div>
+    <div class="key"><b>The key idea.</b> When they crash, both cars are at the same place at the same time. So Red x = Blue x. Put the two equations equal and solve.</div>
+  </div>
+
+  <div class="q"><b>2i. Solve. Follow the example on the left, one row at a time.</b>
+    <p class="hint">Example problem: Green starts at 0 m going +0.2 m/s. Yellow starts at 3.6 m going −0.1 m/s.</p>
+    <div class="tw"><table style="min-width:640px"><thead><tr><th>Step</th><th>Example, done for you</th><th>Your turn</th></tr></thead><tbody>
+      <tr><td>1. Set them equal</td><td class="given">0.2t = −0.1t + 3.6</td><td><div class="frame">0.30t = (<input class="n" data-k="2i_1a">)t + (<input class="n" data-k="2i_1b">)</div></td></tr>
+      <tr><td>2. Get the t's together (add to both sides)</td><td class="given">0.2t + 0.1t = 3.6<br>0.3t = 3.6</td><td><div class="frame">0.30t + (<input class="n" data-k="2i_2a">)t = (<input class="n" data-k="2i_2b">)</div><div class="frame">(<input class="n" data-k="2i_2c">)t = (<input class="n" data-k="2i_2d">)</div></td></tr>
+      <tr><td>3. Divide to find t</td><td class="given">t = 3.6 ÷ 0.3 = 12 s</td><td><div class="frame">t = (<input class="n" data-k="2i_3a">) ÷ (<input class="n" data-k="2i_3b">) = (<input class="n" data-k="2i_3c">) s</div></td></tr>
+      <tr><td>4. Put t into the first equation to find x</td><td class="given">x = 0.2 × 12 = 2.4 m</td><td><div class="frame">x = 0.30 × (<input class="n" data-k="2i_4a">) = (<input class="n" data-k="2i_4b">) m</div></td></tr>
+      <tr><td>5. Check with the other equation</td><td class="given">x = −0.1 × 12 + 3.6 = 2.4 m ✓</td><td><div class="frame">x = −0.10 × (<input class="n" data-k="2i_5a">) + 4.0 = (<input class="n" data-k="2i_5b">) m</div><div class="row"><span>Same?</span><span class="ch" data-k="2i_5c" data-o="YES|NO"></span></div></td></tr>
+    </tbody></table></div>
+  </div>
+
+  <div class="q"><b>2j. Fill in what each method told you.</b>
+    <div class="tw"><table><thead><tr><th>Method</th><th>Crash time t (s)</th><th>Crash position x (m)</th></tr></thead><tbody>
+      <tr><td>Table</td><td><input class="n" data-k="2j_tt"></td><td><input class="n" data-k="2j_tx"></td></tr>
+      <tr><td>Motion map</td><td class="given">—</td><td><input class="n" data-k="2j_mx"></td></tr>
+      <tr><td>Graph</td><td><input class="n" data-k="2j_gt"></td><td><input class="n" data-k="2j_gx"></td></tr>
+      <tr><td>Equations</td><td><input class="n" data-k="2j_et"></td><td><input class="n" data-k="2j_ex"></td></tr>
+    </tbody></table></div>
+    <div class="row"><span>Do all the methods agree?</span><span class="ch" data-k="2j_ag" data-o="YES|NO"></span></div>
+  </div>
+  <div class="checkline"><button class="btn ghost" data-check="s2">Check Step 2</button><span class="cmsg" id="cm-s2" role="status"></span></div>
+</section>
+
+<!-- STEP 3 -->
+<section class="card" data-step="s3">
+  <div class="banner">Step 3 · Measure YOUR buggy</div>
+  <p>In class, a Timer calls "NOW" every 2 seconds, a Marker puts tape at the front edge of the buggy, and a Measurer measures each tape from the zero line. Here, the virtual group does the timing and marking. <b>You do the measuring.</b></p>
+  <div class="row"><label>Your buggy number <input type="text" class="n" data-k="3_car"></label></div>
+  <div class="sim">
+    <div class="row">
+      <label>Trial <select id="s3trial"><option value="0">Trial 1</option><option value="1">Trial 2</option></select></label>
+      <button class="btn" id="s3go">Run trial</button>
+      <label class="row" style="gap:6px"><input type="checkbox" id="s3fast"> Fast forward</label>
+      <span class="msg" id="s3msg" role="status"></span>
+    </div>
+    <canvas id="floor3" class="floor" aria-label="Floor with the zero line, the buggy, and tape marks"></canvas>
+    <div class="row"><b>Measure a mark:</b><select id="s3meas"></select><span class="sub" style="font-size:.88rem">Read the front edge of the blue tape against the tape measure, to the nearest cm.</span></div>
+    <canvas id="zoom3" class="zoom" aria-label="Close-up of the tape measure at the selected mark"></canvas>
+  </div>
+
+  <div class="q"><b>3a. Record your data.</b> <span>To change cm to m, divide by 100 (example: 45 cm = 0.45 m).</span>
+    <div class="tw"><table><thead><tr><th>t (s)</th><th>Trial 1 (cm)</th><th>Trial 2 (cm)</th><th>Average (cm)</th><th>Average (m)</th></tr></thead><tbody>
+      <tr><td>0</td><td class="given">0</td><td class="given">0</td><td class="given">0</td><td class="given">0</td></tr>
+      <tr><td>2</td><td><input class="n" data-k="3a_1_2"></td><td><input class="n" data-k="3a_2_2"></td><td><input class="n" data-k="3a_c_2"></td><td><input class="n" data-k="3a_m_2"></td></tr>
+      <tr><td>4</td><td><input class="n" data-k="3a_1_4"></td><td><input class="n" data-k="3a_2_4"></td><td><input class="n" data-k="3a_c_4"></td><td><input class="n" data-k="3a_m_4"></td></tr>
+      <tr><td>6</td><td><input class="n" data-k="3a_1_6"></td><td><input class="n" data-k="3a_2_6"></td><td><input class="n" data-k="3a_c_6"></td><td><input class="n" data-k="3a_m_6"></td></tr>
+      <tr><td>8</td><td><input class="n" data-k="3a_1_8"></td><td><input class="n" data-k="3a_2_8"></td><td><input class="n" data-k="3a_c_8"></td><td><input class="n" data-k="3a_m_8"></td></tr>
+      <tr><td>10</td><td><input class="n" data-k="3a_1_10"></td><td><input class="n" data-k="3a_2_10"></td><td><input class="n" data-k="3a_c_10"></td><td><input class="n" data-k="3a_m_10"></td></tr>
+      <tr><td>12</td><td><input class="n" data-k="3a_1_12"></td><td><input class="n" data-k="3a_2_12"></td><td><input class="n" data-k="3a_c_12"></td><td><input class="n" data-k="3a_m_12"></td></tr>
+    </tbody></table></div>
+  </div>
+
+  <div class="q"><b>3b. Your Average (m) points are plotted for you.</b>
+    <p>Drag the two round handles to lay the ruler so the line goes through the middle of your dots. One straight line.</p>
+    <div class="plotbox"><canvas id="plot3" class="plot" aria-label="Your buggy's position versus time with a draggable best-fit line"></canvas></div>
+    <p class="log" id="rulerlog"></p>
+  </div>
+
+  <div class="q"><b>3c. Find the slope (the velocity).</b> <span>Pick two points that are ON YOUR LINE and far apart. The handle readout above gives you two.</span>
+    <div class="frame"><span class="t">Point 1:</span> t₁ =<input class="n" data-k="3c_t1">s, x₁ =<input class="n" data-k="3c_x1">m</div>
+    <div class="frame"><span class="t">Point 2:</span> t₂ =<input class="n" data-k="3c_t2">s, x₂ =<input class="n" data-k="3c_x2">m</div>
+    <div class="frame">v = (<input class="n" data-k="3c_a">−<input class="n" data-k="3c_b">) ÷ (<input class="n" data-k="3c_c">−<input class="n" data-k="3c_d">) =<input class="n" data-k="3c_v">m/s</div>
+    <p class="hint">Top of the fraction: x₂ − x₁. Bottom: t₂ − t₁.</p>
+  </div>
+
+  <div class="q"><b>3d. Write your buggy's equation.</b>
+    <div class="frame"><span class="t">Where does your line hit the vertical axis?</span><input class="n" data-k="3d_int"><span class="t">m</span></div>
+    <div class="row"><span>Is that number less than 0.1 m?</span><span class="ch" data-k="3d_small" data-o="YES → use 0|NO → use the number"></span></div>
+    <div class="frame"><span class="t">My equation:</span> x = (<input class="n" data-k="3d_v"> m/s) t + (<input class="n" data-k="3d_xi"> m)</div>
+  </div>
+  <div class="checkline"><button class="btn ghost" data-check="s3">Check Step 3</button><span class="cmsg" id="cm-s3" role="status"></span></div>
+</section>
+
+<!-- STEP 4 -->
+<section class="card" data-step="s4">
+  <div class="banner">Step 4 · Test your equation on one buggy</div>
+  <div class="q"><b>4a. Pick a distance between 1 m and 3 m. Predict the time.</b>
+    <div class="frame"><span class="t">Distance:</span><input class="n" data-k="4a_d" data-lock="s4"><span class="t">m</span></div>
+    <div class="frame"><span class="t">time = distance ÷ velocity =</span><input class="n" data-k="4a_a" data-lock="s4">÷<input class="n" data-k="4a_b" data-lock="s4">=<input class="n" data-k="4a_t" data-lock="s4"><span class="t">s</span></div>
+    <div class="stopbox"><b>STOP. Lock your prediction BEFORE you run it.</b><button class="btn" id="lock4">Lock my prediction</button><span class="locked" id="lock4msg"></span></div>
+  </div>
+  <div class="q"><b>4b. Time three runs.</b>
+    <p>The start and finish are taped on the floor. Press <b>GO</b> to set the buggy down and start the stopwatch. Press <b>STOP</b> the moment the front of the buggy crosses the finish tape. That's your job as Timer, so watch closely.</p>
+    <div class="sim">
+      <div class="row"><button class="btn big" id="s4go" disabled>GO</button><button class="btn big stop" id="s4stop" disabled>STOP</button><div class="watch" id="w4">0.00</div><span class="msg" id="s4msg" role="status"></span></div>
+      <canvas id="floor4" class="floor" aria-label="Floor with start and finish tape and the buggy"></canvas>
+      <div class="row"><span class="log" id="s4log"></span><button class="btn ghost" id="s4clear">Clear my runs</button></div>
+    </div>
+    <div class="tw"><table><thead><tr><th>Run 1 (s)</th><th>Run 2 (s)</th><th>Run 3 (s)</th><th>Average (s)</th></tr></thead><tbody>
+      <tr><td><input class="n" data-k="4b_1"></td><td><input class="n" data-k="4b_2"></td><td><input class="n" data-k="4b_3"></td><td><input class="n" data-k="4b_avg"></td></tr></tbody></table></div>
+  </div>
+  <div class="q"><b>4c. How close were you?</b>
+    <div class="frame"><span class="t">My prediction was off by</span><input class="n" data-k="4c_off"><span class="t">s.</span></div>
+    <p>Check the reason that fits best:</p>
+    <ul class="checks">
+      <li><label><input type="checkbox" data-k="4c_r1"> The buggy slowed down (battery).</label></li>
+      <li><label><input type="checkbox" data-k="4c_r2"> The buggy drifted sideways.</label></li>
+      <li><label><input type="checkbox" data-k="4c_r3"> The stopwatch started or stopped late.</label></li>
+      <li><label><input type="checkbox" data-k="4c_r4"> We measured from the wrong edge of the buggy.</label></li>
+    </ul>
+  </div>
+  <div class="checkline"><button class="btn ghost" data-check="s4">Check Step 4</button><span class="cmsg" id="cm-s4" role="status"></span></div>
+</section>
+
+<!-- STEP 5 -->
+<section class="card" data-step="s5">
+  <div class="banner">Step 5 · The real crash</div>
+  <p>Join your partner group. The two buggies start 4.0 m apart, facing each other. Car A (yours) starts at 0 m. Car B starts at 4.0 m.</p>
+  <div class="card-info" id="partner"></div>
+  <div class="q"><b>5a. Set up.</b> <span>The signs are printed for you. Car B moves toward zero, so its velocity is negative.</span>
+    <div class="tw"><table><thead><tr><th></th><th>Car number</th><th>Starts at (m)</th><th>Velocity sign</th><th>Speed from Step 3 (m/s)</th></tr></thead><tbody>
+      <tr><th style="color:var(--ca)">Car A</th><td><input class="n" data-k="5a_an"></td><td class="given">0</td><td class="given">+</td><td><input class="n" data-k="5a_av"></td></tr>
+      <tr><th style="color:var(--cb)">Car B</th><td><input class="n" data-k="5a_bn"></td><td class="given">4.0</td><td class="given">−</td><td><input class="n" data-k="5a_bv"></td></tr>
+    </tbody></table></div>
+  </div>
+  <div class="q"><b>5b. Write both equations.</b>
+    <div class="frame"><span class="t" style="width:3.5rem;color:var(--ca);font-weight:700">Car A:</span> x = (<input class="n" data-k="5b_a">) t</div>
+    <div class="frame"><span class="t" style="width:3.5rem;color:var(--cb);font-weight:700">Car B:</span> x = (−<input class="n" data-k="5b_b">) t + 4.0</div>
+  </div>
+  <div class="q"><b>5c. Solve. Same steps as 2i.</b>
+    <div class="tw"><table style="min-width:560px"><thead><tr><th>Step</th><th>Your work</th></tr></thead><tbody>
+      <tr><td>1. Set them equal</td><td><div class="frame">(<input class="n" data-k="5c_1a">)t = −(<input class="n" data-k="5c_1b">)t + 4.0</div></td></tr>
+      <tr><td>2. Get the t's together</td><td><div class="frame">(<input class="n" data-k="5c_2a">)t + (<input class="n" data-k="5c_2b">)t = 4.0</div><div class="frame">(<input class="n" data-k="5c_2c">)t = 4.0</div></td></tr>
+      <tr><td>3. Divide to find t</td><td><div class="frame">t = 4.0 ÷ (<input class="n" data-k="5c_3a">) = (<input class="n" data-k="5c_3b">) s</div></td></tr>
+      <tr><td>4. Find x with Car A</td><td><div class="frame">x = (<input class="n" data-k="5c_4a">) × (<input class="n" data-k="5c_4b">) = (<input class="n" data-k="5c_4c">) m</div></td></tr>
+      <tr><td>5. Check with Car B</td><td><div class="frame">x = −(<input class="n" data-k="5c_5a">) × (<input class="n" data-k="5c_5b">) + 4.0 = (<input class="n" data-k="5c_5c">) m</div></td></tr>
+    </tbody></table></div>
+  </div>
+  <div class="q"><b>5d. Your prediction.</b> <span>Copy it from 5c, then lock it before any buggy moves.</span>
+    <div class="frame"><span class="t">Predicted crash time</span><input class="n" data-k="5d_t" data-lock="s5"><span class="t">s</span><span class="t" style="margin-left:14px">Predicted crash position</span><input class="n" data-k="5d_x" data-lock="s5"><span class="t">m</span></div>
+    <div class="stopbox"><b>STOP. Lock your prediction before any buggy moves.</b><button class="btn" id="lock5">Lock my prediction</button><span class="locked" id="lock5msg"></span></div>
+  </div>
+  <div class="q"><b>5e. Run it.</b>
+    <p>An X is taped at your predicted position. Press <b>GO</b> to set both buggies down and start the stopwatch. Press <b>STOP</b> the moment the front bumpers meet. Then measure where they met from Car A's start.</p>
+    <div class="sim">
+      <div class="row"><button class="btn big" id="s5go" disabled>GO</button><button class="btn big stop" id="s5stop" disabled>STOP</button><div class="watch" id="w5">0.00</div><span class="msg" id="s5msg" role="status"></span></div>
+      <canvas id="floor5" class="floor" aria-label="4 meter lane with Car A, Car B, and your X"></canvas>
+      <div class="row"><b>Measure a crash:</b><select id="s5meas"></select><span class="sub" style="font-size:.88rem">Read the crash mark, in cm, then change to m.</span></div>
+      <canvas id="zoom5" class="zoom" aria-label="Close-up of the tape measure at the crash mark"></canvas>
+      <div class="row"><span class="log" id="s5log"></span><button class="btn ghost" id="s5clear">Clear my runs</button></div>
+    </div>
+    <div class="tw"><table><thead><tr><th>Run</th><th>Crash time (s)</th><th>Crash position (m)</th><th>Miss: how far from the X (m)</th></tr></thead><tbody>
+      <tr><td>1</td><td><input class="n" data-k="5e_t1"></td><td><input class="n" data-k="5e_x1"></td><td><input class="n" data-k="5e_m1"></td></tr>
+      <tr><td>2</td><td><input class="n" data-k="5e_t2"></td><td><input class="n" data-k="5e_x2"></td><td><input class="n" data-k="5e_m2"></td></tr>
+      <tr><td>3</td><td><input class="n" data-k="5e_t3"></td><td><input class="n" data-k="5e_x3"></td><td><input class="n" data-k="5e_m3"></td></tr>
+      <tr><th>Average</th><td><input class="n" data-k="5e_ta"></td><td><input class="n" data-k="5e_xa"></td><td><input class="n" data-k="5e_ma"></td></tr>
+    </tbody></table></div>
+  </div>
+  <div class="q"><b>5f. How far off were you, in percent?</b> <span>Use the averages.</span>
+    <div class="frame"><span class="t">Miss ÷ actual position =</span><input class="n" data-k="5f_a">÷<input class="n" data-k="5f_b">=<input class="n" data-k="5f_c">× 100 =<input class="n" data-k="5f_d">%</div>
+  </div>
+  <div class="checkline"><button class="btn ghost" data-check="s5">Check Step 5</button><span class="cmsg" id="cm-s5" role="status"></span></div>
+</section>
+
+<!-- WRAP-UP -->
+<section class="card" data-step="w">
+  <div class="banner">Wrap-up</div>
+  <div class="q"><b>W1. Choose, then finish the sentence.</b>
+    <div class="row"><span>The car with the negative velocity was</span><span class="ch" data-k="W1_car" data-o="Car A|Car B"></span></div>
+    <div class="frame"><span class="t">because it moved toward…</span><input type="text" class="w" data-k="W1_why"></div>
+  </div>
+  <div class="q"><b>W2. Why does setting the equations equal find the crash? Finish the sentence.</b>
+    <textarea data-k="W2">At the crash, both cars are…</textarea></div>
+  <div class="q"><b>W3. What was the biggest reason for your miss, and how could you fix it?</b>
+    <textarea data-k="W3">The biggest reason was…  To fix it, we could…</textarea></div>
+  <div class="q"><b>W4. Optional challenge:</b> <span>Two buggies start 4.0 m apart, pointed the SAME way, at the SAME speed. When do they crash? How do you know?</span>
+    <textarea data-k="W4"></textarea></div>
+</section>
+
+<section class="card">
+  <div class="banner">Turn it in</div>
+  <p>Press <b>Copy my lab</b>, then paste into the assignment. Your raw floor data (every tape mark, stopwatch reading and crash position) is included so your teacher can see your measurements.</p>
+  <div class="row"><button class="btn big" id="copy">Copy my lab</button><button class="btn ghost" id="checkall">Check everything</button><span class="msg" id="copymsg" role="status"></span></div>
+  <textarea id="fallback" hidden readonly></textarea>
+  <p class="sub" style="font-size:.82rem">Modeling Physical Science · Unit 2 · When Worlds Collide · Virtual</p>
+</section>
+</div>
+
+<script>
+(function(){
+"use strict";
+const STORE="u2-worlds-collide-virtual-v1";
+const $=id=>document.getElementById(id);
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+const r2=x=>Math.round(x*100)/100;
+
+/* ---------------- state ---------------- */
+let S={v:{},mm:{red:[],blue:[]},p2:{red:[],blue:[]},ruler:{t1:1,x1:.4,t2:11,x2:2.2},bug:null,s3:[null,null],s4:{locked:null,runs:[]},s5:{locked:null,runs:[]}};
+try{const raw=localStorage.getItem(STORE);if(raw){const o=JSON.parse(raw);if(o&&o.v)S=Object.assign(S,o)}}catch(e){}
+if(!S.bug){
+  const vA=.20+.09*Math.random();let vB=.13+.05*Math.random();if(vA-vB<.05)vB=vA-.05-.01*Math.random();
+  S.bug={vA,vB,vBrep:r2(vB*(1+.025*gauss())),bNum:String(2+Math.floor(Math.random()*14))};
+}
+function save(){try{localStorage.setItem(STORE,JSON.stringify(S))}catch(e){}}
+save();
+
+/* ---------------- bind inputs ---------------- */
+document.querySelectorAll("[data-k]").forEach(el=>{
+  const k=el.dataset.k;
+  if(el.classList.contains("ch")){
+    el.innerHTML=el.dataset.o.split("|").map(o=>`<button type="button" aria-pressed="false">${o}</button>`).join("");
+    const paint=()=>el.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.textContent===S.v[k]));
+    el.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{if(el.dataset.lockedNow)return;S.v[k]=b.textContent;el.classList.remove("ok","bad");paint();save();onChange(k)}));
+    if(k==="_pencil"&&!S.v[k])S.v[k]="Red pencil";
+    paint();return;
+  }
+  if(el.tagName==="CANVAS")return;
+  if(el.type==="checkbox"){el.checked=!!S.v[k];el.addEventListener("change",()=>{S.v[k]=el.checked;save()});return}
+  if(S.v[k]!=null)el.value=S.v[k];else if(el.tagName==="TEXTAREA")S.v[k]=el.value;
+  el.addEventListener("input",()=>{S.v[k]=el.value;el.classList.remove("ok","bad");save();onChange(k)});
+  el.addEventListener("change",()=>{S.v[k]=el.value;save();onChange(k)});
+});
+function onChange(k){if(/^3a_m_/.test(k))drawPlot3()}
+const num=s=>{if(s==null)return NaN;s=String(s).replace(/[−–]/g,"-").replace(/,/g,"").replace(/[^0-9eE+\-.]/g,"");return s===""||s==="-"?NaN:parseFloat(s)};
+const V=k=>num(S.v[k]);
+
+/* ---------------- checking ---------------- */
+const near=(a,b,abs=.005,rel=.01)=>!isNaN(a)&&!isNaN(b)&&Math.abs(a-b)<=Math.max(abs,Math.abs(b)*rel);
+function mark(k,ok){const el=document.querySelector(`[data-k="${k}"]`);if(!el)return;el.classList.remove("ok","bad");if(ok!==null)el.classList.add(ok?"ok":"bad")}
+function blank(k){const v=S.v[k];return v==null||String(v).trim()===""}
+function run(rules,id){
+  let r=0,w=0,b=0;
+  rules.forEach(([k,test])=>{if(k!=="mm"&&k!=="plot2"&&blank(k)){mark(k,null);b++;return}const ok=!!test(S.v[k]);mark(k,ok);ok?r++:w++});
+  const m=$("cm-"+id);m.textContent=`${r} correct · ${w} to fix${b?` · ${b} blank`:""}`;m.style.color=w?"var(--bad)":(b?"var(--muted)":"var(--ok)");
+}
+const N=(val,abs,rel)=>s=>near(num(s),val,abs,rel);
+const A=(val)=>s=>near(Math.abs(num(s)),val);
+const E=(val)=>s=>s===val;
+const RULES={
+ s1:()=>[["1a_dx",N(.2)],["1a_x0",N(.3)],["1b_a1",N(.3)],["1b_a2",N(.2)],["1b_a3",N(2.3)],["1b_b1",N(.3)],["1b_b2",N(.2)],["1b_b3",N(9.7)],
+   ["1c_a",s=>["how far it moves each second","clock reading"].includes(s)&&s!==S.v["1c_b"]],["1c_b",s=>["how far it moves each second","clock reading"].includes(s)&&s!==S.v["1c_a"]],["1c_c",E("starting position")],
+   ["1d_a",s=>["v t","xᵢ"].includes(s)&&s!==S.v["1d_b"]],["1d_b",s=>["v t","xᵢ"].includes(s)&&s!==S.v["1d_a"]],
+   ["1e_dir",E("SMALLER")],["1e_sign",E("NEGATIVE")],["1e_v",N(-.2)],["1e_xi",N(4)],["1e_c1",N(-.2)],["1e_c2",N(4)],["1e_c3",N(2.8)],
+   ["eq_x_u",E("m")],["eq_v_u",E("m/s")],["eq_t_u",E("s")],["eq_xi_u",E("m")]],
+ s2a:()=>[["2a_rd",E("+ side")],["2a_rs",E("+")],["2a_rv",A(.3)],["2a_bd",E("− side")],["2a_bs",E("−")],["2a_bv",A(.1)]],
+ s2:()=>RULES.s2a().concat([
+   ["2b_r6",N(1.8)],["2b_b6",N(3.4)],["2b_g6",N(1.6)],["2b_r8",N(2.4)],["2b_b8",N(3.2)],["2b_g8",N(.8)],["2b_r10",N(3)],["2b_b10",N(3)],["2b_g10",N(0)],
+   ["2b_r12",N(3.6)],["2b_b12",N(2.8)],["2b_g12",s=>/pass/i.test(s)||near(num(s),-.8)],
+   ["2c_t",N(10)],["2c_x",N(3)],["2c_g",N(.8)],["2d_ra",E("→")],["2d_ba",E("←")],["mm",()=>mmOK()],["2e_a",E("position")],["2e_b",E("time")],["plot2",()=>p2OK()],
+   ["2g_t",N(10,.05)],["2g_x",N(3,.05)],["2h_rv",N(.3)],["2h_rx",N(0)],["2h_bv",N(-.1)],["2h_bx",N(4)],
+   ["2i_1a",N(-.1)],["2i_1b",N(4)],["2i_2a",N(.1)],["2i_2b",N(4)],["2i_2c",N(.4)],["2i_2d",N(4)],["2i_3a",N(4)],["2i_3b",N(.4)],["2i_3c",N(10)],
+   ["2i_4a",N(10)],["2i_4b",N(3)],["2i_5a",N(10)],["2i_5b",N(3)],["2i_5c",E("YES")],
+   ["2j_tt",N(10)],["2j_tx",N(3)],["2j_mx",N(3)],["2j_gt",N(10,.05)],["2j_gx",N(3,.05)],["2j_et",N(10)],["2j_ex",N(3)],["2j_ag",E("YES")]]),
+ s3:()=>{
+   const R=[];
+   [2,4,6,8,10,12].forEach((t,i)=>{
+     [0,1].forEach(tr=>{const m=S.s3[tr];R.push([`3a_${tr+1}_${t}`,s=>m?Math.abs(num(s)-m.marks[i])<=1.05:false])});
+     R.push([`3a_c_${t}`,s=>near(num(s),(V(`3a_1_${t}`)+V(`3a_2_${t}`))/2,.3,0)]);
+     R.push([`3a_m_${t}`,s=>near(num(s),V(`3a_c_${t}`)/100,.004,0)]);
+   });
+   const rl=rulerLine();const on=(tk,xk)=>()=>near(V(xk),rl.at(V(tk)),.03,0)&&V(tk)>=0&&V(tk)<=12.5;
+   R.push(["3c_t1",s=>!isNaN(num(s))],["3c_x1",on("3c_t1","3c_x1")],["3c_t2",s=>!isNaN(num(s))&&Math.abs(num(s)-V("3c_t1"))>=4],["3c_x2",on("3c_t2","3c_x2")]);
+   R.push(["3c_a",N(V("3c_x2"))],["3c_b",N(V("3c_x1"))],["3c_c",N(V("3c_t2"))],["3c_d",N(V("3c_t1"))],["3c_v",s=>near(num(s),(V("3c_x2")-V("3c_x1"))/(V("3c_t2")-V("3c_t1")),.003,.02)]);
+   R.push(["3d_int",N(rl.at(0),.03,0)],["3d_small",s=>s===(V("3d_int")<.1?"YES → use 0":"NO → use the number")],["3d_v",N(V("3c_v"),.002,.01)],["3d_xi",s=>near(num(s),V("3d_int")<.1?0:V("3d_int"),.005,0)]);
+   return R;},
+ s4:()=>{
+   const R=[["4a_d",s=>num(s)>=1&&num(s)<=3],["4a_a",N(V("4a_d"))],["4a_b",N(V("3d_v"),.002,.01)],["4a_t",s=>near(num(s),V("4a_a")/V("4a_b"),.05,.02)]];
+   [1,2,3].forEach(i=>R.push([`4b_${i}`,s=>{const r=S.s4.runs[i-1];return r&&r.watch!=null?near(num(s),r.watch,.011,0):false}]));
+   R.push(["4b_avg",s=>near(num(s),(V("4b_1")+V("4b_2")+V("4b_3"))/3,.02,0)],["4c_off",s=>near(num(s),Math.abs(V("4b_avg")-V("4a_t")),.03,0)]);
+   return R;},
+ s5:()=>{
+   const va=V("3d_v"),vb=S.bug.vBrep;const R=[["5a_an",s=>s.trim()!==""],["5a_av",N(va,.002)],["5a_bn",s=>s.trim()!==""],["5a_bv",N(vb,.002)],["5b_a",N(V("5a_av"),.002)],["5b_b",N(V("5a_bv"),.002)],
+     ["5c_1a",N(V("5b_a"),.002)],["5c_1b",N(V("5b_b"),.002)],["5c_2a",N(V("5b_a"),.002)],["5c_2b",N(V("5b_b"),.002)],["5c_2c",s=>near(num(s),V("5c_2a")+V("5c_2b"),.002)],
+     ["5c_3a",N(V("5c_2c"),.002)],["5c_3b",s=>near(num(s),4/V("5c_3a"),.05,.01)],["5c_4a",N(V("5b_a"),.002)],["5c_4b",N(V("5c_3b"),.01)],["5c_4c",s=>near(num(s),V("5c_4a")*V("5c_4b"),.02,.01)],
+     ["5c_5a",N(V("5b_b"),.002)],["5c_5b",N(V("5c_3b"),.01)],["5c_5c",s=>near(num(s),4-V("5c_5a")*V("5c_5b"),.02,.01)],
+     ["5d_t",N(V("5c_3b"),.01)],["5d_x",N(V("5c_4c"),.01)]];
+   [1,2,3].forEach(i=>{const r=S.s5.runs[i-1];
+     R.push([`5e_t${i}`,s=>r&&r.watch!=null?near(num(s),r.watch,.011,0):false],[`5e_x${i}`,s=>r?Math.abs(num(s)-r.crash)<=.0105:false],[`5e_m${i}`,s=>near(num(s),Math.abs(V(`5e_x${i}`)-V("5d_x")),.011,0)])});
+   R.push(["5e_ta",s=>near(num(s),(V("5e_t1")+V("5e_t2")+V("5e_t3"))/3,.02,0)],["5e_xa",s=>near(num(s),(V("5e_x1")+V("5e_x2")+V("5e_x3"))/3,.005,0)],["5e_ma",s=>near(num(s),(V("5e_m1")+V("5e_m2")+V("5e_m3"))/3,.005,0)]);
+   R.push(["5f_a",N(V("5e_ma"),.002)],["5f_b",N(V("5e_xa"),.002)],["5f_c",s=>near(num(s),V("5f_a")/V("5f_b"),.002,.02)],["5f_d",s=>near(num(s),V("5f_c")*100,.2,.02)]);
+   return R;}
+};
+document.querySelectorAll("[data-check]").forEach(b=>b.addEventListener("click",()=>{const id=b.dataset.check;run(RULES[id](),id)}));
+$("checkall").addEventListener("click",()=>["s1","s2","s3","s4","s5"].forEach(id=>run(RULES[id](),id)));
+function mark2(el,ok){el.classList.remove("ok","bad");if(ok!=null)el.classList.add(ok?"ok":"bad")}
+
+/* ---------------- canvas helpers ---------------- */
+function fit(c){const r=c.getBoundingClientRect(),d=window.devicePixelRatio||1;c.width=Math.max(1,Math.round(r.width*d));c.height=Math.max(1,Math.round(r.height*d));const g=c.getContext("2d");g.setTransform(d,0,0,d,0,0);return [g,r.width,r.height]}
+const FONT=()=>css("--sans"),MONO=()=>css("--mono");
+
+/* problem picture */
+function drawProb(){const [g,w,h]=fit($("probpic"));const pad=40,X=x=>pad+x/4*(w-2*pad),y=h-30;
+  g.fillStyle=css("--muted");g.fillRect(pad,y,w-2*pad,2);
+  g.font="12px "+MONO();g.textAlign="center";[0,1,2,3,4].forEach(m=>{g.fillRect(X(m),y-4,1,8);g.fillText(m.toFixed(1)+" m",X(m),y+18)});
+  buggy(g,X(0),y-4,1,css("--red"),"",36);buggy(g,X(4),y-4,-1,css("--blue"),"",36);
+  g.font="bold 13px "+FONT();g.fillStyle=css("--red");g.textAlign="left";g.fillText("RED → 0.30 m/s",X(0)+6,16);
+  g.fillStyle=css("--blue");g.textAlign="right";g.fillText("0.10 m/s ← BLUE",X(4)-6,16);
+  g.fillStyle=css("--muted");g.textAlign="center";g.font="12px "+FONT();g.fillText("4.0 m apart",w/2,16);
+}
+/* buggy: front at fx, dir +1 faces right */
+function buggy(g,fx,y,dir,col,label,len){
+  const L=len,H=Math.max(14,L*.42);const x0=dir>0?fx-L:fx;
+  g.fillStyle=col;g.beginPath();g.roundRect?g.roundRect(x0,y-H-6,L,H,4):g.rect(x0,y-H-6,L,H);g.fill();
+  g.fillStyle=css("--ink");[x0+L*.2,x0+L*.8].forEach(c=>{g.beginPath();g.arc(c,y-5,Math.max(3,H*.28),0,7);g.fill()});
+  g.fillStyle=col;g.fillRect(dir>0?fx-2:fx,y-H-2,2,H-8);
+  if(label){g.fillStyle="#fff";g.font="bold 12px "+FONT();g.textAlign="center";g.fillText(label,x0+L/2,y-H/2-2)}
+}
+/* floor */
+function drawFloor(cv,o){
+  const [g,w,h]=fit(cv);const pad=12,a=o.a,b=o.b,X=x=>pad+(x-a)/(b-a)*(w-2*pad),pxm=(w-2*pad)/(b-a);
+  const fy=h-44;
+  g.fillStyle=css("--floor");g.fillRect(0,0,w,h);
+  // tape measure
+  const ty=h-38;g.fillStyle=css("--tape");g.fillRect(X(Math.max(a,0)),ty,X(b)-X(Math.max(a,0)),22);
+  g.fillStyle=css("--tapeink");g.font="10px "+MONO();g.textAlign="center";
+  for(let cm=0;cm<=b*100+1e-6;cm+=10){const m=cm/100;if(m<a)continue;const xx=X(m);const big=cm%50===0;g.fillRect(xx,ty,1,big?10:5);if(big&&pxm*.5>28)g.fillText(m.toFixed(1),xx,ty+20)}
+  // tapes
+  (o.tapes||[]).forEach(tp=>{const xx=X(tp.x);g.fillStyle=tp.color;g.globalAlpha=.9;g.fillRect(xx-(tp.w||3)/2,fy-(tp.hgt||30),(tp.w||3),(tp.hgt||30));g.globalAlpha=1;
+    if(tp.label){g.fillStyle=tp.color;g.font="bold 11px "+FONT();g.textAlign="center";g.fillText(tp.label,xx,fy-(tp.hgt||30)-4)}});
+  (o.xs||[]).forEach(p=>{const xx=X(p.x);g.strokeStyle=p.color;g.lineWidth=3;g.beginPath();g.moveTo(xx-7,fy-2);g.lineTo(xx+7,fy-16);g.moveTo(xx-7,fy-16);g.lineTo(xx+7,fy-2);g.stroke();
+    g.fillStyle=p.color;g.font="bold 11px "+FONT();g.textAlign="center";g.fillText(p.label||"X",xx,fy-20)});
+  (o.bugs||[]).forEach(bg=>{if(bg.hidden)return;buggy(g,X(bg.front),fy,bg.dir,bg.color,bg.label,Math.max(26,.22*pxm))});
+  if(o.bubble){g.font="bold 20px "+FONT();g.textAlign="left";g.fillStyle=css("--accent");g.fillText(o.bubble,pad+6,26)}
+  if(o.note){g.font="12px "+FONT();g.textAlign="right";g.fillStyle=css("--muted");g.fillText(o.note,w-pad,18)}
+}
+/* zoom tape */
+function drawZoom(cv,center,items,empty){
+  const [g,w,h]=fit(cv);g.fillStyle=css("--floor");g.fillRect(0,0,w,h);
+  if(center==null){g.fillStyle=css("--muted");g.font="14px "+FONT();g.textAlign="center";g.fillText(empty||"Nothing to measure yet.",w/2,h/2);return}
+  const span=w<500?.14:.24;const a=center-span/2,X=x=>(x-a)/span*w;
+  const ty=46,th=48;g.fillStyle=css("--tape");g.fillRect(0,ty,w,th);
+  g.fillStyle=css("--tapeink");g.textAlign="center";g.font="bold 12px "+MONO();
+  const mm0=Math.ceil(a*1000),mm1=Math.floor((a+span)*1000);
+  for(let mm=mm0;mm<=mm1;mm++){if(mm<0)continue;const xx=X(mm/1000);const cmk=mm%10===0,half=mm%5===0;g.fillRect(xx,ty,1,cmk?22:half?14:8);if(cmk)g.fillText(String(mm/10),xx,ty+36)}
+  g.font="10px "+FONT();g.fillStyle=css("--tapeink");g.textAlign="left";g.fillText("cm",4,ty+th-4);
+  (items||[]).forEach(it=>{const xx=X(it.x);if(xx<-20||xx>w+20)return;g.fillStyle=it.color;g.globalAlpha=.35;g.fillRect(it.side<0?xx-18:xx,ty-30,18,30);g.globalAlpha=1;g.fillRect(xx-1,ty-30,2,th+30);
+    g.font="bold 12px "+FONT();g.textAlign=it.side<0?"right":"left";g.fillText(it.label,it.side<0?xx-22:xx+22,ty-14)});
+}
+
+/* ---------------- 2d motion map ---------------- */
+const mmcv=$("mm");
+function mmGeom(w){const pad=30,X=x=>pad+x/4*(w-2*pad);return {pad,X,inv:px=>(px-pad)/(w-2*pad)*4,rows:{red:40,blue:88}}}
+function drawMM(){const [g,w,h]=fit(mmcv);const G=mmGeom(w);g.clearRect(0,0,w,h);
+  g.font="12px "+MONO();g.textAlign="center";
+  ["red","blue"].forEach(c=>{const y=G.rows[c];g.strokeStyle=css("--grid2");g.lineWidth=1;g.beginPath();g.moveTo(G.X(0),y);g.lineTo(G.X(4),y);g.stroke();
+    g.fillStyle=css(c==="red"?"--red":"--blue");g.font="bold 12px "+FONT();g.textAlign="left";g.fillText(c==="red"?"Red":"Blue",2,y-10);
+    S.mm[c].forEach(x=>{g.beginPath();g.arc(G.X(x),y,6,0,7);g.fill()});
+    const arr=S.v[c==="red"?"2d_ra":"2d_ba"];if(arr){const xs=S.mm[c];const mid=xs.length?(Math.min(...xs)+Math.max(...xs))/2:2;const d=arr==="→"?1:-1;g.strokeStyle=g.fillStyle;g.lineWidth=2;const x0=G.X(mid)-d*30,x1=G.X(mid)+d*30,yy=y-16;g.beginPath();g.moveTo(x0,yy);g.lineTo(x1,yy);g.stroke();g.beginPath();g.moveTo(x1,yy);g.lineTo(x1-d*8,yy-5);g.lineTo(x1-d*8,yy+5);g.fill()}});
+  g.fillStyle=css("--muted");g.font="11px "+MONO();g.textAlign="center";
+  for(let i=0;i<=40;i++){const x=i/10,xx=G.X(x);g.fillRect(xx,118,1,i%5===0?8:4);if(i%5===0)g.fillText(x.toFixed(1),xx,138)}
+  g.textAlign="right";g.fillText("x (m)",w-4,148);
+}
+mmcv.addEventListener("click",e=>{const r=mmcv.getBoundingClientRect();const G=mmGeom(r.width);const px=e.clientX-r.left,py=e.clientY-r.top;
+  const c=Math.abs(py-G.rows.red)<Math.abs(py-G.rows.blue)?"red":"blue";if(Math.abs(py-G.rows[c])>28)return;
+  const x=Math.round(G.inv(px)*10)/10;if(x<0||x>4)return;const arr=S.mm[c];const i=arr.findIndex(q=>Math.abs(q-x)<.05);if(i>=0)arr.splice(i,1);else arr.push(x);
+  mmcv.classList.remove("ok","bad");save();drawMM()});
+$("mmclear").addEventListener("click",()=>{S.mm={red:[],blue:[]};save();drawMM()});
+function mmOK(){const want={red:[0,.6,1.2,1.8,2.4,3],blue:[4,3.8,3.6,3.4,3.2,3]};let ok=true;
+  ["red","blue"].forEach(c=>{const have=S.mm[c];want[c].forEach(x=>{if(!have.some(q=>Math.abs(q-x)<.05))ok=false});have.forEach(x=>{if(!want[c].concat(c==="red"?[3.6]:[2.8]).some(q=>Math.abs(q-x)<.05))ok=false})});
+  mark2(mmcv,ok);return ok}
+
+/* ---------------- plots ---------------- */
+const TM=12.5,XM=5;
+function plotGeom(w,h){const L=46,B=40,T=12,R=12;const pw=w-L-R,ph=h-T-B;return {L,T,pw,ph,X:t=>L+t/TM*pw,Y:x=>T+(XM-x)/XM*ph,it:px=>(px-L)/pw*TM,ix:py=>XM-(py-T)/ph*XM}}
+function axes(g,w,h,G){
+  g.clearRect(0,0,w,h);
+  for(let i=0;i<=25;i++){g.strokeStyle=css(i%5===0?"--grid2":"--grid");g.lineWidth=1;const xx=G.X(i*.5);g.beginPath();g.moveTo(xx,G.T);g.lineTo(xx,G.T+G.ph);g.stroke();const yy=G.Y(i*.2);g.beginPath();g.moveTo(G.L,yy);g.lineTo(G.L+G.pw,yy);g.stroke()}
+  g.fillStyle=css("--muted");g.font="11px "+MONO();g.textAlign="center";g.textBaseline="top";
+  for(let t=0;t<=12.5;t+=2.5)g.fillText(t.toFixed(1),G.X(t),G.T+G.ph+4);
+  g.textAlign="right";g.textBaseline="middle";for(let x=0;x<=5;x+=1)g.fillText(x.toFixed(1),G.L-5,G.Y(x));
+  g.textBaseline="alphabetic";g.textAlign="center";g.font="12px "+FONT();g.fillText("clock reading t (s)",G.L+G.pw/2,h-6);
+  g.save();g.translate(12,G.T+G.ph/2);g.rotate(-Math.PI/2);g.fillText("position x (m)",0,0);g.restore();
+}
+const p2=$("plot2");
+function drawPlot2(){const [g,w,h]=fit(p2);const G=plotGeom(w,h);axes(g,w,h,G);
+  [["red","--red"],["blue","--blue"]].forEach(([c,col])=>{const pts=S.p2[c].slice().sort((a,b)=>a[0]-b[0]);g.strokeStyle=g.fillStyle=css(col);g.lineWidth=2;
+    if(pts.length>1){g.beginPath();pts.forEach((p,i)=>i?g.lineTo(G.X(p[0]),G.Y(p[1])):g.moveTo(G.X(p[0]),G.Y(p[1])));g.stroke()}
+    pts.forEach(p=>{g.beginPath();g.arc(G.X(p[0]),G.Y(p[1]),4.5,0,7);g.fill()})});
+  g.textAlign="left";g.font="bold 12px "+FONT();g.fillStyle=css("--red");g.fillText("Red",G.L+8,G.T+16);g.fillStyle=css("--blue");g.fillText("Blue",G.L+44,G.T+16);
+}
+p2.addEventListener("click",e=>{const r=p2.getBoundingClientRect();const G=plotGeom(r.width,r.height);
+  const t=Math.round(G.it(e.clientX-r.left)*2)/2,x=Math.round(G.ix(e.clientY-r.top)*10)/10;if(t<0||t>TM||x<0||x>XM)return;
+  const c=S.v._pencil==="Blue pencil"?"blue":"red";const arr=S.p2[c];const i=arr.findIndex(p=>Math.abs(p[0]-t)<.01&&Math.abs(p[1]-x)<.05);
+  if(i>=0)arr.splice(i,1);else{const j=arr.findIndex(p=>Math.abs(p[0]-t)<.01);if(j>=0)arr.splice(j,1);arr.push([t,x])}
+  p2.classList.remove("ok","bad");save();drawPlot2()});
+$("p2clear").addEventListener("click",()=>{S.p2={red:[],blue:[]};save();drawPlot2()});
+function p2OK(){const f={red:t=>.3*t,blue:t=>4-.1*t};let ok=true;["red","blue"].forEach(c=>{const a=S.p2[c];if(a.length<4)ok=false;a.forEach(p=>{if(Math.abs(p[1]-f[c](p[0]))>.06)ok=false})});mark2(p2,ok);return ok}
+
+/* 3b ruler plot */
+const p3=$("plot3");let drag=null;
+function rulerLine(){const R=S.ruler;const m=(R.x2-R.x1)/((R.t2-R.t1)||1e-9);return {m,at:t=>R.x1+m*(t-R.t1)}}
+function avgPts(){const out=[[0,0]];[2,4,6,8,10,12].forEach(t=>{const v=V("3a_m_"+t);if(!isNaN(v))out.push([t,v])});return out}
+function drawPlot3(){const [g,w,h]=fit(p3);const G=plotGeom(w,h);axes(g,w,h,G);
+  g.fillStyle=css("--ca");avgPts().forEach(p=>{g.beginPath();g.arc(G.X(p[0]),G.Y(p[1]),4.5,0,7);g.fill()});
+  const rl=rulerLine(),R=S.ruler;g.save();g.beginPath();g.rect(G.L,G.T,G.pw,G.ph);g.clip();
+  g.strokeStyle=css("--ink");g.lineWidth=2;g.beginPath();g.moveTo(G.X(0),G.Y(rl.at(0)));g.lineTo(G.X(TM),G.Y(rl.at(TM)));g.stroke();g.restore();
+  [[R.t1,R.x1],[R.t2,R.x2]].forEach(p=>{g.fillStyle=css("--surface");g.strokeStyle=css("--ink");g.lineWidth=2;g.beginPath();g.arc(G.X(p[0]),G.Y(p[1]),8,0,7);g.fill();g.stroke()});
+  $("rulerlog").textContent=`Ruler handles: (${R.t1.toFixed(1)} s, ${R.x1.toFixed(2)} m) and (${R.t2.toFixed(1)} s, ${R.x2.toFixed(2)} m)`;
+}
+function p3pos(e){const r=p3.getBoundingClientRect();const G=plotGeom(r.width,r.height);return {G,t:Math.min(TM,Math.max(0,G.it(e.clientX-r.left))),x:Math.min(XM,Math.max(0,G.ix(e.clientY-r.top))),px:e.clientX-r.left,py:e.clientY-r.top}}
+p3.addEventListener("pointerdown",e=>{const P=p3pos(e),R=S.ruler;const d1=Math.hypot(P.px-P.G.X(R.t1),P.py-P.G.Y(R.x1)),d2=Math.hypot(P.px-P.G.X(R.t2),P.py-P.G.Y(R.x2));
+  const d=Math.min(d1,d2);if(d>22)return;drag=d1<=d2?1:2;p3.setPointerCapture(e.pointerId);e.preventDefault()});
+p3.addEventListener("pointermove",e=>{if(!drag)return;const P=p3pos(e);S.ruler["t"+drag]=Math.round(P.t*10)/10;S.ruler["x"+drag]=Math.round(P.x*100)/100;drawPlot3()});
+p3.addEventListener("pointerup",()=>{if(drag){drag=null;save()}});
+
+/* ---------------- animation engine ---------------- */
+let anim=null;
+function stopAnim(){if(anim){cancelAnimationFrame(anim.id);anim=null}}
+function play(fn,speed=1){stopAnim();const t0=performance.now();anim={id:0};const tick=now=>{const t=(now-t0)/1000*speed;const cont=fn(t);if(cont&&anim)anim.id=requestAnimationFrame(tick);else anim=null};anim.id=requestAnimationFrame(tick)}
+const COUNT=["3","2","1","GO!"];const PRE=2.4;
+function countdown(t){if(t<0){const i=Math.min(3,Math.floor((t+PRE)/.8));return COUNT[i]}return t<.6?"GO!":""}
+
+/* ---------------- Step 3 ---------------- */
+const MT=[2,4,6,8,10,12];
+function fillS3meas(){const sel=$("s3meas");const cur=sel.value;sel.innerHTML="";
+  [0,1].forEach(tr=>{if(!S.s3[tr])return;MT.forEach((t,i)=>{const o=document.createElement("option");o.value=tr+"-"+i;o.textContent=`Trial ${tr+1} · mark at ${t} s`;sel.appendChild(o)})});
+  if(!sel.options.length){const o=document.createElement("option");o.textContent="Run a trial first";o.value="";sel.appendChild(o)}
+  if([...sel.options].some(o=>o.value===cur))sel.value=cur;drawZoom3()}
+function drawZoom3(){const v=$("s3meas").value;if(!v){drawZoom($("zoom3"),null,null,"Run a trial, then pick a mark to measure.");return}
+  const [tr,i]=v.split("-").map(Number);const m=S.s3[tr].marks[i]/100;
+  const items=[{x:0,color:css("--ink"),label:"zero line"}];S.s3[tr].marks.forEach((c,j)=>items.push({x:c/100,color:css("--mark"),label:`${MT[j]} s`,side:-1}));
+  drawZoom($("zoom3"),m,items)}
+$("s3meas").addEventListener("change",drawZoom3);
+function idleFloor3(){const tr=+$("s3trial").value;const d=S.s3[tr];
+  drawFloor($("floor3"),{a:-.35,b:3.9,tapes:[{x:0,color:css("--ink"),label:"0",w:3}].concat(d?d.marks.map((c,j)=>({x:c/100,color:css("--mark"),label:`${MT[j]}s`,w:4,hgt:22})):[]),bugs:[{front:d?d.end:0,dir:1,color:css("--ca"),label:"A",hidden:!!d}],note:d?`Trial ${tr+1} marks`:"Ready"})}
+$("s3trial").addEventListener("change",()=>{if(!anim)idleFloor3()});
+$("s3go").addEventListener("click",()=>{
+  const tr=+$("s3trial").value;const v=S.bug.vA*(1+.012*gauss()),x0=.005*gauss();
+  const delays=MT.map(()=>Math.min(.3,Math.max(0,.10+.06*gauss())));const marks=MT.map((t,i)=>(x0+v*(t+delays[i]))*100);
+  $("s3go").disabled=true;$("s3msg").textContent=S.s3[tr]?`Re-running Trial ${tr+1}. The old marks are gone.`:`Running Trial ${tr+1}…`;
+  const fast=$("s3fast").checked;
+  play(t=>{t-=PRE;let bubble=countdown(t);const tapes=[{x:0,color:css("--ink"),label:"0",w:3}];
+    MT.forEach((mt,i)=>{if(t>=mt+delays[i])tapes.push({x:marks[i]/100,color:css("--mark"),label:`${mt}s`,w:4,hgt:22});if(t>=mt&&t<mt+.6)bubble="NOW!"});
+    const front=t<0?x0:x0+v*Math.min(t,12.8);
+    drawFloor($("floor3"),{a:-.35,b:3.9,tapes,bugs:[{front,dir:1,color:css("--ca"),label:"A"}],bubble,note:t>=0?`t = ${Math.min(t,12.8).toFixed(1)} s`:""});
+    if(t>12.8){S.s3[tr]={marks,end:front};save();$("s3go").disabled=false;$("s3msg").textContent=`Trial ${tr+1} done. Measure each mark below.`;fillS3meas();$("s3meas").value=tr+"-0";drawZoom3();idleFloor3();return false}
+    return true},fast?4:1);
+});
+
+/* ---------------- locks ---------------- */
+function applyLock(step){const L=S[step].locked;document.querySelectorAll(`[data-lock="${step}"]`).forEach(el=>el.disabled=!!L);
+  $("lock"+step[1]+"msg").textContent=L?`Locked ${L}`:"";$("lock"+step[1]).disabled=!!L;
+  $(step+"go").disabled=!L||(S[step].runs.length>=3)}
+function lock(step,keys){if(keys.some(k=>isNaN(V(k)))){$("lock"+step[1]+"msg").textContent="Fill in your prediction first.";$("lock"+step[1]+"msg").style.color="var(--bad)";return}
+  $("lock"+step[1]+"msg").style.color="";S[step].locked=new Date().toLocaleString([], {month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});save();applyLock(step);if(step==="s4")idle4();else idle5()}
+$("lock4").addEventListener("click",()=>lock("s4",["4a_d","4a_t"]));
+$("lock5").addEventListener("click",()=>lock("s5",["5d_t","5d_x"]));
+
+/* ---------------- Step 4 ---------------- */
+let live=null;
+function d4(){const d=V("4a_d");return isNaN(d)?2:Math.min(3,Math.max(1,d))}
+function idle4(){const d=d4();drawFloor($("floor4"),{a:-.35,b:d+.9,tapes:[{x:0,color:css("--ink"),label:"START",w:3},{x:d,color:css("--bad"),label:"FINISH",w:3}],bugs:[{front:0,dir:1,color:css("--ca"),label:"A"}],note:S.s4.locked?"":"Lock your prediction to start."});log4()}
+function log4(){$("s4log").textContent=S.s4.runs.length?S.s4.runs.map((r,i)=>`Run ${i+1}: ${r.watch!=null?r.watch.toFixed(2)+" s":"no reading"}`).join("   ·   "):"No runs yet."}
+$("s4go").addEventListener("click",()=>{
+  const d=d4(),i=S.s4.runs.length;const v=S.bug.vA*(1+.012*gauss())*(1-.008*i),x0=.004*gauss();
+  $("s4go").disabled=true;$("s4msg").textContent="";let stopped=null;const tCross=(d-x0)/v;
+  live={stop:t=>{stopped=t}};
+  play(t=>{t-=PRE;const bubble=countdown(t);if(t>=0){$("s4stop").disabled=stopped!=null}
+    const front=t<0?x0:Math.min(x0+v*t,d+.7);const w=stopped!=null?stopped:Math.max(0,t);$("w4").textContent=w.toFixed(2);
+    drawFloor($("floor4"),{a:-.35,b:d+.9,tapes:[{x:0,color:css("--ink"),label:"START",w:3},{x:d,color:css("--bad"),label:"FINISH",w:3}],bugs:[{front,dir:1,color:css("--ca"),label:"A"}],bubble});
+    const over=stopped!=null?t>stopped+.8&&t>tCross+.5:t>tCross+4;
+    if(over){$("s4stop").disabled=true;S.s4.runs.push({watch:stopped!=null?r2(stopped):null});save();live=null;
+      $("s4msg").textContent=stopped!=null?`Stopwatch reads ${stopped.toFixed(2)} s. Record it in the table.`:"You didn't stop the watch. That run doesn't count.";
+      if(stopped==null)S.s4.runs.pop();save();log4();applyLock("s4");return false}
+    return true});
+});
+$("s4stop").addEventListener("click",()=>{if(live&&anim){live.stop(parseFloat($("w4").textContent));$("s4stop").disabled=true}});
+$("s4clear").addEventListener("click",()=>{if(anim)return;S.s4.runs=[];save();log4();applyLock("s4");$("w4").textContent="0.00"});
+
+/* ---------------- Step 5 ---------------- */
+function paintPartner(){$("partner").innerHTML=`<b style="color:var(--cb)">Your partner group sent you their Step 3 result.</b><br>Car B is buggy #${S.bug.bNum}. Their equation: <span style="font-family:var(--mono)">x = (−${S.bug.vBrep.toFixed(2)} m/s) t + 4.0 m</span>. Their measured speed is ${S.bug.vBrep.toFixed(2)} m/s.<br><span class="sub">Car A's speed is the velocity from YOUR Step 3d.</span>`}
+function idle5(){drawFloor($("floor5"),{a:-.35,b:4.35,tapes:[{x:0,color:css("--ca"),label:"A start",w:3},{x:4,color:css("--cb"),label:"B start",w:3}].concat(S.s5.runs.map((r,i)=>({x:r.crash,color:css("--mark"),label:`crash ${i+1}`,w:3,hgt:20}))),
+  xs:isNaN(V("5d_x"))||!S.s5.locked?[]:[{x:V("5d_x"),color:css("--bad"),label:"X"}],bugs:[{front:0,dir:1,color:css("--ca"),label:"A"},{front:4,dir:-1,color:css("--cb"),label:"B"}],note:S.s5.locked?"":"Lock your prediction to start."});log5()}
+function log5(){$("s5log").textContent=S.s5.runs.length?S.s5.runs.map((r,i)=>`Run ${i+1}: ${r.watch.toFixed(2)} s`).join("   ·   "):"No runs yet.";
+  const sel=$("s5meas");const cur=sel.value;sel.innerHTML="";S.s5.runs.forEach((r,i)=>{const o=document.createElement("option");o.value=i;o.textContent=`Run ${i+1} crash mark`;sel.appendChild(o)});
+  if(!sel.options.length){const o=document.createElement("option");o.value="";o.textContent="Run the crash first";sel.appendChild(o)}
+  if([...sel.options].some(o=>o.value===cur))sel.value=cur;drawZoom5()}
+function drawZoom5(){const v=$("s5meas").value;if(v===""){drawZoom($("zoom5"),null,null,"Run the crash, then measure where the bumpers met.");return}
+  const r=S.s5.runs[+v];const items=[{x:r.crash,color:css("--mark"),label:"bumpers met",side:-1}];if(!isNaN(V("5d_x")))items.push({x:V("5d_x"),color:css("--bad"),label:"your X"});
+  drawZoom($("zoom5"),r.crash,items)}
+$("s5meas").addEventListener("change",drawZoom5);
+$("s5go").addEventListener("click",()=>{
+  const vA=S.bug.vA*(1+.012*gauss()),vB=S.bug.vB*(1+.012*gauss()),a0=.004*gauss(),b0=4+.004*gauss(),dB=.07*gauss();
+  const xa=t=>a0+vA*Math.max(0,t),xb=t=>b0-vB*Math.max(0,t-dB);
+  // crash time
+  let tc=0;for(let t=0;t<40;t+=.001){if(xa(t)>=xb(t)){tc=t;break}}const crash=(xa(tc)+xb(tc))/2;
+  $("s5go").disabled=true;$("s5msg").textContent="";let stopped=null;live={stop:t=>{stopped=t}};
+  play(t=>{t-=PRE;const bubble=t>=tc&&t<tc+1.2?"CRASH!":countdown(t);if(t>=0)$("s5stop").disabled=stopped!=null;
+    const tt=Math.min(t,tc);const fa=t<0?a0:xa(tt),fb=t<0?b0:xb(tt);const w=stopped!=null?stopped:Math.max(0,t);$("w5").textContent=w.toFixed(2);
+    const tapes=[{x:0,color:css("--ca"),label:"A start",w:3},{x:4,color:css("--cb"),label:"B start",w:3}];if(t>=tc+.4)tapes.push({x:crash,color:css("--mark"),label:"crash",w:3,hgt:20});
+    drawFloor($("floor5"),{a:-.35,b:4.35,tapes,xs:[{x:V("5d_x"),color:css("--bad"),label:"X"}],bugs:[{front:fa,dir:1,color:css("--ca"),label:"A"},{front:fb,dir:-1,color:css("--cb"),label:"B"}],bubble});
+    const over=stopped!=null?t>Math.max(stopped,tc)+1:t>tc+4;
+    if(over){$("s5stop").disabled=true;live=null;
+      if(stopped==null){$("s5msg").textContent="You didn't stop the watch. That run doesn't count.";applyLock("s5");idle5();return false}
+      S.s5.runs.push({watch:r2(stopped),crash});save();$("s5msg").textContent=`Stopwatch reads ${stopped.toFixed(2)} s. Now measure the crash mark.`;applyLock("s5");log5();$("s5meas").value=String(S.s5.runs.length-1);drawZoom5();idle5();return false}
+    return true});
+});
+$("s5stop").addEventListener("click",()=>{if(live&&anim){live.stop(parseFloat($("w5").textContent));$("s5stop").disabled=true}});
+$("s5clear").addEventListener("click",()=>{if(anim)return;S.s5.runs=[];save();applyLock("s5");idle5();$("w5").textContent="0.00"});
+
+/* ---------------- report ---------------- */
+function report(){const g=k=>{const v=S.v[k];return v==null||v===""?"__":String(v).trim()};const L=[];
+  L.push("Unit 2 Lab: When Worlds Collide (virtual)");L.push(`Name: ${g("name")}   Period: ${g("period")}`);L.push("");
+  L.push("STEP 1");L.push(`1a: moves ${g("1a_dx")} m each second; at t=0 it was at ${g("1a_x0")} m`);
+  L.push(`1b: t=10 s: ${g("1b_a1")} + (${g("1b_a2")})(10) = ${g("1b_a3")} m;  t=47 s: ${g("1b_b1")} + (${g("1b_b2")})(47) = ${g("1b_b3")} m`);
+  L.push(`1c: position = ${g("1c_a")} × ${g("1c_b")} + ${g("1c_c")}`);L.push(`1d: x = ${g("1d_a")} + ${g("1d_b")}`);
+  L.push(`1e: position gets ${g("1e_dir")}; velocity ${g("1e_sign")}; x = (${g("1e_v")} m/s)t + (${g("1e_xi")} m); at 6 s: (${g("1e_c1")})(6) + ${g("1e_c2")} = ${g("1e_c3")} m`);
+  L.push(`Class equation: x = ${g("eq_x_m")} (${g("eq_x_u")}); v = ${g("eq_v_m")} (${g("eq_v_u")}); t = ${g("eq_t_m")} (${g("eq_t_u")}); xi = ${g("eq_xi_m")} (${g("eq_xi_u")})`);
+  L.push("");L.push("STEP 2");
+  L.push(`2a: Red toward ${g("2a_rd")}, sign ${g("2a_rs")}, ${g("2a_rv")} m/s; Blue toward ${g("2a_bd")}, sign ${g("2a_bs")}, ${g("2a_bv")} m/s`);
+  L.push("2b:\tt (s)\tRed x\tBlue x\tGap");[6,8,10,12].forEach(t=>L.push(`\t${t}\t${g("2b_r"+t)}\t${g("2b_b"+t)}\t${g("2b_g"+t)}`));
+  L.push(`2c: crash at t = ${g("2c_t")} s, x = ${g("2c_x")} m; gap shrinks ${g("2c_g")} m every 2 s`);
+  L.push(`2d: Red dots ${S.mm.red.slice().sort((a,b)=>a-b).join(", ")||"__"} arrow ${g("2d_ra")}; Blue dots ${S.mm.blue.slice().sort((a,b)=>a-b).join(", ")||"__"} arrow ${g("2d_ba")}`);
+  L.push(`2e: same ${g("2e_a")} at the same ${g("2e_b")}`);
+  L.push(`2f graph points: Red ${S.p2.red.slice().sort((a,b)=>a[0]-b[0]).map(p=>`(${p[0]}, ${p[1]})`).join(" ")||"__"}; Blue ${S.p2.blue.slice().sort((a,b)=>a[0]-b[0]).map(p=>`(${p[0]}, ${p[1]})`).join(" ")||"__"}`);
+  L.push(`2g: cross at t = ${g("2g_t")} s, x = ${g("2g_x")} m`);
+  L.push(`2h: Red x = (${g("2h_rv")})t + (${g("2h_rx")});  Blue x = (${g("2h_bv")})t + (${g("2h_bx")})`);
+  L.push(`2i: 0.30t = (${g("2i_1a")})t + (${g("2i_1b")}) | 0.30t + (${g("2i_2a")})t = (${g("2i_2b")}) | (${g("2i_2c")})t = (${g("2i_2d")}) | t = ${g("2i_3a")} ÷ ${g("2i_3b")} = ${g("2i_3c")} s | x = 0.30 × ${g("2i_4a")} = ${g("2i_4b")} m | check −0.10 × ${g("2i_5a")} + 4.0 = ${g("2i_5b")} m, same? ${g("2i_5c")}`);
+  L.push(`2j: Table ${g("2j_tt")} s, ${g("2j_tx")} m | Motion map ${g("2j_mx")} m | Graph ${g("2j_gt")} s, ${g("2j_gx")} m | Equations ${g("2j_et")} s, ${g("2j_ex")} m | Agree? ${g("2j_ag")}`);
+  L.push("");L.push(`STEP 3 (buggy #${g("3_car")})`);L.push("3a:\tt (s)\tTrial 1 (cm)\tTrial 2 (cm)\tAvg (cm)\tAvg (m)");
+  MT.forEach(t=>L.push(`\t${t}\t${g("3a_1_"+t)}\t${g("3a_2_"+t)}\t${g("3a_c_"+t)}\t${g("3a_m_"+t)}`));
+  L.push(`Floor data (true mark positions, cm): T1 ${S.s3[0]?S.s3[0].marks.map(c=>c.toFixed(1)).join(", "):"not run"}; T2 ${S.s3[1]?S.s3[1].marks.map(c=>c.toFixed(1)).join(", "):"not run"}`);
+  const R=S.ruler;L.push(`3b ruler: (${R.t1.toFixed(1)} s, ${R.x1.toFixed(2)} m) to (${R.t2.toFixed(1)} s, ${R.x2.toFixed(2)} m)`);
+  L.push(`3c: P1 (${g("3c_t1")} s, ${g("3c_x1")} m), P2 (${g("3c_t2")} s, ${g("3c_x2")} m); v = (${g("3c_a")} − ${g("3c_b")}) ÷ (${g("3c_c")} − ${g("3c_d")}) = ${g("3c_v")} m/s`);
+  L.push(`3d: intercept ${g("3d_int")} m; ${g("3d_small")}; x = (${g("3d_v")} m/s)t + (${g("3d_xi")} m)`);
+  L.push("");L.push("STEP 4");L.push(`4a: distance ${g("4a_d")} m; time = ${g("4a_a")} ÷ ${g("4a_b")} = ${g("4a_t")} s   [locked ${S.s4.locked||"NO"}]`);
+  L.push(`4b: ${g("4b_1")}, ${g("4b_2")}, ${g("4b_3")}; avg ${g("4b_avg")} s   [stopwatch log: ${S.s4.runs.map(r=>r.watch).join(", ")||"none"}]`);
+  L.push(`4c: off by ${g("4c_off")} s; reason: ${[["4c_r1","battery"],["4c_r2","drifted"],["4c_r3","stopwatch late"],["4c_r4","wrong edge"]].filter(([k])=>S.v[k]).map(r=>r[1]).join(", ")||"__"}`);
+  L.push("");L.push("STEP 5");
+  L.push(`5a: Car A #${g("5a_an")} ${g("5a_av")} m/s; Car B #${g("5a_bn")} ${g("5a_bv")} m/s   [partner sent ${S.bug.vBrep.toFixed(2)} m/s]`);
+  L.push(`5b: A: x = (${g("5b_a")})t;  B: x = (−${g("5b_b")})t + 4.0`);
+  L.push(`5c: (${g("5c_1a")})t = −(${g("5c_1b")})t + 4.0 | (${g("5c_2a")})t + (${g("5c_2b")})t = 4.0 | (${g("5c_2c")})t = 4.0 | t = 4.0 ÷ ${g("5c_3a")} = ${g("5c_3b")} s | x = ${g("5c_4a")} × ${g("5c_4b")} = ${g("5c_4c")} m | check −${g("5c_5a")} × ${g("5c_5b")} + 4.0 = ${g("5c_5c")} m`);
+  L.push(`5d: predicted ${g("5d_t")} s at ${g("5d_x")} m   [locked ${S.s5.locked||"NO"}]`);
+  L.push("5e:\tRun\tTime (s)\tPosition (m)\tMiss (m)");[1,2,3].forEach(i=>L.push(`\t${i}\t${g("5e_t"+i)}\t${g("5e_x"+i)}\t${g("5e_m"+i)}`));L.push(`\tAvg\t${g("5e_ta")}\t${g("5e_xa")}\t${g("5e_ma")}`);
+  L.push(`Floor data (stopwatch s / true crash m): ${S.s5.runs.map(r=>`${r.watch.toFixed(2)} / ${r.crash.toFixed(3)}`).join("; ")||"none"}`);
+  L.push(`5f: ${g("5f_a")} ÷ ${g("5f_b")} = ${g("5f_c")} × 100 = ${g("5f_d")} %`);
+  L.push("");L.push("WRAP-UP");L.push(`W1: ${g("W1_car")} because it moved toward ${g("W1_why")}`);L.push(`W2: ${g("W2")}`);L.push(`W3: ${g("W3")}`);L.push(`W4: ${g("W4")}`);
+  return L.join("\n")}
+$("copy").addEventListener("click",()=>{const txt=report(),fb=$("fallback");
+  const fallback=()=>{fb.hidden=false;fb.value=txt;fb.focus();fb.select();$("copymsg").textContent="Copy the selected text below (Ctrl/Cmd + C)."};
+  try{navigator.clipboard.writeText(txt).then(()=>{fb.hidden=true;$("copymsg").textContent="Copied. Paste it into the assignment."},fallback)}catch(e){fallback()}});
+
+/* ---------------- boot ---------------- */
+function drawAll(){drawProb();drawMM();drawPlot2();drawPlot3();if(!anim){idleFloor3();idle4();idle5()}drawZoom3();drawZoom5()}
+paintPartner();fillS3meas();applyLock("s4");applyLock("s5");drawAll();
+document.querySelectorAll('[data-k="2d_ra"] button,[data-k="2d_ba"] button').forEach(b=>b.addEventListener("click",drawMM));
+document.querySelectorAll('[data-k="4a_d"],[data-k="5d_x"]').forEach(el=>el.addEventListener("input",()=>{if(!anim){idle4();idle5()}}));
+let rz;addEventListener("resize",()=>{clearTimeout(rz);rz=setTimeout(drawAll,120)});
+try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",drawAll)}catch(e){}
+new MutationObserver(drawAll).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(drawAll);
+})();
+</script>
+
+</body>
+</html>
