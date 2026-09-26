@@ -421,8 +421,10 @@ ul.checks label{display:flex;gap:8px;align-items:flex-start}
 
 <section class="card">
   <div class="banner">Turn it in</div>
-  <p>Press <b>Copy my lab</b>, then paste into the assignment. Your raw floor data (every tape mark, stopwatch reading and crash position) is included so your teacher can see your measurements.</p>
-  <div class="row"><button class="btn big" id="copy">Copy my lab</button><button class="btn ghost" id="checkall">Check everything</button><span class="msg" id="copymsg" role="status"></span></div>
+  <p id="submitintro">Make sure your name and period are filled in at the top, then press <b>Submit to Mr. C</b>. Your teacher gets a PDF of your whole lab, including your raw floor data (every tape mark, stopwatch reading and crash position).</p>
+  <div class="row" id="submitrow"><button class="btn big" id="submit">Submit to Mr. C</button><button class="btn ghost" id="submitno" hidden>Not yet</button><span class="msg" id="submitmsg" role="status"></span></div>
+  <p class="sub" style="font-size:.88rem">If Submit doesn't work, use <b>Copy my lab</b> and paste it into the assignment instead.</p>
+  <div class="row"><button class="btn ghost" id="copy">Copy my lab</button><button class="btn ghost" id="checkall">Check everything</button><span class="msg" id="copymsg" role="status"></span></div>
   <textarea id="fallback" hidden readonly></textarea>
   <p class="sub" style="font-size:.82rem">Modeling Physical Science · Unit 2 · When Worlds Collide · Virtual</p>
 </section>
@@ -783,6 +785,32 @@ $("copy").addEventListener("click",()=>{const txt=report(),fb=$("fallback");
   const fallback=()=>{fb.hidden=false;fb.value=txt;fb.focus();fb.select();$("copymsg").textContent="Copy the selected text below (Ctrl/Cmd + C)."};
   try{navigator.clipboard.writeText(txt).then(()=>{fb.hidden=true;$("copymsg").textContent="Copied. Paste it into the assignment."},fallback)}catch(e){fallback()}});
 
+
+/* ---------------- submit ---------------- */
+const SUBMIT_URL="https://script.google.com/macros/s/AKfycbz9Z4ngptZkunZvRU5gY5RaD-vuHMa00WJuPgpnFxxC0CsHw0-J8m03cPp7HlTtQM_c/exec";
+(function(){
+  const btn=$("submit"),no=$("submitno"),msg=$("submitmsg");let armed=false;
+  if(!/^https:\/\/script\.google\.com\//.test(SUBMIT_URL)){$("submitrow").hidden=true;$("submitintro").hidden=true;return}
+  if(S.submittedAt){msg.textContent=`Last submitted ${S.submittedAt}. You can submit again if you change anything.`}
+  no.addEventListener("click",()=>{armed=false;no.hidden=true;btn.textContent="Submit to Mr. C";msg.textContent=""});
+  btn.addEventListener("click",async()=>{
+    const name=(S.v.name||"").trim(),period=(S.v.period||"").trim();
+    if(!name||!period){msg.style.color="var(--bad)";msg.textContent="Fill in your name and period at the top first.";document.querySelector('[data-k="name"]').focus();return}
+    msg.style.color="";
+    if(!armed){armed=true;no.hidden=false;btn.textContent="Yes, submit";msg.textContent=S.submittedAt?"You already submitted once. Send a new version?":"Ready to send your lab to Mr. C?";return}
+    armed=false;no.hidden=true;btn.disabled=true;btn.textContent="Sending…";msg.textContent="";
+    const body=JSON.stringify({name,period,report:report(),lab:"When Worlds Collide"});
+    const done=(t)=>{S.submittedAt=new Date().toLocaleString([], {month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});save();btn.disabled=false;btn.textContent="Submit to Mr. C";msg.style.color="var(--ok)";msg.textContent=t};
+    const fail=t=>{btn.disabled=false;btn.textContent="Submit to Mr. C";msg.style.color="var(--bad)";msg.textContent=t};
+    let j=null;
+    try{const r=await fetch(SUBMIT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body});j=await r.json()}catch(e){}
+    if(j){if(j.ok)done(`Submitted at ${new Date().toLocaleTimeString([], {hour:"numeric",minute:"2-digit"})}. Mr. C got your PDF.`);else fail("It didn't go through. Try again, or use Copy my lab.")}
+    else{
+      try{await fetch(SUBMIT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body});done("Sent. If your teacher says it didn't arrive, use Copy my lab instead.")}
+      catch(e2){fail("Couldn't send. Check your internet and try again, or use Copy my lab.")}
+    }
+  });
+})();
 /* ---------------- boot ---------------- */
 function drawAll(){drawProb();drawMM();drawPlot2();drawPlot3();if(!anim){idleFloor3();idle4();idle5()}drawZoom3();drawZoom5()}
 paintPartner();fillS3meas();applyLock("s4");applyLock("s5");drawAll();
