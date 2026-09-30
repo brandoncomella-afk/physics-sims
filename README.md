@@ -9,6 +9,7 @@ Interactive, quantitative physics labs for high school and AP / intro-college co
 | `pv-cycle-lab.html` | Thermodynamic cycles | Draggable PV diagram, Carnot/Otto/rectangle presets, per-leg W/Q/ΔU table, piston animation, efficiency vs. Carnot limit, copy-data button |
 | `relativity-lab.html` | Special relativity | Light clock, length contraction, muon survival lab (with data export), relativity of simultaneity |
 | `dune-buggy-challenge.html` | Projectile motion | Ramp → table → moving target. Predict-then-test with the answer hidden, randomised setups, worked solution on reveal, trial log with data export |
+| `motion-match.html` | Constant velocity review | Match x–t ↔ v–t graphs, graphs ↔ equations, graphs ↔ written descriptions; 17 shuffled questions, explanation after each, score by match type, retry missed |
 | `battleship-verbos.html` | Spanish verbs | Verb-conjugation Battleship (*Batalla de Barco*). Random verb pool, irregular toggle, five tenses, vs-computer / pass-and-play / play-by-code |
 | `index.html` | Landing page | Card grid linking all sims |
 

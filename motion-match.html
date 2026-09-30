@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Motion Match</title>
+
+<style>
+/* Layout: one question card at a time on a graph-paper whiteboard; answer choices as a 2x2 grid of mini-graphs.
+   Deliberately single light theme so it matches the projected Showdown game and prints/screenshots cleanly. */
+:root{
+  --board:#fbfcfd; --grid:#e8edf2; --ink:#1d232b; --soft:#56606c;
+  --blue:#1f5fbf; --red:#c8322b; --green:#1d8a4e; --tile:#ffffff; --tray:#eef1f4;
+  --f-marker:ui-rounded,"Arial Rounded MT Bold","Segoe UI",system-ui,sans-serif;
+  --f-body:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-data:ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+body{background:var(--board);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:28px 28px;color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.45}
+.wrap{max-width:900px;margin:0 auto;padding-inline:16px;padding-block:18px 32px;display:flex;flex-direction:column;gap:16px}
+header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:6px 18px}
+h1{font-family:var(--f-marker);font-weight:800;color:var(--blue);font-size:clamp(30px,5vw,44px);line-height:1;margin:0}
+.sub{margin:0;color:var(--soft);font-size:15px}
+.bar{height:10px;background:var(--tray);border-radius:99px;overflow:hidden;border:1px solid #d5dce3}
+.bar i{display:block;height:100%;background:var(--blue);transition:width .25s}
+.meta{display:flex;justify-content:space-between;font-size:14px;color:var(--soft);font-family:var(--f-data)}
+.card{background:var(--tile);border:2px solid var(--ink);border-radius:12px;padding:16px 18px;box-shadow:3px 3px 0 rgba(29,35,43,.1);display:flex;flex-direction:column;gap:14px}
+.tag{font-family:var(--f-data);font-weight:700;font-size:13px;letter-spacing:.05em;color:var(--blue)}
+.q{font-size:clamp(18px,2.4vw,21px);margin:0}
+.given{border:2px dashed #b9c2cc;border-radius:10px;padding:6px;background:#fff;overflow-x:auto}
+.given svg,.opt svg{display:block;width:100%;height:auto}
+.given svg{max-width:520px;margin:0 auto}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.opt{font:inherit;text-align:left;background:#fff;color:var(--ink);border:2px solid var(--ink);border-radius:10px;padding:8px 10px;cursor:pointer;display:flex;flex-direction:column;gap:4px;min-width:0}
+.opt:hover:not(:disabled){background:#f3f6fa}
+.opt:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.opt .lt{font-family:var(--f-marker);font-size:20px;color:var(--soft);line-height:1}
+.opt.txt{font-size:17px;flex-direction:row;align-items:baseline;gap:10px}
+.opt.right{border-color:var(--green);background:#ecf7f0;box-shadow:0 0 0 2px var(--green)}
+.opt.wrong{border-color:var(--red);background:#fbeeed}
+.opt:disabled{cursor:default}
+.fb{border-left:5px solid var(--green);background:#ecf7f0;padding:10px 14px;border-radius:0 8px 8px 0}
+.fb.no{border-color:var(--red);background:#fbeeed}
+.fb b{display:block;margin-bottom:2px}
+.row{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center}
+button.btn{font:inherit;font-weight:700;cursor:pointer;border-radius:8px;border:2px solid var(--blue);background:var(--blue);color:#fff;padding:8px 18px}
+button.btn.ghost{background:#fff;color:var(--blue)}
+input.name{font:inherit;padding:8px 10px;border:2px solid var(--ink);border-radius:8px;min-width:0;width:100%;max-width:340px}
+table.res{border-collapse:collapse;width:100%;font-size:16px}
+table.res th,table.res td{border-bottom:1px solid #dfe5eb;padding:8px 6px;text-align:left;vertical-align:top}
+table.res td.n{font-family:var(--f-data);font-weight:700;white-space:nowrap}
+.pill{display:inline-block;font-size:13px;font-weight:700;padding:2px 10px;border-radius:99px;color:#fff}
+.pill.ok{background:var(--green)}.pill.mid{background:#b7791f}.pill.lo{background:var(--red)}
+.big{font-family:var(--f-marker);font-size:44px;color:var(--blue);line-height:1}
+@media (max-width:560px){.opts{grid-template-columns:minmax(0,1fr)}}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap" id="app"></div>
+
+<script>
+/* ---------- figures ---------- */
+const C={blue:"#1f5fbf",red:"#c8322b",green:"#1d8a4e",ink:"#1d232b",orange:"#b7791f"};
+const neg=n=>(n<0?"−":"")+Math.abs(n);
+function plot(f,small){
+  const W=460,H=small?250:290,L=54,R=18,T=14,B=46;
+  const [t0,t1,ts]=f.t,[y0,y1,ys]=f.y;
+  const X=t=>L+(t-t0)/(t1-t0)*(W-L-R),Y=y=>T+(y1-y)/(y1-y0)*(H-T-B);
+  const fs=small?15:14;
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${f.kind==='x'?'position':'velocity'} vs time graph" font-family="system-ui,sans-serif">`;
+  for(let t=t0;t<=t1+1e-9;t+=ts){s+=`<line x1="${X(t)}" y1="${T}" x2="${X(t)}" y2="${H-B}" stroke="#e1e7ed"/>`;
+    s+=`<text x="${X(t)}" y="${H-B+18}" text-anchor="middle" font-size="${fs}" fill="${C.ink}">${t}</text>`;}
+  for(let y=y0;y<=y1+1e-9;y+=ys){s+=`<line x1="${L}" y1="${Y(y)}" x2="${W-R}" y2="${Y(y)}" stroke="#e1e7ed"/>`;
+    s+=`<text x="${L-7}" y="${Y(y)+5}" text-anchor="end" font-size="${fs}" fill="${C.ink}">${neg(y)}</text>`;}
+  const z=Y(Math.max(y0,Math.min(0,y1)));
+  s+=`<line x1="${L}" y1="${z}" x2="${W-R}" y2="${z}" stroke="${C.ink}" stroke-width="2"/><line x1="${L}" y1="${T}" x2="${L}" y2="${H-B}" stroke="${C.ink}" stroke-width="2"/>`;
+  s+=`<text x="${(L+W-R)/2}" y="${H-6}" text-anchor="middle" font-size="${fs}" font-weight="700" fill="${C.ink}">time (s)</text>`;
+  s+=`<text transform="translate(14 ${(T+H-B)/2}) rotate(-90)" text-anchor="middle" font-size="${fs}" font-weight="700" fill="${C.ink}">${f.kind==='x'?'position (m)':'velocity (m/s)'}</text>`;
+  (f.series||[]).forEach(se=>{const c=C[se.c||'blue'];
+    s+=`<polyline points="${se.pts.map(p=>X(p[0])+','+Y(p[1])).join(' ')}" fill="none" stroke="${c}" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" ${se.dash?'stroke-dasharray="9 6"':''}/>`;
+    if(se.name){const p=se.pts[se.pts.length-1];s+=`<text x="${X(p[0])-6}" y="${Y(p[1])-9}" text-anchor="end" font-size="17" font-weight="700" fill="${c}">${se.name}</text>`;}});
+  (f.segs||[]).forEach(g=>{s+=`<line x1="${X(g[0])}" y1="${Y(g[2])}" x2="${X(g[1])}" y2="${Y(g[2])}" stroke="${C.blue}" stroke-width="5" stroke-linecap="round"/>`;});
+  return s+`</svg>`;
+}
+/* Motion map: each velocity arrow starts at its dot. */
+function mm(f){
+  const [x0,x1,xs]=f.x,W=460,L=20,R=20,rowH=54,top=6,H=top+rowH*f.rows.length+48;
+  const X=x=>L+(x-x0)/(x1-x0)*(W-L-R),k=(W-L-R)/(x1-x0)*0.45;
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="motion map" font-family="system-ui,sans-serif"><defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${C.blue}"/></marker></defs>`;
+  f.rows.forEach((r,i)=>{const y=top+rowH*i+rowH-16;
+    r.dots.forEach((d,j)=>{const a=r.arrows[j];
+      if(a)s+=`<line x1="${X(d)}" y1="${y}" x2="${X(d)+a*k}" y2="${y}" stroke="${C.blue}" stroke-width="3.5" marker-end="url(#ah)"/>`;
+      s+=`<circle cx="${X(d)}" cy="${y}" r="6.5" fill="${C.ink}"/>`;
+      if(r.t)s+=`<text x="${X(d)}" y="${y-13}" text-anchor="middle" font-size="13" fill="${C.soft||C.ink}">${r.t[j]}</text>`;});
+    if(r.label)s+=`<text x="${W-R}" y="${y-12}" text-anchor="end" font-size="14" font-weight="700" fill="${C.red}">${r.label}</text>`;});
+  const yl=H-34;
+  s+=`<line x1="${L-6}" y1="${yl}" x2="${W-R+6}" y2="${yl}" stroke="${C.ink}" stroke-width="2"/>`;
+  for(let x=x0;x<=x1;x+=xs)s+=`<line x1="${X(x)}" y1="${yl-5}" x2="${X(x)}" y2="${yl+5}" stroke="${C.ink}" stroke-width="2"/><text x="${X(x)}" y="${yl+21}" text-anchor="middle" font-size="14" font-weight="${x===0?700:400}" fill="${C.ink}">${neg(x)}</text>`;
+  s+=`<text x="${W-R}" y="${H-1}" text-anchor="end" font-size="13" font-weight="700" fill="${C.ink}">position (m) →</text>`;
+  return s+`</svg>`;
+}
+const fig=(f,small)=>f.type==='mm'?mm(f):plot(f,small);
+const xt=(t,y,series)=>({type:'plot',kind:'x',t,y,series});
+const vt=(t,y,segs)=>({type:'plot',kind:'v',t,y,segs});
+const map=(x,rows)=>({type:'mm',x,rows});
+
+/* ---------- questions (numbers checked before publishing) ---------- */
+const X8=[0,8,1];
+const QS=[
+/* ---- A: position graph -> velocity graph ---- */
+{type:"xv",q:"Which velocity vs. time graph matches this position graph?",
+ given:xt(X8,[0,16,2],[{pts:[[0,2],[6,14]]}]),
+ opts:[vt(X8,[-4,4,1],[[0,6,2]]),vt(X8,[-4,4,1],[[0,6,-2]]),{type:'plot',kind:'v',t:X8,y:[-4,4,1],series:[{pts:[[0,0],[6,4]]}]},vt(X8,[-4,4,1],[[0,6,0]])],
+ a:0,why:"Slope = (14 − 2) m ÷ 6 s = +2 m/s, constant, so the velocity graph is a flat line at +2 m/s. A straight x–t line never becomes a slanted v–t line."},
+{type:"xv",q:"Which velocity vs. time graph matches this position graph?",
+ given:xt(X8,[0,14,2],[{pts:[[0,12],[6,0]]}]),
+ opts:[vt(X8,[-4,4,1],[[0,6,-2]]),vt(X8,[-4,4,1],[[0,6,2]]),{type:'plot',kind:'v',t:X8,y:[-4,4,1],series:[{pts:[[0,3],[6,-3]]}]},vt(X8,[-4,4,1],[[0,6,0]])],
+ a:0,why:"Slope = (0 − 12) m ÷ 6 s = −2 m/s. A line sloping down means negative velocity: a flat line below the time axis."},
+{type:"xv",q:"Which velocity vs. time graph matches this position graph?",
+ given:xt(X8,[-8,8,2],[{pts:[[0,6],[8,6]]}]),
+ opts:[vt(X8,[-8,8,2],[[0,8,0]]),vt(X8,[-8,8,2],[[0,8,6]]),vt(X8,[-8,8,2],[[0,8,0.75]]),vt(X8,[-8,8,2],[[0,8,-6]])],
+ a:0,why:"A flat x–t line means the position never changes: the object is at rest at 6 m, so v = 0. The height of an x–t graph is position, not velocity, and 6 m ÷ 8 s is not a slope."},
+{type:"xv",q:"Which velocity vs. time graph matches this position graph?",
+ given:xt(X8,[0,10,2],[{pts:[[0,0],[3,9],[6,9],[8,1]]}]),
+ opts:[vt(X8,[-5,5,1],[[0,3,3],[3,6,0],[6,8,-4]]),vt(X8,[-5,5,1],[[0,3,-3],[3,6,0],[6,8,4]]),vt(X8,[-5,5,1],[[0,3,3],[3,6,0],[6,8,4]]),{type:'plot',kind:'v',t:X8,y:[-5,5,1],series:[{pts:[[0,0],[3,3],[6,3],[8,-1]]}]}],
+ a:0,why:"Slopes: 9 m ÷ 3 s = +3 m/s, then 0 (at rest), then (1 − 9) m ÷ 2 s = −4 m/s. Each segment becomes a flat step. Copying the shape of the x–t graph is the most common mistake."},
+/* ---- B: velocity graph -> position graph ---- */
+{type:"vx",q:"The object starts at the origin. Which position vs. time graph matches this velocity graph?",
+ given:vt([0,5,1],[-1,4,1],[[0,4,3]]),
+ opts:[xt([0,5,1],[0,14,2],[{pts:[[0,0],[4,12]]}]),xt([0,5,1],[0,14,2],[{pts:[[0,3],[4,3]]}]),xt([0,5,1],[0,14,2],[{pts:[[0,0],[4,3]]}]),xt([0,5,1],[0,14,2],[{pts:[[0,12],[4,0]]}])],
+ a:0,why:"Constant +3 m/s means a straight x–t line rising 3 m every second: area = (3 m/s)(4 s) = 12 m, so it ends at 12 m. A flat v–t line is NOT a flat x–t line."},
+{type:"vx",q:"The object starts at x = 10 m. Which position vs. time graph matches this velocity graph?",
+ given:vt([0,6,1],[-3,1,1],[[0,5,-2]]),
+ opts:[xt([0,6,1],[-12,20,4],[{pts:[[0,10],[5,0]]}]),xt([0,6,1],[-12,20,4],[{pts:[[0,0],[5,-10]]}]),xt([0,6,1],[-12,20,4],[{pts:[[0,10],[5,20]]}]),xt([0,6,1],[-12,20,4],[{pts:[[0,-2],[5,-2]]}])],
+ a:0,why:"Area = (−2 m/s)(5 s) = −10 m, so the object goes from 10 m down to 0 m. The v–t graph cannot tell you the start; you have to use x = 10 m."},
+{type:"vx",q:"The object starts at x = −4 m. Which position vs. time graph matches this velocity graph?",
+ given:vt([0,7,1],[-1,3,1],[[0,6,2]]),
+ opts:[xt([0,7,1],[-8,12,4],[{pts:[[0,-4],[6,8]]}]),xt([0,7,1],[-8,12,4],[{pts:[[0,0],[6,12]]}]),xt([0,7,1],[-8,12,4],[{pts:[[0,-4],[6,2]]}]),xt([0,7,1],[-8,12,4],[{pts:[[0,4],[6,-8]]}])],
+ a:0,why:"Area = (2 m/s)(6 s) = +12 m. Starting at −4 m, it ends at −4 + 12 = 8 m. The line that starts at 0 forgot the starting position."},
+{type:"vx",q:"The object starts at the origin. Which position vs. time graph matches this velocity graph?",
+ given:vt([0,9,1],[-3,5,1],[[0,3,4],[3,5,0],[5,9,-2]]),
+ opts:[xt([0,9,1],[0,20,4],[{pts:[[0,0],[3,12],[5,12],[9,4]]}]),xt([0,9,1],[0,20,4],[{pts:[[0,0],[3,12],[5,12],[9,20]]}]),xt([0,9,1],[0,20,4],[{pts:[[0,0],[3,12],[5,12],[9,0]]}]),xt([0,9,1],[0,20,4],[{pts:[[0,4],[3,4],[5,0],[9,0]]}])],
+ a:0,why:"Areas: +12 m (0–3 s), 0 m (3–5 s), then (−2)(4) = −8 m (5–9 s). So 0 → 12 → 12 → 4 m. Negative area means moving back, and 8 m back from 12 m is 4 m, not the origin."},
+/* ---- C: graph <-> equation ---- */
+{type:"eq",q:"Which equation matches this position graph?",txt:true,
+ given:xt([0,9,1],[0,20,2],[{pts:[[0,18],[6,6]]}]),
+ opts:["x = −2t + 18","x = 2t + 18","x = −2t + 6","x = 18t − 2"],
+ a:0,why:"Slope = (6 − 18) m ÷ 6 s = −2 m/s. Vertical intercept (position at t = 0) = 18 m. So x = −2t + 18. The 6 is where the line ends, not where it starts."},
+{type:"eq",q:"Which equation matches this position graph?",txt:true,
+ given:xt([0,5,1],[-8,8,2],[{pts:[[0,-6],[4,6]]}]),
+ opts:["x = 3t − 6","x = 3t + 6","x = 1.5t − 6","x = −6t + 3"],
+ a:0,why:"Slope = (6 − (−6)) m ÷ 4 s = 12 ÷ 4 = +3 m/s. Intercept = −6 m. Using only the final 6 m (6 ÷ 4 = 1.5) skips the subtraction."},
+{type:"eq",q:"Which equation matches this position graph?",txt:true,
+ given:xt([0,6,1],[0,8,1],[{pts:[[0,5],[6,5]]}]),
+ opts:["x = 5 (the velocity is 0)","x = 5t","x = t + 5","x = 0"],
+ a:0,why:"The line is flat, so the slope (velocity) is 0: x = 0·t + 5, which is just x = 5 m. The object is at rest at 5 m."},
+{type:"eq",q:"Which position graph matches  x = 4t − 8 ?",
+ given:null,
+ opts:[xt([0,5,1],[-10,10,2],[{pts:[[0,-8],[4,8]]}]),xt([0,5,1],[-10,10,2],[{pts:[[0,8],[4,-8]]}]),xt([0,5,1],[-10,10,2],[{pts:[[0,-8],[4,0]]}]),xt([0,5,1],[-10,10,2],[{pts:[[0,0],[2.5,10]]}])],
+ a:0,why:"Start at the intercept, −8 m, then rise 4 m every second: at t = 4 s, x = 4(4) − 8 = 8 m. The line through the origin forgot the −8."},
+/* ---- D: graph <-> written description ---- */
+{type:"wd",q:"Which position graph matches this description? “Starts 6 m on the negative side of the origin and moves in the positive direction at 2 m/s for 6 s.”",
+ given:null,
+ opts:[xt([0,7,1],[-8,12,4],[{pts:[[0,-6],[6,6]]}]),xt([0,7,1],[-8,12,4],[{pts:[[0,6],[6,-6]]}]),xt([0,7,1],[-8,12,4],[{pts:[[0,0],[6,12]]}]),xt([0,7,1],[-8,12,4],[{pts:[[0,-6],[6,0]]}])],
+ a:0,why:"Start at −6 m, then +2 m every second for 6 s = +12 m, ending at +6 m. The graph ending at 0 has half the speed."},
+{type:"wd",q:"Which position graph matches this description? “Starts at 10 m, moves toward the origin at 5 m/s for 2 s, then stays at rest for 3 s.”",
+ given:null,
+ opts:[xt([0,6,1],[0,20,4],[{pts:[[0,10],[2,0],[5,0]]}]),xt([0,6,1],[0,20,4],[{pts:[[0,10],[2,20],[5,20]]}]),xt([0,6,1],[0,20,4],[{pts:[[0,0],[2,10],[5,10]]}]),xt([0,6,1],[0,20,4],[{pts:[[0,10],[2,0],[5,5]]}])],
+ a:0,why:"Toward the origin from 10 m at 5 m/s: 10 m in 2 s, so it reaches 0 m at t = 2 s. At rest means a flat line, staying at 0 m until t = 5 s."},
+{type:"wd",q:"Which description matches this position graph?",txt:true,
+ given:xt(X8,[0,10,2],[{pts:[[0,8],[4,8],[8,0]]}]),
+ opts:["At rest at 8 m for 4 s, then moves toward the origin at 2 m/s, reaching it at t = 8 s.","Moves along flat ground, then goes down a hill at 2 m/s.","Moves at a constant speed for 4 s, then slows down to a stop.","At rest at the origin for 4 s, then moves in the negative direction at 8 m/s."],
+ a:0,why:"Flat line = at rest (at 8 m). Then the slope is (0 − 8) m ÷ 4 s = −2 m/s. An x–t graph is not a picture of the path, so there is no hill."},
+{type:"wd",q:"Which description matches this velocity graph?",txt:true,
+ given:vt(X8,[-4,2,1],[[0,4,-3],[4,8,1]]),
+ opts:["Moves in the negative direction at 3 m/s for 4 s, then turns around and moves in the positive direction at 1 m/s for 4 s.","Slows down from 3 m/s to 1 m/s.","Starts 3 m behind the origin, then jumps to 1 m in front of it.","Moves down a hill for 4 s, then up a smaller hill."],
+ a:0,why:"On a v–t graph, below the axis means the negative direction and above means positive; the height is the speed. A v–t graph shows nothing about where the object is."},
+{type:"wd",q:"Two objects are shown on one position graph. Which statement describes t = 4 s, where the lines cross?",txt:true,
+ given:xt([0,10,1],[0,12,2],[{pts:[[0,0],[10,10]],name:"1"},{pts:[[0,12],[6,0]],c:"orange",dash:true,name:"2"}]),
+ opts:["They are at the same position (4 m) but moving in opposite directions at different speeds.","They have the same velocity.","They are both at the origin.","They collide and stop."],
+ a:0,why:"Crossing on a position graph means the same position at the same moment. Object 1's slope is +1 m/s and object 2's is −2 m/s, so they pass each other with different velocities."}
+];
+const STD={"xv":{name:"Position graph → velocity graph",std:"2-2",study:"Study guide Practice 2"},"vx":{name:"Velocity graph → position graph",std:"2-3",study:"Study guide Practice 3"},"eq":{name:"Graph ↔ equation",std:"2-2",study:"Study guide Practice 2(e) and 7"},"wd":{name:"Graph ↔ written description",std:"2-1",study:"Study guide Practice 1 and 7"}};
+
+/* ---------- state ---------- */
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function newRun(ids){return {order:shuffle(ids),i:0,picked:null,perm:null,results:{},name:S?S.name:""}}
+let S=null;
+function start(d){S=(d&&d.order)?d:newRun(QS.map((_,i)=>i));S.view=S.view||"intro";render()}
+function permFor(){if(!S.perm)S.perm=shuffle([0,1,2,3]);return S.perm}
+
+/* ---------- render ---------- */
+const app=document.getElementById('app');
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+function head(){return `<header><h1>Motion Match</h1><p class="sub">Unit 2 · Constant Velocity review</p></header>`}
+function render(){
+  if(S.view==='intro'){app.innerHTML=head()+`<section class="card"><p class="q">${QS.length} matching questions. Match position graphs to velocity graphs (and back), graphs to equations, and graphs to written descriptions. You'll see why after each one, and a score for each type at the end.</p>
+  <label for="nm" style="font-weight:700">Name and period</label><input class="name" id="nm" value="${esc(S.name||'')}" placeholder="e.g. Jordan P3">
+  <div class="row"><span class="sub">Show your results screen to Mr. C when you finish.</span><button class="btn" data-a="go">Start</button></div></section>`;return}
+  if(S.view==='done'){return renderDone()}
+  const qi=S.order[S.i],Q=QS[qi],perm=permFor(),n=S.order.length;
+  let h=head()+`<div><div class="bar"><i style="width:${(S.i/n)*100}%"></i></div><div class="meta"><span>Question ${S.i+1} of ${n}</span><span>${Object.values(S.results).filter(Boolean).length} correct</span></div></div>`;
+  h+=`<section class="card"><span class="tag">${STD[Q.type].name.toUpperCase()} · STANDARD ${STD[Q.type].std}</span><p class="q">${Q.q}</p>`;
+  if(Q.given)h+=`<div class="given">${fig(Q.given)}</div>`;
+  h+=`<div class="opts">`;
+  perm.forEach((oi,k)=>{const L="ABCD"[k];let cls="opt"+(Q.txt?" txt":"");
+    if(S.picked!==null){if(oi===Q.a)cls+=" right";else if(oi===S.picked)cls+=" wrong";}
+    h+=`<button class="${cls}" data-o="${oi}" ${S.picked!==null?'disabled':''} aria-label="Choice ${L}"><span class="lt">${L}</span>${Q.txt?`<span>${Q.opts[oi]}</span>`:fig(Q.opts[oi],true)}</button>`;});
+  h+=`</div>`;
+  if(S.picked!==null){const ok=S.picked===Q.a;
+    h+=`<div class="fb ${ok?'':'no'}"><b>${ok?'Correct.':'Not quite. The answer is '+"ABCD"[perm.indexOf(Q.a)]+'.'}</b>${Q.why}</div>
+    <div class="row"><span></span><button class="btn" data-a="next">${S.i+1<n?'Next question':'See results'}</button></div>`;}
+  app.innerHTML=h+`</section>`;
+}
+function renderDone(){
+  const by={};S.order.forEach(qi=>{const s=QS[qi].type;by[s]=by[s]||{r:0,n:0};by[s].n++;if(S.results[qi])by[s].r++;});
+  const tot=Object.values(S.results).filter(Boolean).length,n=S.order.length;
+  const missed=S.order.filter(qi=>!S.results[qi]);
+  let h=head()+`<section class="card"><div class="row"><div><div class="sub">${esc(S.name||'Results')}</div><div class="big">${tot} / ${n}</div></div>
+  ${missed.length?`<button class="btn" data-a="retry">Retry the ${missed.length} I missed</button>`:`<span class="pill ok">All correct</span>`}</div>
+  <table class="res"><thead><tr><th>Match type</th><th>Score</th><th>If you missed some</th></tr></thead><tbody>`;
+  Object.keys(STD).forEach(k=>{if(!by[k])return;const b=by[k],f=b.r/b.n,p=f===1?'ok':f>=.5?'mid':'lo';
+    h+=`<tr><td>${STD[k].name} <span class="sub">(${STD[k].std})</span></td><td class="n"><span class="pill ${p}">${b.r}/${b.n}</span></td><td>${f===1?'Ready':STD[k].study}</td></tr>`;});
+  h+=`</tbody></table><div class="row"><span class="sub">Starting over reshuffles all ${QS.length} questions.</span><button class="btn ghost" data-a="restart">Start over</button></div></section>`;
+  app.innerHTML=h;
+}
+app.addEventListener('click',e=>{const t=e.target.closest('[data-o],[data-a]');if(!t)return;
+  if(t.dataset.o!=null&&S.picked===null){const oi=+t.dataset.o,qi=S.order[S.i];S.picked=oi;S.results[qi]=oi===QS[qi].a;render();return}
+  const a=t.dataset.a;
+  if(a==='go'){const v=document.getElementById('nm');S.name=v?v.value.trim():'';S.view='q';render();window.scrollTo(0,0)}
+  else if(a==='next'){S.i++;S.picked=null;S.perm=null;if(S.i>=S.order.length)S.view='done';render();window.scrollTo(0,0)}
+  else if(a==='retry'){const miss=S.order.filter(qi=>!S.results[qi]);const nm=S.name;S=newRun(miss);S.name=nm;S.view='q';render();window.scrollTo(0,0)}
+  else if(a==='restart'){const nm=S.name;S=newRun(QS.map((_,i)=>i));S.name=nm;S.view='q';render();window.scrollTo(0,0)}
+});
+window.claude?.hot?.snapshot?.(()=>S);
+window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+</script>
+
+</body>
+</html>
