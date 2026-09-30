@@ -183,11 +183,101 @@ const QS=[
  opts:["They are at the same position (4 m) but moving in opposite directions at different speeds.","They have the same velocity.","They are both at the origin.","They collide and stop."],
  a:0,why:"Crossing on a position graph means the same position at the same moment. Object 1's slope is +1 m/s and object 2's is −2 m/s, so they pass each other with different velocities."}
 ];
+
+/* ---------- generated questions (answers computed from the same numbers that draw the graphs) ---------- */
+const sg=n=>(n<0?"−":"")+Math.abs(+n.toFixed(2));
+const sgp=n=>(n>0?"+":"")+sg(n);
+const sgq=n=>n<0?`(${sg(n)})`:sg(n);
+function niceAxis(vals){const mn=Math.min(...vals),mx=Math.max(...vals),lo=Math.min(0,mn),hi=Math.max(0,mx);
+  /* leave one grid step of room so no line sits on the top or bottom edge */
+  for(const s of [1,2,4,5,10,20]){let a=Math.floor(lo/s)*s,b=Math.ceil(hi/s)*s;
+    if(mn<0&&a>=mn-1e-9)a-=s;if(mx>0&&b<=mx+1e-9)b+=s;if(mx<=0&&b<=0)b=s;
+    if((b-a)/s<=10)return [a,b,s]}return [lo,hi,20]}
+const tAx=T=>[0,T,T>10?2:1];
+const key=o=>JSON.stringify(o);
+function pickWrong(correct,cands){const seen=new Set([key(correct)]),out=[];for(const c of cands){if(!c)continue;const k=key(c);if(!seen.has(k)){seen.add(k);out.push(c)}if(out.length===3)break}return out}
+function eqStr(m,b){if(m===0)return `x = ${sg(b)} (the velocity is 0)`;const mt=m===1?"t":m===-1?"−t":`${sg(m)}t`;return `x = ${mt}${b===0?"":b>0?` + ${b}`:` − ${Math.abs(b)}`}`}
+
+/* position graph -> velocity graph */
+function xvQ(pts){
+  const segs=[];for(let i=0;i<pts.length-1;i++){const[a,b]=[pts[i],pts[i+1]];segs.push([a[0],b[0],(b[1]-a[1])/(b[0]-a[0])])}
+  const T=pts[pts.length-1][0],flip=segs.map(s=>[s[0],s[1],-s[2]||0]),abs=segs.map(s=>[s[0],s[1],Math.abs(s[2])]),
+    height=segs.map(s=>[s[0],s[1],pts.find(p=>p[0]===s[0])[1]]),zero=segs.map(s=>[s[0],s[1],0]),perT=segs.map(s=>[s[0],s[1],+(pts.find(p=>p[0]===s[1])[1]/s[1]).toFixed(2)]);
+  const shape=pts.every(q=>q[1]===pts[0][1])?null:{shape:pts}; /* a flat x-t copy would look identical to a flat v-t line */
+  const wrong=pickWrong({segs},[{segs:flip},shape,{segs:abs},{segs:height},{segs:zero},{segs:perT},{segs:height.map(s=>[s[0],s[1],-s[2]||0])}]);
+  const all=[{segs},...wrong];const vals=[];all.forEach(o=>o.segs?o.segs.forEach(s=>vals.push(s[2])):o.shape.forEach(p=>vals.push(p[1])));
+  const y=niceAxis(vals),t=tAx(T);
+  const mk=o=>o.segs?vt(t,y,o.segs):{type:'plot',kind:'v',t,y,series:[{pts:o.shape}]};
+  const list=segs.map((s,i)=>`${s[0]}–${s[1]} s: (${sg(pts[i+1][1])} − ${sgq(pts[i][1])}) m ÷ ${s[1]-s[0]} s = ${sgp(s[2])} m/s`).join("; ");
+  return {type:"xv",q:"Which velocity vs. time graph matches this position graph?",given:xt(t,niceAxis(pts.map(p=>p[1])),[{pts}]),
+    opts:all.map(mk),a:0,why:`${list}. Each straight piece of the x–t graph becomes a flat step at its slope. ${segs.some(s=>s[2]===0)?"A flat x–t piece means at rest, so v = 0 there.":""}`.trim()};
+}
+/* velocity graph -> position graph */
+function vxQ(segs,x0){
+  const integ=(sg2,start)=>{const pts=[[sg2[0][0],start]];let x=start;sg2.forEach(s=>{x+=s[2]*(s[1]-s[0]);pts.push([s[1],+x.toFixed(2)])});return pts};
+  const pts=integ(segs,x0),T=segs[segs.length-1][1];
+  const noStart=x0!==0?integ(segs,0):null,absA=integ(segs.map(s=>[s[0],s[1],Math.abs(s[2])]),x0),flip=integ(segs.map(s=>[s[0],s[1],-s[2]]),x0);
+  const copy=[];segs.forEach(s=>{copy.push([s[0],s[2]]);copy.push([s[1],s[2]])});
+  const perSec=integ(segs.map(s=>[s[0],s[1],s[2]/(s[1]-s[0])]),x0);
+  const wrong=pickWrong(pts,[noStart,absA,copy,flip,perSec]);
+  const all=[pts,...wrong],y=niceAxis(all.flat().map(p=>p[1])),t=tAx(T);
+  const areas=segs.map(s=>`${s[0]}–${s[1]} s: (${sg(s[2])})(${s[1]-s[0]}) = ${sgp(+(s[2]*(s[1]-s[0])).toFixed(2))} m`).join("; ");
+  return {type:"vx",q:`The object starts at ${x0===0?"the origin":`x = ${sg(x0)} m`}. Which position vs. time graph matches this velocity graph?`,
+    given:vt(t,niceAxis(segs.map(s=>s[2])),segs),opts:all.map(pp=>xt(t,y,[{pts:pp}])),a:0,
+    why:`Areas: ${areas}. Starting at ${sg(x0)} m, the position goes ${pts.map(p=>sg(p[1])).join(" → ")} m.${x0!==0?" A velocity graph can't show the start, so you have to add it.":""}`};
+}
+/* position graph -> equation */
+function eqQ(m,b,T){const end=+(b+m*T).toFixed(2),c=eqStr(m,b);
+  const cands=[eqStr(-m,b),eqStr(m,end),m!==0&&b!==0?eqStr(b,m):null,b!==0&&m!==0?eqStr(+(end/T).toFixed(2),b):null,eqStr(m,-b),m!==0?`x = ${sg(b)}`:`x = ${sg(b)}t`,eqStr(m===0?1:m,0)];
+  const wrong=pickWrong(c,cands);
+  return {type:"eq",q:"Which equation matches this position graph?",txt:true,given:xt(tAx(T),niceAxis([b,end]),[{pts:[[0,b],[T,end]]}]),
+    opts:[c,...wrong],a:0,why:m===0?`The line is flat, so the velocity is 0 and the object stays at ${sg(b)} m: ${c}.`:`Slope = (${sg(end)} − ${sgq(b)}) m ÷ ${T} s = ${sgp(m)} m/s. The vertical intercept (position at t = 0) is ${sg(b)} m. So ${c}.`};
+}
+/* equation -> position graph */
+function eqGQ(m,b,T){const line=(mm,bb)=>[[0,bb],[T,+(bb+mm*T).toFixed(2)]];
+  const all=[line(m,b),...pickWrong(line(m,b),[line(-m,b),line(m,-b),line(m,0),line(b/Math.max(1,T),m)])],t=tAx(T),y=niceAxis(all.flat().map(p=>p[1]));
+  return {type:"eq",q:`Which position graph matches  ${eqStr(m,b)} ?`,given:null,opts:all.map(pp=>xt(t,y,[{pts:pp}])),a:0,
+    why:`Start at the intercept, ${sg(b)} m, then change by ${sgp(m)} m every second: at t = ${T} s, x = ${sg(m)}(${T}) ${b<0?"−":"+"} ${Math.abs(b)} = ${sg(+(b+m*T).toFixed(2))} m.`};
+}
+[[[0,-6],[6,6]],[[0,10],[5,0]],[[0,-4],[8,-4]],[[0,0],[4,12],[8,12]],[[0,12],[3,12],[7,-4]],[[0,-8],[2,0],[6,0],[8,8]],
+ [[0,4],[4,16],[8,0]],[[0,10],[2,2],[8,-4]],[[0,-6],[3,3],[5,3],[8,-6]]].forEach(p=>QS.push(xvQ(p)));
+[[[[0,5,2]],0],[[[0,4,-3]],6],[[[0,3,4],[3,6,0]],-4],[[[0,2,0],[2,6,-2]],5],[[[0,4,2],[4,8,-1]],0],
+ [[[0,3,-2],[3,6,3]],2],[[[0,2,5],[2,4,0],[4,8,-2]],-6],[[[0,6,1]],-3],[[[0,3,-4],[3,7,0]],8]].forEach(([s,x])=>QS.push(vxQ(s,x)));
+[[3,-6,4],[-2,10,5],[4,0,5],[-3,6,4],[0,-4,6],[1.5,-3,4]].forEach(([m,b,T])=>QS.push(eqQ(m,b,T)));
+[[-2,8,6],[3,-9,5]].forEach(([m,b,T])=>QS.push(eqGQ(m,b,T)));
+
+/* written descriptions */
+QS.push(
+{type:"wd",q:"Which position graph matches this description? “Starts 8 m on the positive side and moves toward the origin at 2 m/s for 6 s.”",given:null,
+ opts:[xt([0,6,1],[-8,20,4],[{pts:[[0,8],[6,-4]]}]),xt([0,6,1],[-8,20,4],[{pts:[[0,8],[6,20]]}]),xt([0,6,1],[-8,20,4],[{pts:[[0,8],[4,0],[6,0]]}]),xt([0,6,1],[-8,20,4],[{pts:[[0,-8],[6,4]]}])],
+ a:0,why:"Start at 8 m, then −2 m every second for 6 s: 8 − 12 = −4 m. “Toward the origin” gives the direction; it doesn't mean the object stops there."},
+{type:"wd",q:"Which position graph matches this description? “At rest at −4 m for 3 s, then moves in the positive direction at 3 m/s for 3 s.”",given:null,
+ opts:[xt([0,6,1],[-16,8,4],[{pts:[[0,-4],[3,-4],[6,5]]}]),xt([0,6,1],[-16,8,4],[{pts:[[0,4],[3,4],[6,13]]}]),xt([0,6,1],[-16,8,4],[{pts:[[0,-4],[3,5],[6,5]]}]),xt([0,6,1],[-16,8,4],[{pts:[[0,-4],[3,-4],[6,-13]]}])],
+ a:0,why:"Flat at −4 m for 3 s (at rest), then +3 m every second for 3 s: −4 + 9 = 5 m."},
+{type:"wd",q:"Which velocity graph matches this description? “Moves in the positive direction at 4 m/s for 3 s, then stops for 3 s.”",given:null,
+ opts:[vt([0,6,1],[-5,5,1],[[0,3,4],[3,6,0]]),vt([0,6,1],[-5,5,1],[[0,3,-4],[3,6,0]]),{type:'plot',kind:'v',t:[0,6,1],y:[-5,5,1],series:[{pts:[[0,0],[3,4],[6,4]]}]},vt([0,6,1],[-5,5,1],[[0,3,4],[3,6,4]])],
+ a:0,why:"A velocity graph shows velocity as height: +4 m/s for 3 s, then 0 m/s (stopped). The rising-then-flat line is what the position graph would look like."},
+{type:"wd",q:"Which velocity graph matches this description? “Moves in the negative direction at 2 m/s for 4 s, then turns around and moves in the positive direction at 3 m/s for 2 s.”",given:null,
+ opts:[vt([0,6,1],[-4,4,1],[[0,4,-2],[4,6,3]]),vt([0,6,1],[-4,4,1],[[0,4,2],[4,6,-3]]),vt([0,6,1],[-4,4,1],[[0,4,-2],[4,6,-3]]),vt([0,6,1],[-4,4,1],[[0,4,2],[4,6,3]])],
+ a:0,why:"Negative direction = below the axis (−2 m/s). Turning around to the positive direction = above the axis (+3 m/s)."},
+{type:"wd",q:"Which description matches this position graph?",txt:true,given:xt([0,5,1],[-8,8,2],[{pts:[[0,-6],[4,6]]}]),
+ opts:["Starts 6 m on the negative side and moves in the positive direction at 3 m/s, passing the origin at t = 2 s.","Moves uphill at 3 m/s.","Starts at the origin and moves in the positive direction at 6 m/s.","Starts 6 m on the negative side and speeds up."],
+ a:0,why:"Intercept −6 m; slope = (6 − (−6)) ÷ 4 = +3 m/s, constant (straight line). 0 = 3t − 6 gives t = 2 s at the origin."},
+{type:"wd",q:"Which description matches this position graph?",txt:true,given:xt([0,8,1],[0,16,2],[{pts:[[0,0],[2,8],[8,14]]}]),
+ opts:["Moves in the positive direction at 4 m/s for 2 s, then keeps going the same way at a slower 1 m/s.","Moves in the positive direction for 2 s, then turns around.","Moves for 2 s, then stops at 8 m.","Moves at 1 m/s for 2 s, then speeds up to 4 m/s."],
+ a:0,why:"Slopes: 8 m ÷ 2 s = 4 m/s, then 6 m ÷ 6 s = 1 m/s. Both positive, so same direction; the second piece is less steep, so slower."},
+{type:"wd",q:"Which description matches this velocity graph?",txt:true,given:vt([0,6,1],[-4,2,1],[[0,3,0],[3,6,-3]]),
+ opts:["At rest for 3 s, then moves in the negative direction at 3 m/s.","At the origin for 3 s, then 3 m behind the origin.","Moves at a constant speed, then slows down.","Sits still, then falls down a hill."],
+ a:0,why:"Velocity 0 for 3 s means at rest (not necessarily at the origin). Then −3 m/s: moving in the negative direction at 3 m/s."}
+);
 const STD={"xv":{name:"Position graph → velocity graph",std:"2-2",study:"Study guide Practice 2"},"vx":{name:"Velocity graph → position graph",std:"2-3",study:"Study guide Practice 3"},"eq":{name:"Graph ↔ equation",std:"2-2",study:"Study guide Practice 2(e) and 7"},"wd":{name:"Graph ↔ written description",std:"2-1",study:"Study guide Practice 1 and 7"}};
 
 /* ---------- state ---------- */
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function newRun(ids){return {order:shuffle(ids),i:0,picked:null,perm:null,results:{},name:S?S.name:""}}
+/* a round of n questions, spread evenly across the four match types */
+function roundIds(n){const b={};shuffle(QS.map((_,i)=>i)).forEach(i=>{(b[QS[i].type]=b[QS[i].type]||[]).push(i)});
+  const types=shuffle(Object.keys(b)),out=[];while(out.length<n&&types.some(k=>b[k].length))types.forEach(k=>{if(out.length<n&&b[k].length)out.push(b[k].pop())});return out}
 let S=null;
 function start(d){S=(d&&d.order)?d:newRun(QS.map((_,i)=>i));S.view=S.view||"intro";render()}
 function permFor(){if(!S.perm)S.perm=shuffle([0,1,2,3]);return S.perm}
@@ -197,9 +287,11 @@ const app=document.getElementById('app');
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 function head(){return `<header><h1>Motion Match</h1><p class="sub">Unit 2 · Constant Velocity review</p></header>`}
 function render(){
-  if(S.view==='intro'){app.innerHTML=head()+`<section class="card"><p class="q">${QS.length} matching questions. Match position graphs to velocity graphs (and back), graphs to equations, and graphs to written descriptions. You'll see why after each one, and a score for each type at the end.</p>
+  if(S.view==='intro'){app.innerHTML=head()+`<section class="card"><p class="q">${QS.length} matching questions in the bank. Match position graphs to velocity graphs (and back), graphs to equations, and graphs to written descriptions. You'll see why after each one, and a score for each type at the end.</p>
   <label for="nm" style="font-weight:700">Name and period</label><input class="name" id="nm" value="${esc(S.name||'')}" placeholder="e.g. Jordan P3">
-  <div class="row"><span class="sub">Show your results screen to Mr. C when you finish.</span><button class="btn" data-a="go">Start</button></div></section>`;return}
+  <p style="font-weight:700;margin:4px 0 0">How many questions?</p>
+  <div class="row" style="justify-content:flex-start"><button class="btn" data-a="go" data-n="15">Quick round · 15</button><button class="btn" data-a="go" data-n="25">Half · 25</button><button class="btn ghost" data-a="go" data-n="${QS.length}">All ${QS.length}</button></div>
+  <p class="sub">Each round mixes all four match types. Show your results screen to Mr. C when you finish.</p></section>`;return}
   if(S.view==='done'){return renderDone()}
   const qi=S.order[S.i],Q=QS[qi],perm=permFor(),n=S.order.length;
   let h=head()+`<div><div class="bar"><i style="width:${(S.i/n)*100}%"></i></div><div class="meta"><span>Question ${S.i+1} of ${n}</span><span>${Object.values(S.results).filter(Boolean).length} correct</span></div></div>`;
@@ -224,16 +316,16 @@ function renderDone(){
   <table class="res"><thead><tr><th>Match type</th><th>Score</th><th>If you missed some</th></tr></thead><tbody>`;
   Object.keys(STD).forEach(k=>{if(!by[k])return;const b=by[k],f=b.r/b.n,p=f===1?'ok':f>=.5?'mid':'lo';
     h+=`<tr><td>${STD[k].name} <span class="sub">(${STD[k].std})</span></td><td class="n"><span class="pill ${p}">${b.r}/${b.n}</span></td><td>${f===1?'Ready':STD[k].study}</td></tr>`;});
-  h+=`</tbody></table><div class="row"><span class="sub">Starting over reshuffles all ${QS.length} questions.</span><button class="btn ghost" data-a="restart">Start over</button></div></section>`;
+  h+=`</tbody></table><div class="row"><span class="sub">A new round draws fresh questions from all ${QS.length}.</span><button class="btn ghost" data-a="restart">New round</button></div></section>`;
   app.innerHTML=h;
 }
 app.addEventListener('click',e=>{const t=e.target.closest('[data-o],[data-a]');if(!t)return;
   if(t.dataset.o!=null&&S.picked===null){const oi=+t.dataset.o,qi=S.order[S.i];S.picked=oi;S.results[qi]=oi===QS[qi].a;render();return}
   const a=t.dataset.a;
-  if(a==='go'){const v=document.getElementById('nm');S.name=v?v.value.trim():'';S.view='q';render();window.scrollTo(0,0)}
+  if(a==='go'){const v=document.getElementById('nm');const nm=v?v.value.trim():'';S=newRun(roundIds(+t.dataset.n||QS.length));S.name=nm;S.view='q';render();window.scrollTo(0,0)}
   else if(a==='next'){S.i++;S.picked=null;S.perm=null;if(S.i>=S.order.length)S.view='done';render();window.scrollTo(0,0)}
   else if(a==='retry'){const miss=S.order.filter(qi=>!S.results[qi]);const nm=S.name;S=newRun(miss);S.name=nm;S.view='q';render();window.scrollTo(0,0)}
-  else if(a==='restart'){const nm=S.name;S=newRun(QS.map((_,i)=>i));S.name=nm;S.view='q';render();window.scrollTo(0,0)}
+  else if(a==='restart'){const nm=S.name;S=newRun([]);S.name=nm;S.view='intro';render();window.scrollTo(0,0)}
 });
 window.claude?.hot?.snapshot?.(()=>S);
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});

@@ -9,7 +9,7 @@ Interactive, quantitative physics labs for high school and AP / intro-college co
 | `pv-cycle-lab.html` | Thermodynamic cycles | Draggable PV diagram, Carnot/Otto/rectangle presets, per-leg W/Q/ΔU table, piston animation, efficiency vs. Carnot limit, copy-data button |
 | `relativity-lab.html` | Special relativity | Light clock, length contraction, muon survival lab (with data export), relativity of simultaneity |
 | `dune-buggy-challenge.html` | Projectile motion | Ramp → table → moving target. Predict-then-test with the answer hidden, randomised setups, worked solution on reveal, trial log with data export |
-| `motion-match.html` | Constant velocity review | Match x–t ↔ v–t graphs, graphs ↔ equations, graphs ↔ written descriptions; 17 shuffled questions, explanation after each, score by match type, retry missed |
+| `motion-match.html` | Constant velocity review | Match x–t ↔ v–t graphs, graphs ↔ equations, graphs ↔ written descriptions; 50-question bank, 15/25/50-question rounds balanced across types, explanation after each, score by match type, retry missed |
 | `constant-velocity-showdown.html` | Constant velocity review game | Projected Jeopardy-style board by standard (2-1 to 2-4), all teams answer on whiteboards, timer, scoreboard with ± buttons matching the open question, wager final |
 | `kinematics-lab-guide.html` | Lab guide (Universe & More Kinematics Lab) | Match-the-Graph record tables for position and velocity Tier 1, check-in questions, area prediction, auto-checked wrap-up, Copy / Submit to Mr. C |
 | `battleship-verbos.html` | Spanish verbs | Verb-conjugation Battleship (*Batalla de Barco*). Random verb pool, irregular toggle, five tenses, vs-computer / pass-and-play / play-by-code |
