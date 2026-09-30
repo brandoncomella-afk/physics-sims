@@ -156,7 +156,7 @@ const CATS=[
  {code:"2-3",name:"Velocity–Time Graphs"},
  {code:"2-4",name:"Equations & Two Objects"}
 ];
-const LEVEL={100:"Beginner",200:"Beginner",300:"Intermediate",400:"Advanced"};
+const LEVEL={100:"Beginner",200:"Pre-Intermediate",300:"Intermediate",400:"Advanced"};
 const TIME={100:120,200:180,300:240,400:300,final:360};
 
 const Q={
@@ -270,23 +270,39 @@ const Q={
 }
 };
 
-/* ================= FINAL SHOWDOWN: new numbers on every reset ================= */
-const FINAL_DEFAULT={D:120,a:8,b:12};
-function newFinal(prev){const pick=arr=>arr[Math.floor(Math.random()*arr.length)];
-  /* choose the collision time first so versions spread across 3-9 s, then speeds that give a whole-number gap of 40-200 m */
-  for(;;){const t=3+Math.floor(Math.random()*7),c=[];
-    for(const a of [2,3,4,5,6,8,10])for(const b of [3,4,5,6,8,10,12,15]){const D=(a+b)*t;
-      if(a!==b&&D>=40&&D<=200&&!(prev&&prev.D===D&&prev.a===a&&prev.b===b))c.push({D,a,b});}
+/* ================= FINAL SHOWDOWN: new numbers on every reset =================
+   Two scenarios: head-on (cars approach) and catch-up (same direction). Car A never starts at the origin.
+   Numbers are chosen so the meeting time and position are whole numbers. */
+const FINAL_DEFAULT={type:"head",xa:-20,a:6,xb:100,b:9};
+const mn=n=>(n<0?"−":"")+Math.abs(n);
+const eqS=(v,x0)=>`${v<0?"−":""}${Math.abs(v)}t${x0<0?` − ${-x0}`:x0>0?` + ${x0}`:""}`;
+function newFinal(prev){const pick=arr=>arr[Math.floor(Math.random()*arr.length)],same=f=>prev&&prev.type===f.type&&prev.xa===f.xa&&prev.a===f.a&&prev.xb===f.xb&&prev.b===f.b;
+  for(;;){const t=3+Math.floor(Math.random()*6),c=[];
+    if(Math.random()<0.5){
+      for(const a of [2,3,4,5,6,8])for(const b of [3,4,5,6,8,10,12])for(const xa of [-40,-30,-25,-20,-15,-10]){
+        const D=(a+b)*t,xb=xa+D,f={type:"head",xa,a,xb,b};if(a!==b&&D>=40&&xb<=180&&!same(f))c.push(f);}
+    }else{
+      for(const a of [6,8,10,12,15])for(const b of [2,3,4,5,6])for(const xa of [-30,-20,-10,10]){
+        const G=(a-b)*t,xb=xa+G,f={type:"catch",xa,a,xb,b};if(a>b+1&&G>=20&&G<=100&&xa+a*t<=200&&!same(f))c.push(f);}
+    }
     if(c.length)return pick(c);}}
-function finalFrom(fv){const {D,a,b}=fv,t=D/(a+b),x=a*t,tEnd=2*t;
-  const step=[10,20,25,40,50].find(s=>D/s<=8)||50,ts=tEnd<=12?1:2;
-  const A=a*tEnd>D?[D/a,D]:[tEnd,a*tEnd],B=b*tEnd>D?[D/b,0]:[tEnd,D-b*tEnd];
+function finalFrom(fv){const {type,xa,a,xb,b}=fv,head=type==="head",vb=head?-b:b,rel=head?a+b:a-b,t=(xb-xa)/rel,x=xa+a*t,tEnd=Math.round(t*1.5);
+  const endA=xa+a*tEnd,endB=xb+vb*tEnd,lo=Math.min(xa,xb,endA,endB,0),hi=Math.max(xa,xb,endA,endB);
+  const step=[5,10,20,25,40,50].find(s=>(Math.ceil(hi/s)-Math.floor(lo/s))<=10)||50,ts=tEnd<=12?1:2;
+  const dA=x-xa,dB=Math.abs(x-xb);
   return {
-  prompt:`<p>Two cars are <b>${D} m apart</b> and drive straight toward each other. Car A starts at the origin at ${a} m/s. Car B starts at x = ${D} m at ${b} m/s.</p><ol><li>Write an equation of motion for each car.</li><li>Sketch both on one position vs. time graph.</li><li>When do they collide?</li><li>Where do they collide?</li></ol>`,
+  prompt: head
+   ?`<p>Car A starts at <b>x = ${mn(xa)} m</b> and drives in the positive direction at <b>${a} m/s</b>. At the same moment, Car B starts at <b>x = ${mn(xb)} m</b> and drives toward Car A at <b>${b} m/s</b>.</p><ol><li>Write an equation of motion for each car.</li><li>When and where do they collide?</li><li>How far does each car travel before the collision?</li><li>Sketch both cars on one position vs. time graph.</li></ol>`
+   :`<p>Car A starts at <b>x = ${mn(xa)} m</b> and drives in the positive direction at <b>${a} m/s</b>. At the same moment, Car B starts at <b>x = ${mn(xb)} m</b> and drives in the <b>same direction</b> at <b>${b} m/s</b>.</p><ol><li>Write an equation of motion for each car.</li><li>When and where does Car A catch Car B?</li><li>How far does each car travel before A catches B?</li><li>Sketch both cars on one position vs. time graph.</li></ol>`,
   fig:null,
-  ans:[`x<sub>A</sub> = ${a}t;  x<sub>B</sub> = −${b}t + ${D}`,`${a}t = −${b}t + ${D}, so ${a+b}t = ${D} and t = ${t} s`,`x = ${a}(${t}) = ${x} m (check: −${b}(${t}) + ${D} = ${D-b*t} m)`,`Graph: A rises from (0, 0); B falls from (0, ${D}); they cross at (${t} s, ${x} m)`],
-  ansFig:{type:"plot",kind:"x",t:[0,tEnd,ts],y:[0,Math.ceil(D/step)*step,step],series:[{pts:[[0,0],A],c:"blue",name:"A"},{pts:[[0,D],B],c:"red",name:"B"}],dot:[t,x]},
-  watch:`Car B's velocity written as +${b} m/s. This is the same problem type as the test's two-object question.`};}
+  ans:[`x<sub>A</sub> = ${eqS(a,xa)};  x<sub>B</sub> = ${eqS(vb,xb)}`,
+    `${eqS(a,xa)} = ${eqS(vb,xb)}, so ${rel}t = ${xb-xa} and t = ${t} s. Position: x = ${a}(${t}) ${xa<0?"−":"+"} ${Math.abs(xa)} = ${mn(x)} m (check: ${vb<0?"−":""}${b}(${t}) ${xb<0?"−":"+"} ${Math.abs(xb)} = ${mn(xb+vb*t)} m)`,
+    `A travels ${mn(x)} − ${xa<0?`(${mn(xa)})`:xa} = ${dA} m; B travels ${head?`${mn(xb)} − ${x<0?`(${mn(x)})`:x}`:`${mn(x)} − ${xb<0?`(${mn(xb)})`:xb}`} = ${dB} m.${head?` Together that's ${dA+dB} m, the starting gap.`:` A covers ${dA-dB} m more, the head start B had.`}`,
+    `Graph: A starts at (0, ${mn(xa)}) and rises; B starts at (0, ${mn(xb)}) and ${head?"falls":"rises more slowly"}. The lines cross at (${t} s, ${mn(x)} m).`],
+  ansFig:{type:"plot",kind:"x",t:[0,tEnd,ts],y:[Math.floor(lo/step)*step,Math.ceil(hi/step)*step,step],series:[{pts:[[0,xa],[tEnd,endA]],c:"blue",name:"A"},{pts:[[0,xb],[tEnd,endB]],c:"red",name:"B"}],dot:[t,x]},
+  watch: head
+   ?`Leaving out Car A's ${mn(xa)} m start (writing x<sub>A</sub> = ${a}t), or giving Car B a positive velocity. The gap is ${xb-xa} m, not ${xb} m.`
+   :`Adding the speeds. When both cars move the same way, the gap closes at ${a} − ${b} = ${rel} m/s, not ${a+b} m/s.`};}
 
 /* ================= FIGURES (SVG) ================= */
 const COL={blue:"#1f5fbf",red:"#c8322b",green:"#1d8a4e",ink:"#1d232b"};
@@ -422,7 +438,7 @@ function qView(){
   }
   return h+`</section>`+tray();
 }
-function render(){if(!S.fv)S.fv=FINAL_DEFAULT;Q.final=finalFrom(S.fv);app.innerHTML=S.view==="q"?qView():boardView();if(S.view==="q")drawClock();save()}
+function render(){if(!S.fv||!S.fv.type)S.fv=FINAL_DEFAULT;Q.final=finalFrom(S.fv);app.innerHTML=S.view==="q"?qView():boardView();if(S.view==="q")drawClock();save()}
 
 /* ================= EVENTS ================= */
 app.addEventListener("click",e=>{
