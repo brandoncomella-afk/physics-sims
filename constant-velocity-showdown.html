@@ -270,6 +270,24 @@ const Q={
 }
 };
 
+/* ================= FINAL SHOWDOWN: new numbers on every reset ================= */
+const FINAL_DEFAULT={D:120,a:8,b:12};
+function newFinal(prev){const pick=arr=>arr[Math.floor(Math.random()*arr.length)];
+  /* choose the collision time first so versions spread across 3-9 s, then speeds that give a whole-number gap of 40-200 m */
+  for(;;){const t=3+Math.floor(Math.random()*7),c=[];
+    for(const a of [2,3,4,5,6,8,10])for(const b of [3,4,5,6,8,10,12,15]){const D=(a+b)*t;
+      if(a!==b&&D>=40&&D<=200&&!(prev&&prev.D===D&&prev.a===a&&prev.b===b))c.push({D,a,b});}
+    if(c.length)return pick(c);}}
+function finalFrom(fv){const {D,a,b}=fv,t=D/(a+b),x=a*t,tEnd=2*t;
+  const step=[10,20,25,40,50].find(s=>D/s<=8)||50,ts=tEnd<=12?1:2;
+  const A=a*tEnd>D?[D/a,D]:[tEnd,a*tEnd],B=b*tEnd>D?[D/b,0]:[tEnd,D-b*tEnd];
+  return {
+  prompt:`<p>Two cars are <b>${D} m apart</b> and drive straight toward each other. Car A starts at the origin at ${a} m/s. Car B starts at x = ${D} m at ${b} m/s.</p><ol><li>Write an equation of motion for each car.</li><li>Sketch both on one position vs. time graph.</li><li>When do they collide?</li><li>Where do they collide?</li></ol>`,
+  fig:null,
+  ans:[`x<sub>A</sub> = ${a}t;  x<sub>B</sub> = −${b}t + ${D}`,`${a}t = −${b}t + ${D}, so ${a+b}t = ${D} and t = ${t} s`,`x = ${a}(${t}) = ${x} m (check: −${b}(${t}) + ${D} = ${D-b*t} m)`,`Graph: A rises from (0, 0); B falls from (0, ${D}); they cross at (${t} s, ${x} m)`],
+  ansFig:{type:"plot",kind:"x",t:[0,tEnd,ts],y:[0,Math.ceil(D/step)*step,step],series:[{pts:[[0,0],A],c:"blue",name:"A"},{pts:[[0,D],B],c:"red",name:"B"}],dot:[t,x]},
+  watch:`Car B's velocity written as +${b} m/s. This is the same problem type as the test's two-object question.`};}
+
 /* ================= FIGURES (SVG) ================= */
 const COL={blue:"#1f5fbf",red:"#c8322b",green:"#1d8a4e",ink:"#1d232b"};
 function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;")}
@@ -319,8 +337,8 @@ function fig(f){return f? (f.type==="mm"?mm(f):plot(f)) : ""}
 
 /* ================= STATE ================= */
 const KEY="cv-showdown-v1";
-function freshState(n){
-  return {teams:Array.from({length:n||9},(_,i)=>({name:"Team "+(i+1),score:0})),used:{},dd:null,view:"board",cur:null,marks:{},wagers:{},revealed:false};
+function freshState(n,fv){
+  return {fv:fv||FINAL_DEFAULT,teams:Array.from({length:n||9},(_,i)=>({name:"Team "+(i+1),score:0})),used:{},dd:null,view:"board",cur:null,marks:{},wagers:{},revealed:false};
 }
 let S;
 function load(d){ if(d&&d.teams){S=d;return}
@@ -362,7 +380,7 @@ function howto(){return `<details class="howto" ${S.howOpen?"open":""} id="how">
 <li>Teams of 3 at the vertical whiteboards, one marker per team. The marker rotates every question.</li>
 <li>Teams take turns choosing a tile. <b>Every team answers every question.</b></li>
 <li>When time is up, markers down. Reveal the answer and tap each team's chip: <b>full</b> points, or <b>half</b> on 300s and 400s for mostly-right work with one slip. The ± buttons under each team's score always match the open question's value, for quick corrections.</li>
-<li><b>Final Showdown:</b> teams write a wager (up to their score, max 500) in the corner of the board before the question appears. Right: gain it. Wrong: lose it.</li>
+<li><b>Final Showdown:</b> teams write a wager (up to their score, max 500) in the corner of the board before the question appears. Right: gain it. Wrong: lose it. The Final gets new numbers every time you press <b>Reset everything</b>, so each class sees a different version.</li>
 </ol>
 <h3>Why this format</h3><ul><li>Each column is one test standard, and the rows climb Beginner → Advanced, matching the SBG levels on Friday's test.</li><li>The “Watch for” line under each answer is the misconception to name out loud before moving on.</li></ul></div>
 <div><h3>Run of show</h3><table class="ros">
@@ -404,7 +422,7 @@ function qView(){
   }
   return h+`</section>`+tray();
 }
-function render(){app.innerHTML=S.view==="q"?qView():boardView();if(S.view==="q")drawClock();save()}
+function render(){if(!S.fv)S.fv=FINAL_DEFAULT;Q.final=finalFrom(S.fv);app.innerHTML=S.view==="q"?qView():boardView();if(S.view==="q")drawClock();save()}
 
 /* ================= EVENTS ================= */
 app.addEventListener("click",e=>{
@@ -427,7 +445,7 @@ app.addEventListener("click",e=>{
     S.used[k]=true;S.view="board";S.cur=null;clearInterval(tInt);render()}
   else if(a==="reset"){S.confirmReset=true;render()}
   else if(a==="resetno"){S.confirmReset=false;render()}
-  else if(a==="resetyes"){const n=S.teams.length;clearInterval(tInt);tRun=false;try{localStorage.removeItem(KEY)}catch(e){}S=freshState(n);render();window.scrollTo(0,0)}
+  else if(a==="resetyes"){const n=S.teams.length,fv=newFinal(S.fv||FINAL_DEFAULT);clearInterval(tInt);tRun=false;try{localStorage.removeItem(KEY)}catch(e){}S=freshState(n,fv);render();window.scrollTo(0,0)}
 });
 app.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.dataset&&e.target.dataset.open){e.preventDefault();e.target.click()}});
 app.addEventListener("change",e=>{
