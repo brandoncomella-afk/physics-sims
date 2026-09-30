@@ -115,17 +115,22 @@ table.lv input[type=checkbox]{width:20px;height:20px;accent-color:var(--ok)}
 <!-- ============ PART B ============ -->
 <section class="card">
   <span class="eyebrow">Part B</span>
-  <h2>Velocity vs Time, Tier 1 (the first 15 levels)</h2>
-  <p>Switch the drop-down to <b>Velocity vs Time</b> and start at the first level. Now the height of the line is the velocity. The graph does not tell you where Ruggle starts, so for starting position write whatever you chose.</p>
+  <h2>Velocity vs Time, levels 1–3</h2>
+  <p>Switch the drop-down to <b>Velocity vs Time</b> and start at level 1. Now the height of the line is the velocity. The graph does not tell you where Ruggle starts, so for starting position write whatever you chose.</p>
   <p class="progress" id="progB"></p>
   <div class="tablewrap"><table class="lv" id="tabB"></table></div>
+</section>
+
+<section class="card skip">
+  <h2>Stop after velocity level 3</h2>
+  <p>Velocity levels 4–15 have sloped lines. A sloped velocity line means Ruggle is speeding up or slowing down, and that's acceleration, which is Unit 3. Answer the check-ins below instead.</p>
 </section>
 
 <section class="card" id="qB"></section>
 
 <section class="card">
   <h3>B5. Area check: predict where Ruggle ends up</h3>
-  <p>Pick one velocity level you matched. Before you press Start, use the area under the velocity graph to predict Ruggle's final position. Then run it and read the final position off the track.</p>
+  <p>Use velocity level 2 or 3. Before you press Start, use the area under the velocity graph to predict Ruggle's final position. Then run it and read the final position off the track.</p>
   <div class="calc">
     <label class="f">Level #<input type="text" data-k="b5_lv"></label>
     <label class="f">Start x (m)<input type="text" data-k="b5_x0"></label>
@@ -166,10 +171,12 @@ try{const raw=localStorage.getItem(STORE);if(raw){const o=JSON.parse(raw);if(o&&
 function save(){try{localStorage.setItem(STORE,JSON.stringify(S))}catch(e){}}
 
 /* ---- level tables ---- */
+const SHAPE_B=["Flat on the 0 line","Flat, above 0","Flat, below 0"];
+const COUNT={a:15,b:3};
 const SHAPE_A=["Flat, above 0","Flat, below 0","Starts at 0, rises slowly","Starts at 0, falls slowly","Starts below 0, rises through 0","Starts above 0, falls through 0","Flat at 0, then rises","Flat above 0, then falls","Flat below 0, rises, rises faster","Flat, falls, flat again","Up, then back down","Down, flat, back up","Up, down, up","Falls fast, then slower","Rises, slower, then faster"];
-function table(id,prefix,shapes){
+function table(id,prefix,shapes,count){
   let h=`<thead><tr><th>Level</th>${shapes?"<th>Target shape</th>":""}<th>Start x (m)</th><th>Velocity plan (m/s, with times)</th><th>Tries</th><th>Matched</th></tr></thead><tbody>`;
-  for(let i=1;i<=15;i++){const k=prefix+i;
+  for(let i=1;i<=count;i++){const k=prefix+i;
     h+=`<tr data-row="${k}"><td class="n">${i}</td>${shapes?`<td class="shape">${shapes[i-1]}</td>`:""}
     <td class="x"><input type="text" data-k="${k}_x" aria-label="Level ${i} start position"></td>
     <td><input type="text" data-k="${k}_v" aria-label="Level ${i} velocity plan"></td>
@@ -177,8 +184,8 @@ function table(id,prefix,shapes){
     <td class="ok"><input type="checkbox" data-k="${k}_ok" aria-label="Level ${i} matched"></td></tr>`;}
   $(id).innerHTML=h+`</tbody>`;
 }
-table("tabA","a",SHAPE_A);
-table("tabB","b",null);
+table("tabA","a",SHAPE_A,15);
+table("tabB","b",SHAPE_B,3);
 
 /* ---- check-in questions ---- */
 const QA=[
@@ -192,7 +199,7 @@ const QB=[
  ["b_q1","B1","On a velocity–time graph, what does a flat line mean? How is that different from a flat line on a position–time graph?"],
  ["b_q2","B2","What does a line below the time axis on a velocity graph mean Ruggle is doing?"],
  ["b_q3","B3","Did Ruggle's starting position change whether you matched a velocity level? Explain why or why not."],
- ["b_q4","B4","Which velocity level was most like one of the position levels from Part A? Name both levels and explain the connection."]
+ ["b_q4","B4","Velocity level 1 and position levels 1–2 all show Ruggle doing the same thing. What is Ruggle doing, and why does one graph sit on the 0 line while the others do not?"]
 ];
 function qs(id,title,list){$(id).innerHTML=`<h3>${title}</h3>`+list.map(([k,t,q])=>`<div class="q"><span class="qt">${t}. ${q}</span><textarea data-k="${k}" aria-label="${t}"></textarea></div>`).join("")}
 qs("qA","Part A check-ins",QA);
@@ -213,8 +220,8 @@ document.querySelectorAll("[data-k]").forEach(el=>{const k=el.dataset.k,v=S.v[k]
   el.addEventListener(el.type==="checkbox"?"change":"input",()=>{S.v[k]=el.type==="checkbox"?el.checked:el.value;save();progress()});});
 document.querySelectorAll('#mcs input[type=radio]').forEach(r=>{if(S.mc[r.name]!=null&&+S.mc[r.name]===+r.value)r.checked=true;
   r.addEventListener("change",()=>{S.mc[r.name]=+r.value;save();const q=r.closest("[data-mc]");q.querySelectorAll("label").forEach(l=>l.classList.remove("right","wrong"));$("fb_"+r.name).hidden=true;});});
-function progress(){["a","b"].forEach(p=>{let n=0;for(let i=1;i<=15;i++){const ok=!!S.v[p+i+"_ok"];if(ok)n++;const tr=document.querySelector(`[data-row="${p+i}"]`);if(tr)tr.classList.toggle("done",ok)}
-  $("prog"+p.toUpperCase()).textContent=`${n} of 15 levels matched`;});}
+function progress(){["a","b"].forEach(p=>{let n=0;for(let i=1;i<=COUNT[p];i++){const ok=!!S.v[p+i+"_ok"];if(ok)n++;const tr=document.querySelector(`[data-row="${p+i}"]`);if(tr)tr.classList.toggle("done",ok)}
+  $("prog"+p.toUpperCase()).textContent=`${n} of ${COUNT[p]} levels matched`;});}
 progress();
 
 function checkMC(){let right=0,answered=0;MC.forEach(m=>{const pick=S.mc[m.k];const q=document.querySelector(`[data-mc="${m.k}"]`);q.querySelectorAll("label").forEach(l=>l.classList.remove("right","wrong"));const fb=$("fb_"+m.k);
@@ -227,10 +234,10 @@ $("checkmc").addEventListener("click",checkMC);
 function report(){const g=k=>{const v=S.v[k];return v==null||v===""?"__":String(v).trim()};const L=[];
   L.push("Unit 2 Lab: Kinematics Lab (Universe & More) - Match the Graph");L.push(`Name: ${g("name")}   Period: ${g("period")}`);L.push("");
   const tab=(p,title)=>{L.push(title);L.push("Level\tStart x (m)\tVelocity plan\tTries\tMatched");
-    for(let i=1;i<=15;i++)L.push(`${i}\t${g(p+i+"_x")}\t${g(p+i+"_v")}\t${g(p+i+"_n")}\t${S.v[p+i+"_ok"]?"yes":"no"}`);L.push("")};
+    for(let i=1;i<=COUNT[p];i++)L.push(`${i}\t${g(p+i+"_x")}\t${g(p+i+"_v")}\t${g(p+i+"_n")}\t${S.v[p+i+"_ok"]?"yes":"no"}`);L.push("")};
   tab("a","PART A: Position vs Time, Tier 1");
   QA.forEach(([k,t,q])=>{L.push(`${t}. ${q}`);L.push(g(k));L.push("")});
-  tab("b","PART B: Velocity vs Time, Tier 1");
+  tab("b","PART B: Velocity vs Time, levels 1-3");
   QB.forEach(([k,t,q])=>{L.push(`${t}. ${q}`);L.push(g(k));L.push("")});
   L.push(`B5 area check: level ${g("b5_lv")}; start ${g("b5_x0")} m; area ${g("b5_area")}; predicted ${g("b5_pred")} m; actual ${g("b5_act")} m`);L.push(g("b5_why"));L.push("");
   L.push("PART C");MC.forEach((m,i)=>{const p=S.mc[m.k];L.push(`${i+1}. ${m.q} -> ${p==null?"__":m.o[p]} (${p==null?"blank":p===m.a?"correct":"incorrect"})`)});
