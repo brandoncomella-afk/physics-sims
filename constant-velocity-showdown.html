@@ -231,7 +231,7 @@ const Q={
 },
 "2-3|400":{
   prompt:`<p>The object starts at the origin.</p><ol><li>How far from the origin does it get, and when?</li><li>When is it back at the origin?</li><li>Sketch the matching position vs. time graph.</li></ol>`,
-  fig:{type:"plot",kind:"v",t:[0,12,1],y:[-4,6,1],segs:[[0,4,5],[4,12,-2.5]],c:"blue"},
+  fig:{type:"plot",kind:"v",t:[0,12,1],y:[-4,6,1],segs:[[0,4,5],[4,12,-2.5]],c:"blue",labels:[[2,5.45,"+5 m/s"],[8,-3.25,"−2.5 m/s"]]},
   ans:["20 m, at t = 4 s (area = 5 × 4)","It needs another 20 m at 2.5 m/s, which takes 8 s, so t = 12 s","x–t: straight line up to (4 s, 20 m), then straight line down to (12 s, 0 m)"],
   ansFig:{type:"plot",kind:"x",t:[0,12,1],y:[0,24,4],series:[{pts:[[0,0],[4,20],[12,0]],c:"red"}]},
   watch:"Saying it turns back when the v–t line crosses zero “at 4 s, so back at 8 s.” The return trip is slower."
