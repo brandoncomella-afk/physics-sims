@@ -384,7 +384,7 @@ function drawVt(res) {
   const svg = $("vt");
   if (!res) { axes(svg, 1.5, 2.5, "t (s)", "v (m/s)", x => x.toFixed(1), y => y.toFixed(1)); return; }
   const tRun = RUNWAY / res.vCar, t1 = res.tRamp, t2 = t1 + tRun, t3 = t2 + res.tSkid;
-  const xmax = Math.max(0.5, Math.ceil(t3 * 5) / 5), ymax = Math.max(1, Math.ceil(res.vCar * 2) / 2);
+  const xmax = Math.max(0.5, Math.ceil(t3 * 2) / 2), ymax = Math.max(1, Math.ceil(res.vCar * 2) / 2);
   const { X, Y } = axes(svg, xmax, ymax, "t (s)", "v (m/s)", x => x.toFixed(1), y => y.toFixed(1));
   el("polygon", { points: `${X(0)},${Y(0)} ${X(t1)},${Y(res.vCar)} ${X(t1)},${Y(0)}`, fill: css("--series-2"), opacity: .15 }, svg);
   el("polygon", { points: `${X(t2)},${Y(0)} ${X(t2)},${Y(res.vBox)} ${X(t3)},${Y(0)}`, fill: css("--series-1"), opacity: .18 }, svg);
