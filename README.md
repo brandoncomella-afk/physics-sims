@@ -11,6 +11,7 @@ Interactive, quantitative physics labs for high school and AP / intro-college co
 | `dune-buggy-challenge.html` | Projectile motion | Ramp → table → moving target. Predict-then-test with the answer hidden, randomised setups, worked solution on reveal, trial log with data export |
 | `motion-match.html` | Constant velocity review | Match x–t ↔ v–t graphs, graphs ↔ equations, graphs ↔ written descriptions; 50-question bank, 15/25/50-question rounds balanced across types, explanation after each, score by match type, retry missed |
 | `constant-velocity-showdown.html` | Constant velocity review game | Projected Jeopardy-style board by standard (2-1 to 2-4), all teams answer on whiteboards, timer, scoreboard with ± buttons matching the open question, wager final |
+| `squares-and-slopes.html` | Area & slope practice (Unit 2) | Shade/count squares under v–t graphs → Δx = v·Δt → negative area & distance; click-to-place slope triangles on x–t graphs; build a v–t graph from an x–t graph and check by area. Six + five leveled, randomized problem sets with hints and error-specific feedback |
 | `kinematics-lab-guide.html` | Lab guide (Universe & More Kinematics Lab) | Match-the-Graph record tables for position and velocity Tier 1, check-in questions, area prediction, auto-checked wrap-up, Copy / Submit to Mr. C |
 | `battleship-verbos.html` | Spanish verbs | Verb-conjugation Battleship (*Batalla de Barco*). Random verb pool, irregular toggle, five tenses, vs-computer / pass-and-play / play-by-code |
 | `index.html` | Landing page | Card grid linking all sims |

@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Squares &amp; Slopes Practice</title>
+<style>
+/* Layout: a lab-notebook bench — graph paper on the left, the step-by-step coach on the right; stacks on phones. */
+:root{
+  --paper:#f6f8f7; --sheet:#ffffff; --ink:#18263a; --muted:#5b6878; --grid:#c9d6d2; --grid-strong:#8fa29d;
+  --pos:#3d7fd1; --pos-fill:rgba(61,127,209,.32); --neg:#d9762b; --neg-fill:rgba(217,118,43,.32);
+  --accent:#1f4e79; --accent-soft:#e3ecf5; --good:#1d7a4c; --good-soft:#e2f3ea; --bad:#b3261e; --bad-soft:#fbe7e5;
+  --line:#dfe6e4; --focus:#f2b705; --key:#c00000;
+  --display:"Avenir Next", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --body:system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono:ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0f1720; --sheet:#16212d; --ink:#e6edf3; --muted:#9fb0c0; --grid:#2c3b49; --grid-strong:#4c6070;
+  --pos:#6ea8ef; --pos-fill:rgba(110,168,239,.30); --neg:#f0a160; --neg-fill:rgba(240,161,96,.30);
+  --accent:#8db8e6; --accent-soft:#1d2f42; --good:#5fd09a; --good-soft:#143326; --bad:#ff8f86; --bad-soft:#3a1c1a;
+  --line:#26333f; --focus:#f2c94c; --key:#ff7b7b; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0f1720; --sheet:#16212d; --ink:#e6edf3; --muted:#9fb0c0; --grid:#2c3b49; --grid-strong:#4c6070;
+  --pos:#6ea8ef; --pos-fill:rgba(110,168,239,.30); --neg:#f0a160; --neg-fill:rgba(240,161,96,.30);
+  --accent:#8db8e6; --accent-soft:#1d2f42; --good:#5fd09a; --good-soft:#143326; --bad:#ff8f86; --bad-soft:#3a1c1a;
+  --line:#26333f; --focus:#f2c94c; --key:#ff7b7b; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:24px 24px}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:20px 48px;display:grid;gap:16px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,4.5vw,42px);line-height:1.05;margin:0;letter-spacing:-.01em;text-wrap:balance}
+h1 small{display:block;font-family:var(--body);font-weight:400;font-size:16px;color:var(--muted);letter-spacing:0;margin-top:6px}
+.modes{display:flex;gap:6px;background:var(--sheet);border:1px solid var(--line);padding:4px;border-radius:12px}
+.modes button{font:700 15px var(--body);border:0;background:transparent;color:var(--muted);padding:9px 14px;border-radius:9px;cursor:pointer}
+.modes button[aria-pressed="true"]{background:var(--accent);color:var(--sheet)}
+.levels{display:flex;flex-wrap:wrap;gap:8px}
+.lvl{font:600 14px var(--body);border:1.5px solid var(--line);background:var(--sheet);color:var(--ink);padding:7px 12px;border-radius:999px;cursor:pointer;display:flex;gap:8px;align-items:center}
+.lvl[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.lvl .stars{font-family:var(--mono);font-size:12px;color:var(--good)}
+.bench{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:860px){.bench{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--sheet);border:1px solid var(--line);border-radius:14px;padding:18px;min-width:0}
+.story{margin:0 0 6px}
+.who{font-family:var(--display);font-weight:600;font-size:21px;margin:0 0 4px}
+.tip{color:var(--muted);font-size:15px;margin:0 0 10px}
+.graphs{display:grid;gap:12px}
+.graphs.two{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+@media (max-width:560px){.graphs.two{grid-template-columns:minmax(0,1fr)}}
+.gcap{font:700 13px var(--body);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 4px}
+svg.g{width:100%;height:auto;display:block;touch-action:none;user-select:none}
+svg.g text{font-family:var(--mono);font-size:12px;fill:var(--muted)}
+svg.g .axlab{font-family:var(--body);font-style:italic;font-size:14px;fill:var(--ink)}
+.counter{display:flex;gap:14px;flex-wrap:wrap;font-family:var(--mono);font-size:14px;margin-top:8px;color:var(--muted)}
+.counter b{color:var(--ink)}
+.steps{display:grid;gap:12px}
+.step{border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:8px}
+.step.active{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.step.done{border-color:var(--good);background:var(--good-soft)}
+.step.locked{opacity:.45}
+.step h3{margin:0;font:700 16px var(--body);display:flex;gap:8px;align-items:baseline}
+.step h3 .n{font-family:var(--mono);font-size:13px;color:var(--accent);background:var(--accent-soft);border-radius:6px;padding:1px 7px}
+.step.done h3 .n{color:var(--good);background:transparent}
+.step p{margin:0}
+.inputs{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.inputs label{display:flex;align-items:center;gap:6px;font-size:15px}
+.inputs input{font:700 17px var(--mono);width:96px;padding:7px 9px;border:1.5px solid var(--grid-strong);border-radius:8px;background:var(--sheet);color:var(--ink)}
+.inputs input:focus,button:focus-visible{outline:3px solid var(--focus);outline-offset:1px}
+.unit{font-family:var(--mono);font-size:14px;color:var(--muted)}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+.btn{font:700 15px var(--body);border:0;border-radius:9px;padding:9px 14px;cursor:pointer;background:var(--accent);color:var(--sheet)}
+.btn.ghost{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}
+.btn.quiet{background:transparent;color:var(--muted);border:1.5px solid var(--line)}
+.fb{border-radius:9px;padding:8px 11px;font-size:15px}
+.fb.ok{background:var(--good-soft);color:var(--good);font-weight:700}
+.fb.no{background:var(--bad-soft);color:var(--bad)}
+.fb.hint{background:var(--accent-soft);color:var(--ink)}
+.answer{font-family:var(--mono);font-weight:700;color:var(--good)}
+.win{text-align:center;padding:18px;border:2px dashed var(--good);border-radius:12px;display:grid;gap:10px;justify-items:center}
+.win strong{font-family:var(--display);font-size:24px}
+.ref{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.ref .panel{padding:14px}
+.ref h2{font-family:var(--display);font-weight:600;font-size:18px;margin:0 0 6px}
+.ref p{margin:0;font-size:15px;color:var(--muted)}
+.eq{font-family:var(--mono);font-weight:700;color:var(--ink)}
+table.seg{border-collapse:collapse;width:100%;font-size:15px}
+table.seg th,table.seg td{border:1px solid var(--line);padding:6px;text-align:left}
+table.seg th{background:var(--accent-soft);font-size:13px}
+table.seg input{width:76px}
+.tblwrap{overflow-x:auto}
+@media (prefers-reduced-motion:no-preference){.step.active{transition:box-shadow .2s}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Squares &amp; Slopes<small>Unit 2 practice · area under v–t graphs and slope of x–t graphs</small></h1>
+    <div class="modes" role="group" aria-label="Choose a skill">
+      <button id="m-area" aria-pressed="true">Area → Displacement</button>
+      <button id="m-slope" aria-pressed="false">Slope → Velocity</button>
+    </div>
+  </header>
+  <nav class="levels" id="levels" aria-label="Levels"></nav>
+  <main class="bench">
+    <section class="panel" id="left"></section>
+    <section class="panel" id="right"></section>
+  </main>
+  <section class="ref" aria-label="Quick reference">
+    <div class="panel"><h2>One square = a chunk of displacement</h2><p>On a v–t graph, one square is (width in s) × (height in m/s) = meters. Count the squares, multiply by what one square is worth. <span class="eq">Δx = v × Δt</span> for a rectangle.</p></div>
+    <div class="panel"><h2>Above +, below −</h2><p>Area above the time axis is positive displacement. Area below is negative. Displacement adds with signs; distance adds sizes.</p></div>
+    <div class="panel"><h2>Slope = rise ÷ run = velocity</h2><p>On an x–t graph, rise is <span class="eq">Δx = x<sub>f</sub> − x<sub>i</sub></span> and run is <span class="eq">Δt</span>. Uphill is +v, downhill is −v, flat is v = 0.</p></div>
+  </section>
+</div>
+
+<script>
+(() => {
+const $ = s => document.querySelector(s);
+const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const near = (a, b) => Math.abs(a - b) < 1e-6;
+const fmt = n => { const r = Math.round(n * 100) / 100; return (r < 0 ? "−" : "") + Math.abs(r); };
+const sgn = n => (n > 0 ? "+" : "") + fmt(n);
+const parse = s => { if (s == null) return NaN; s = String(s).trim().replace(/−|–/g, "-").replace(/,/g, "").replace(/\s+/g, ""); if (s === "" || s === "-" ) return NaN; return Number(s); };
+
+const CAST = {
+  area: [
+    ["Sheldon the Turbo Snail", "zooms along in rocket boots", "Sheldon"],
+    ["Pablo the Penguin", "belly-slides across the ice", "Pablo"],
+    ["Dusty the Robot Vacuum", "rolls down the hallway", "Dusty"],
+    ["Biscuit the Dog", "chases a squirrel", "Biscuit"],
+    ["Nibbles the Hamster", "rides a tiny skateboard", "Nibbles"],
+    ["Professor Waddles the Duck", "power-walks to class", "Waddles"],
+  ],
+};
+const WHO = CAST.area;
+
+const AREA_LEVELS = [
+  {n: 1, name: "Count squares"},
+  {n: 2, name: "Big squares"},
+  {n: 3, name: "Shortcut v × Δt"},
+  {n: 4, name: "Two pieces"},
+  {n: 5, name: "Below the axis"},
+  {n: 6, name: "Half squares ★"},
+];
+const SLOPE_LEVELS = [
+  {n: 1, name: "Rise over run"},
+  {n: 2, name: "Big squares"},
+  {n: 3, name: "Not from zero"},
+  {n: 4, name: "Downhill & flat"},
+  {n: 5, name: "Build the v–t graph"},
+];
+
+const state = { mode: "area", level: 1, wins: {area: {}, slope: {}}, streak: {area: {}, slope: {}} };
+
+/* ---------------- problem generators ---------------- */
+function areaProblem(L) {
+  const [name, act, short] = pick(WHO);
+  let p = {kind: "vt", short, dt: 1, dy: 1, name, segs: [], L};
+  if (L === 1) {
+    const v = rnd(2, 5), T = rnd(3, 7);
+    Object.assign(p, {tmax: T + 1, ymin: 0, ymax: v + 1, segs: [[0, v, T, v]], a: 0, b: T});
+    p.story = `${name} ${act} at a steady ${v} m/s for ${T} seconds. How far does ${short} go?`;
+  } else if (L === 2) {
+    const big = pick(["dy", "dy", "dt"]);
+    if (big === "dy") {
+      p.dy = pick([2, 5]); const k = rnd(2, 4); const v = k * p.dy; const T = rnd(3, 6);
+      Object.assign(p, {tmax: T + 1, ymin: 0, ymax: v + p.dy, segs: [[0, v, T, v]], a: 0, b: T});
+      p.story = `${name} ${act} at ${v} m/s for ${T} s. Careful: on this graph each square is ${p.dy} m/s tall!`;
+    } else {
+      p.dt = 2; const v = rnd(2, 4); const k = rnd(2, 4); const T = 2 * k;
+      Object.assign(p, {tmax: T + 2, ymin: 0, ymax: v + 1, segs: [[0, v, T, v]], a: 0, b: T});
+      p.story = `${name} ${act} at ${v} m/s for ${T} s. Careful: on this graph each square is 2 s wide!`;
+    }
+  } else if (L === 3) {
+    const v = rnd(2, 6), t0 = rnd(0, 3), d = rnd(2, 5), t1 = t0 + d, tmax = t1 + rnd(1, 2);
+    const segs = [];
+    if (t0 > 0) segs.push([0, 0, t0, 0]);
+    segs.push([t0, v, t1, v]);
+    segs.push([t1, 0, tmax, 0]);
+    let a = t0, b = t1;
+    if (d >= 3 && Math.random() < 0.5) { a = t0 + 1; b = t1 - rnd(0, 1); if (b - a < 1) b = a + 1; }
+    Object.assign(p, {tmax, ymin: 0, ymax: v + 1, segs, a, b});
+    p.story = `${name} waits, then ${act} at ${v} m/s, then stops. Find the displacement from t = ${a} s to t = ${b} s only.`;
+  } else if (L === 4) {
+    let v1 = rnd(1, 5), v2 = rnd(1, 5); while (v2 === v1) v2 = rnd(1, 5);
+    const T1 = rnd(2, 4), T2 = rnd(2, 4);
+    Object.assign(p, {tmax: T1 + T2 + 1, ymin: 0, ymax: Math.max(v1, v2) + 1, segs: [[0, v1, T1, v1], [T1, v2, T1 + T2, v2]], a: 0, b: T1 + T2});
+    p.story = `${name} ${act} at ${v1} m/s, then switches to ${v2} m/s. Split the area into two rectangles.`;
+  } else if (L === 5) {
+    const v1 = rnd(2, 4), v2 = -rnd(1, 3), T1 = rnd(2, 4), T2 = rnd(2, 4);
+    const xi = rnd(0, 10);
+    Object.assign(p, {tmax: T1 + T2 + 1, ymin: v2 - 1, ymax: v1 + 1, segs: [[0, v1, T1, v1], [T1, v2, T1 + T2, v2]], a: 0, b: T1 + T2, xi});
+    p.story = `${name} ${act} at ${v1} m/s, then turns around and goes backward at ${fmt(-v2)} m/s. ${short} starts at x = ${xi} m.`;
+  } else {
+    p.dy = pick([1, 2]); const k = rnd(3, 5); const V = k * p.dy;
+    Object.assign(p, {tmax: k + 1, ymin: 0, ymax: V + p.dy, segs: [[0, 0, k, V]], a: 0, b: k, k, preshade: true});
+    p.story = `${name} starts from rest and speeds up steadily to ${V} m/s in ${k} s. The slanted line cuts some squares exactly in half.`;
+  }
+  p.region = regionCells(p);
+  p.dx = areaBetween(p.segs, p.a, p.b);
+  p.dist = distBetween(p.segs, p.a, p.b);
+  p.sq = p.dt * p.dy;
+  return p;
+}
+
+function areaBetween(segs, a, b) {
+  let tot = 0;
+  for (const [t0, y0, t1, y1] of segs) {
+    const lo = Math.max(t0, a), hi = Math.min(t1, b); if (hi <= lo) continue;
+    const f = t => y0 + (y1 - y0) * (t - t0) / (t1 - t0);
+    tot += (f(lo) + f(hi)) / 2 * (hi - lo);
+  }
+  return tot;
+}
+function distBetween(segs, a, b) { return segs.reduce((s, sg) => s + Math.abs(areaBetween([sg], a, b)), 0); }
+
+function regionCells(p) {
+  // cells (col,row) fully inside the shaded region, for step-graphs; for ramps, flagged full/half.
+  const cells = new Map();
+  const ncol = Math.round(p.tmax / p.dt), nrow = Math.round((p.ymax - p.ymin) / p.dy);
+  for (let c = 0; c < ncol; c++) {
+    const tl = c * p.dt, tr = tl + p.dt;
+    if (tl < p.a - 1e-9 || tr > p.b + 1e-9) continue;
+    const seg = p.segs.find(s => tl >= s[0] - 1e-9 && tr <= s[2] + 1e-9); if (!seg) continue;
+    for (let r = 0; r < nrow; r++) {
+      const yb = p.ymin + r * p.dy, yt = yb + p.dy;
+      const f = t => seg[1] + (seg[3] - seg[1]) * (t - seg[0]) / (seg[2] - seg[0]);
+      const vl = f(tl), vr = f(tr);
+      if (near(vl, vr)) {
+        const v = vl;
+        if (v > 0 && yb >= -1e-9 && yt <= v + 1e-9) cells.set(c + "," + r, "full");
+        if (v < 0 && yt <= 1e-9 && yb >= v - 1e-9) cells.set(c + "," + r, "full");
+      } else {
+        const lo = Math.min(vl, vr), hi = Math.max(vl, vr);
+        if (yb >= 0 && yt <= lo + 1e-9) cells.set(c + "," + r, "full");
+        else if (yb >= lo - 1e-9 && yt <= hi + 1e-9 && yb >= 0) cells.set(c + "," + r, "half");
+      }
+    }
+  }
+  return cells;
+}
+
+function slopeProblem(L) {
+  const [name, act, short] = pick(WHO);
+  let p = {kind: "xt", short, dt: 1, dy: 1, name, L};
+  if (L === 1) {
+    let v = rnd(1, 3), T = rnd(2, 5); while (v * T > 12) T--;
+    Object.assign(p, {tmax: T + 1, ymin: 0, ymax: v * T + 1, segs: [[0, 0, T, v * T]]});
+    p.story = `Here is ${name}'s position–time graph. Find the velocity from the slope.`;
+  } else if (L === 2) {
+    p.dy = pick([2, 5]);
+    let T, r, v; do { T = rnd(2, 6); r = rnd(2, 7); v = r * p.dy / T; } while (!Number.isInteger(v * 2));
+    Object.assign(p, {tmax: T + 1, ymin: 0, ymax: (r + 1) * p.dy, segs: [[0, 0, T, r * p.dy]]});
+    p.story = `${name}'s graph uses squares that are ${p.dy} m tall. Check the axis before you count!`;
+  } else if (L === 3) {
+    p.dy = pick([1, 2]);
+    let T, r, x0; do { T = rnd(2, 6); r = rnd(2, 6); x0 = rnd(1, 4) * p.dy; } while (!Number.isInteger(r * p.dy / T * 2));
+    Object.assign(p, {tmax: T + 1, ymin: 0, ymax: x0 + (r + 1) * p.dy, segs: [[0, x0, T, x0 + r * p.dy]]});
+    p.story = `${name} doesn't start at the origin. ${short} starts at x = ${x0} m and ${act}.`;
+  } else if (L === 4) {
+    p.dy = pick([1, 2, 3]);
+    if (Math.random() < 0.25) {
+      const x0 = rnd(2, 6) * p.dy, T = rnd(3, 6);
+      Object.assign(p, {tmax: T + 1, ymin: 0, ymax: x0 + 2 * p.dy, segs: [[0, x0, T, x0]]});
+      p.story = `${name} takes a nap at x = ${x0} m.`;
+    } else {
+      let T, r; do { T = rnd(2, 6); r = rnd(2, 6); } while (!Number.isInteger(r * p.dy / T * 2));
+      const x0 = r * p.dy + rnd(0, 2) * p.dy;
+      Object.assign(p, {tmax: T + 1, ymin: 0, ymax: x0 + p.dy, segs: [[0, x0, T, x0 - r * p.dy]]});
+      p.story = `${name} heads back toward the origin. The line goes downhill.`;
+    }
+  } else {
+    // multi-segment
+    let segs, ok = false, tries = 0;
+    while (!ok && tries++ < 200) {
+      const vs = [pick([1, 2, 3]), 0, -pick([1, 2, 3])];
+      if (Math.random() < 0.4) vs.reverse();
+      const ds = [rnd(2, 3), rnd(1, 3), rnd(2, 4)];
+      let x = rnd(0, 6), t = 0; segs = [];
+      for (let i = 0; i < 3; i++) { segs.push([t, x, t + ds[i], x + vs[i] * ds[i]]); x += vs[i] * ds[i]; t += ds[i]; }
+      const ys = segs.flatMap(s => [s[1], s[3]]);
+      ok = Math.max(...ys) - Math.min(...ys) <= 12 && t <= 10;
+    }
+    const ys = segs.flatMap(s => [s[1], s[3]]);
+    Object.assign(p, {tmax: segs[2][2] + 1, ymin: Math.min(0, Math.min(...ys) - 1), ymax: Math.max(...ys) + 1, segs});
+    const vs = segs.map(s => (s[3] - s[1]) / (s[2] - s[0]));
+    p.vsegs = vs;
+    p.story = `${name}'s trip has three straight pieces. Find the slope of each piece, then see your v–t graph appear.`;
+  }
+  const s = p.segs[0];
+  p.v = (s[3] - s[1]) / (s[2] - s[0]);
+  return p;
+}
+
+/* ---------------- graph drawing ---------------- */
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+
+function drawGraph(g, opts = {}) {
+  const ncol = Math.round((g.tmax) / g.dt), nrow = Math.round((g.ymax - g.ymin) / g.dy);
+  const C = Math.max(22, Math.min(46, Math.floor(420 / Math.max(ncol, nrow * 0.9))));
+  const L = 52, T = 14, R = 18, B = 46;
+  const W = L + ncol * C + R, H = T + nrow * C + B;
+  const svg = el("svg", {viewBox: `0 0 ${W} ${H}`, class: "g", role: "img",
+    "aria-label": (g.kind === "vt" ? "velocity–time" : "position–time") + " graph"});
+  const X = t => L + (t / g.dt) * C, Y = y => T + ((g.ymax - y) / g.dy) * C;
+  const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const cellLayer = el("g", {}, svg);
+  // grid
+  for (let c = 0; c <= ncol; c++) el("line", {x1: X(c * g.dt), y1: T, x2: X(c * g.dt), y2: T + nrow * C, stroke: css("--grid"), "stroke-width": 1}, svg);
+  for (let r = 0; r <= nrow; r++) { const y = g.ymin + r * g.dy; el("line", {x1: L, y1: Y(y), x2: L + ncol * C, y2: Y(y), stroke: css("--grid"), "stroke-width": 1}, svg); }
+  // axes
+  el("line", {x1: L, y1: Y(0), x2: L + ncol * C, y2: Y(0), stroke: css("--ink"), "stroke-width": 2}, svg);
+  el("line", {x1: L, y1: T, x2: L, y2: T + nrow * C, stroke: css("--ink"), "stroke-width": 2}, svg);
+  // ticks
+  const everyY = nrow > 12 ? 2 : 1;
+  for (let c = 0; c <= ncol; c++) { const t = el("text", {x: X(c * g.dt), y: T + nrow * C + 17, "text-anchor": "middle"}, svg); t.textContent = fmt(c * g.dt); }
+  for (let r = 0; r <= nrow; r++) { const y = g.ymin + r * g.dy; if (r % everyY && !near(y, 0)) continue; const t = el("text", {x: L - 7, y: Y(y) + 4, "text-anchor": "end"}, svg); t.textContent = fmt(y); }
+  const xl = el("text", {x: L + ncol * C / 2, y: H - 6, "text-anchor": "middle", class: "axlab"}, svg); xl.textContent = "t (s)";
+  const yl = el("text", {x: 14, y: T + nrow * C / 2, "text-anchor": "middle", class: "axlab", transform: `rotate(-90 14 ${T + nrow * C / 2})`}, svg);
+  yl.textContent = g.kind === "vt" ? "v (m/s)" : "x (m)";
+  // pre-shading (ramps)
+  if (opts.shadeRegion) {
+    for (const [t0, y0, t1, y1] of g.segs) {
+      const lo = Math.max(t0, g.a ?? t0), hi = Math.min(t1, g.b ?? t1); if (hi <= lo) continue;
+      const f = t => y0 + (y1 - y0) * (t - t0) / (t1 - t0);
+      const pos = f(lo) + f(hi) >= 0;
+      el("polygon", {points: `${X(lo)},${Y(0)} ${X(lo)},${Y(f(lo))} ${X(hi)},${Y(f(hi))} ${X(hi)},${Y(0)}`,
+        fill: css(pos ? "--pos-fill" : "--neg-fill"), stroke: "none"}, cellLayer);
+    }
+  }
+  // line
+  const lineColor = opts.lineColor ? css(opts.lineColor) : css("--ink");
+  for (const [t0, y0, t1, y1] of (opts.segs || g.segs)) {
+    el("line", {x1: X(t0), y1: Y(y0), x2: X(t1), y2: Y(y1), stroke: lineColor, "stroke-width": 3.5, "stroke-linecap": "round"}, svg);
+    el("circle", {cx: X(t0), cy: Y(y0), r: 3.6, fill: lineColor}, svg);
+    el("circle", {cx: X(t1), cy: Y(y1), r: 3.6, fill: lineColor}, svg);
+  }
+  const overlay = el("g", {}, svg);
+  return {svg, X, Y, C, ncol, nrow, cellLayer, overlay, css, L, T,
+    toData(evt) { const pt = svg.createSVGPoint(); pt.x = evt.clientX; pt.y = evt.clientY; const q = pt.matrixTransform(svg.getScreenCTM().inverse());
+      return {t: (q.x - L) / C * g.dt, y: g.ymax - (q.y - T) / C * g.dy}; }};
+}
+
+/* ---------------- UI ---------------- */
+let P = null, G = null, STEPS = [], cur = 0, shaded = new Set(), picks = [];
+
+function renderLevels() {
+  const list = state.mode === "area" ? AREA_LEVELS : SLOPE_LEVELS;
+  const nav = $("#levels"); nav.innerHTML = "";
+  for (const lv of list) {
+    const b = document.createElement("button"); b.className = "lvl"; b.setAttribute("aria-pressed", lv.n === state.level);
+    const w = state.wins[state.mode][lv.n] || 0;
+    b.innerHTML = `Level ${lv.n}: ${lv.name}${w ? `<span class="stars">✓${w}</span>` : ""}`;
+    b.onclick = () => { state.level = lv.n; newProblem(); };
+    nav.appendChild(b);
+  }
+}
+
+function newProblem() {
+  P = state.mode === "area" ? areaProblem(state.level) : slopeProblem(state.level);
+  shaded = new Set(); picks = []; cur = 0;
+  STEPS = state.mode === "area" ? areaSteps(P) : slopeSteps(P);
+  renderLevels(); renderLeft(); renderRight();
+}
+
+function renderLeft() {
+  const left = $("#left"); left.innerHTML = "";
+  const h = document.createElement("p"); h.className = "who"; h.textContent = P.name; left.appendChild(h);
+  const s = document.createElement("p"); s.className = "story"; s.textContent = P.story; left.appendChild(s);
+  const tip = document.createElement("p"); tip.className = "tip"; tip.id = "gtip"; left.appendChild(tip);
+  const box = document.createElement("div"); box.className = "graphs"; left.appendChild(box);
+  if (P.L === 5 && P.kind === "xt") {
+    const a = document.createElement("div"); a.innerHTML = `<p class="gcap">Position–time (given)</p>`;
+    G = drawGraph(P); a.appendChild(G.svg); box.appendChild(a);
+    const b = document.createElement("div"); b.innerHTML = `<p class="gcap">Your velocity–time graph</p>`; b.id = "vtbox"; box.appendChild(b);
+    drawVt();
+  } else {
+    G = drawGraph(P, {shadeRegion: P.preshade});
+    box.appendChild(G.svg);
+  }
+  const ctr = document.createElement("div"); ctr.className = "counter"; ctr.id = "ctr"; left.appendChild(ctr);
+  wireGraph(); refreshOverlay();
+}
+
+function drawVt() {
+  const box = $("#vtbox"); if (!box) return;
+  [...box.querySelectorAll("svg")].forEach(n => n.remove());
+  const vals = (P.userV || []).filter(v => v != null);
+  const vmax = Math.max(3, ...P.vsegs.map(Math.abs)) + 1;
+  const g = {kind: "vt", dt: 1, dy: 1, tmax: P.tmax, ymin: -vmax, ymax: vmax, segs: []};
+  const segs = []; P.segs.forEach((s, i) => { const v = P.userV && P.userV[i]; if (v != null) segs.push([s[0], v, s[2], v]); });
+  g.segs = segs;
+  const gg = drawGraph(g, {lineColor: "--key"});
+  if (P.vtShade) {
+    segs.forEach(([t0, v, t1]) => { if (v === 0) return;
+      el("rect", {x: gg.X(t0), y: gg.Y(Math.max(v, 0)), width: gg.X(t1) - gg.X(t0), height: Math.abs(gg.Y(v) - gg.Y(0)), fill: gg.css(v > 0 ? "--pos-fill" : "--neg-fill")}, gg.cellLayer); });
+  }
+  box.appendChild(gg.svg);
+}
+
+function wireGraph() {
+  const svg = G.svg; let painting = null;
+  const cellAt = e => { const d = G.toData(e); const c = Math.floor(d.t / P.dt); const r = Math.floor((d.y - P.ymin) / P.dy);
+    if (c < 0 || r < 0 || c >= G.ncol || r >= G.nrow) return null; return c + "," + r; };
+  svg.addEventListener("pointerdown", e => {
+    const st = STEPS[cur]; if (!st) return;
+    if (st.type === "shade") {
+      const k = cellAt(e); if (!k) return; painting = shaded.has(k) ? "erase" : "paint";
+      painting === "paint" ? shaded.add(k) : shaded.delete(k); svg.setPointerCapture(e.pointerId); refreshOverlay(); e.preventDefault();
+    } else if (st.type === "points") {
+      const d = G.toData(e); const t = Math.round(d.t / P.dt) * P.dt, y = Math.round(d.y / P.dy) * P.dy;
+      const seg = P.segs[0]; const onLine = t >= seg[0] - 1e-9 && t <= seg[2] + 1e-9 && near(seg[1] + (seg[3] - seg[1]) * (t - seg[0]) / (seg[2] - seg[0]), y);
+      const tip = $("#gtip");
+      if (!onLine) { tip.textContent = `(${fmt(t)} s, ${fmt(y)} m) is not on the line. Pick a spot where the line crosses a grid corner.`; return; }
+      if (picks.length === 2) picks = [];
+      if (picks.length === 1 && near(picks[0].t, t)) { tip.textContent = "Pick a second point at a different time."; return; }
+      picks.push({t, y}); picks.sort((a, b) => a.t - b.t); tip.textContent = picks.length === 1 ? `Point 1: (${fmt(t)} s, ${fmt(y)} m). Now click a second point.` : "";
+      refreshOverlay(); renderRight();
+    }
+  });
+  svg.addEventListener("pointermove", e => { if (!painting) return; const k = cellAt(e); if (!k) return;
+    const had = shaded.has(k); if (painting === "paint" && !had) { shaded.add(k); refreshOverlay(); } if (painting === "erase" && had) { shaded.delete(k); refreshOverlay(); } });
+  const stop = () => { if (painting) { painting = null; renderRight(); } };
+  svg.addEventListener("pointerup", stop); svg.addEventListener("pointercancel", stop);
+}
+
+function refreshOverlay() {
+  if (!G) return;
+  // shaded cells
+  if (P.kind === "vt" && !P.preshade) {
+    G.cellLayer.innerHTML = "";
+    for (const k of shaded) { const [c, r] = k.split(",").map(Number); const ybot = P.ymin + r * P.dy;
+      el("rect", {x: G.X(c * P.dt) + 1, y: G.Y(ybot + P.dy) + 1, width: G.C - 2, height: G.C - 2, fill: G.css(ybot < 0 ? "--neg-fill" : "--pos-fill")}, G.cellLayer); }
+    const ctr = $("#ctr");
+    if (ctr) { const up = [...shaded].filter(k => P.ymin + Number(k.split(",")[1]) * P.dy >= 0).length; const dn = shaded.size - up;
+      ctr.innerHTML = shaded.size ? `<span>Shaded: <b>${shaded.size}</b> squares</span>${dn ? `<span>above axis <b>${up}</b> · below axis <b>${dn}</b></span>` : ""}` : (STEPS[cur] && STEPS[cur].type === "shade" ? "<span>Click or drag on squares to shade them. Click a shaded square to erase.</span>" : ""); }
+    if (P.L === 3 && P.kind === "vt") {
+      [P.a, P.b].forEach(t => el("line", {x1: G.X(t), y1: G.T, x2: G.X(t), y2: G.T + G.nrow * G.C, stroke: G.css("--accent"), "stroke-width": 2, "stroke-dasharray": "6 5"}, G.cellLayer));
+    }
+  }
+  // slope triangle
+  G.overlay.innerHTML = "";
+  if (P.kind === "xt") {
+    for (const p of picks) el("circle", {cx: G.X(p.t), cy: G.Y(p.y), r: 7, fill: "none", stroke: G.css("--key"), "stroke-width": 3}, G.overlay);
+    if (picks.length === 2) {
+      const [a, b] = picks; const k = G.css("--key");
+      el("line", {x1: G.X(a.t), y1: G.Y(a.y), x2: G.X(b.t), y2: G.Y(a.y), stroke: k, "stroke-width": 2.5, "stroke-dasharray": "7 5"}, G.overlay);
+      el("line", {x1: G.X(b.t), y1: G.Y(a.y), x2: G.X(b.t), y2: G.Y(b.y), stroke: k, "stroke-width": 2.5, "stroke-dasharray": "7 5"}, G.overlay);
+      // staircase squares count markers
+      const lab = (txt, x, y, anchor) => { const t = el("text", {x, y, "text-anchor": anchor, style: `fill:${k};font-weight:700`}, G.overlay); t.textContent = txt; };
+      lab("run", (G.X(a.t) + G.X(b.t)) / 2, G.Y(a.y) + (b.y >= a.y ? 16 : -7), "middle");
+      if (!near(a.y, b.y)) lab("rise", G.X(b.t) - 6, (G.Y(a.y) + G.Y(b.y)) / 2, "end");
+    }
+  }
+}
+
+/* ---------------- step definitions ---------------- */
+function areaSteps(p) {
+  const S = [];
+  const unitSq = `${fmt(p.dt)} s × ${fmt(p.dy)} m/s = ${fmt(p.sq)} m`;
+  const nSq = Math.round(Math.abs(p.dx) / p.sq * 100) / 100;
+  if (!p.preshade) S.push({type: "shade", title: "Shade the area",
+    text: p.L === 3 ? `Shade only between the dashed lines (t = ${p.a} s to t = ${p.b} s), between the line and the time axis.` : "Shade every square between the line and the time axis.",
+    check() {
+      const want = [...p.region.keys()]; const missing = want.filter(k => !shaded.has(k)).length; const extra = [...shaded].filter(k => !p.region.has(k)).length;
+      if (!missing && !extra) return {ok: true, msg: `You shaded exactly ${want.length} squares.`};
+      if (extra && !missing) return {ok: false, msg: `You shaded ${extra} square${extra > 1 ? "s" : ""} too many. Only shade between the line and the time axis${p.L === 3 ? ", and only between the dashed lines" : ""}.`};
+      if (missing && !extra) return {ok: false, msg: `Almost! ${missing} square${missing > 1 ? "s are" : " is"} still missing. Every square under the line counts${p.L === 5 ? ", including the ones below the axis" : ""}.`};
+      return {ok: false, msg: `Some shaded squares are outside the region and ${missing} inside are missing. The region goes from the line straight down (or up) to the time axis.`};
+    },
+    hint: "Start at the time axis and color upward until you reach the line. Do this for every column under the line.",
+    auto() { shaded = new Set(p.region.keys()); refreshOverlay(); }});
+
+  S.push({type: "in", title: "What is one square worth?", text: "Width of one square (s) × height of one square (m/s).",
+    inputs: [["w", "width", "s"], ["h", "height", "m/s"], ["val", "one square =", "m"]],
+    check(v) {
+      if (!near(v.w, p.dt)) return {ok: false, msg: `Width: read two labels on the t-axis that are next to each other. How far apart are they?`};
+      if (!near(v.h, p.dy)) return {ok: false, msg: `Height: read two labels on the v-axis that are one square apart. ${p.dy !== 1 ? "They are not 1 apart on this graph!" : ""}`};
+      if (!near(v.val, p.sq)) return {ok: false, msg: `Multiply the width by the height: ${fmt(p.dt)} × ${fmt(p.dy)}.`};
+      return {ok: true, msg: `One square = ${unitSq}.`};
+    }, hint: "s × m/s = m, because the seconds cancel.", answer: unitSq});
+
+  if (p.L === 6) {
+    const full = p.k * (p.k - 1) / 2, half = p.k;
+    S.push({type: "in", title: "Count full and half squares", text: "Count the whole squares under the line, then the squares the line cuts in half.",
+      inputs: [["f", "full", "squares"], ["hh", "half", "squares"]],
+      check(v) { if (!near(v.f, full)) return {ok: false, msg: "Recount the full squares. Go column by column: each column has one more full square than the one before."};
+        if (!near(v.hh, half)) return {ok: false, msg: "The line cuts exactly one square in half in every column it passes through."};
+        return {ok: true, msg: `${full} full + ${half} halves = ${full + half / 2} squares.`}; },
+      hint: "Two half squares make one whole square.", answer: `${full} full, ${half} half`});
+    S.push({type: "in", title: "Find the displacement", text: "Total squares × value of one square.", inputs: [["dx", "Δx =", "m"]],
+      check(v) { if (near(v.dx, p.dx)) return {ok: true, msg: `Δx = ${fmt(p.dx)} m. Check: ½ × ${p.k} s × ${fmt(p.segs[0][3])} m/s = ${fmt(p.dx)} m ✓`};
+        if (near(v.dx, full + half / 2)) return {ok: false, msg: `That's the number of squares. Multiply by what one square is worth (${fmt(p.sq)} m).`};
+        if (near(v.dx, (full + half) * p.sq)) return {ok: false, msg: "Half squares only count as ½ each."};
+        return near(v.dx, p.dx) ? {ok: true, msg: `Δx = ${fmt(p.dx)} m. Check: ½ × ${p.k} s × ${fmt(p.segs[0][3])} m/s = ${fmt(p.dx)} m ✓`} : {ok: false, msg: "Not yet. (full + halves × ½) × value of one square."}; },
+      hint: "Triangle shortcut: ½ × base × height.", answer: `${fmt(p.dx)} m`});
+    return S;
+  }
+
+  if (p.L <= 2) {
+    S.push({type: "in", title: "Count the squares", text: "How many squares are shaded?", inputs: [["n", "squares =", ""]],
+      check(v) { if (near(v.n, nSq)) return {ok: true, msg: `${nSq} squares.`}; if (near(v.n, p.dx) && p.sq !== 1) return {ok: false, msg: "That looks like meters. Just count the squares here."};
+        return {ok: false, msg: "Recount. Count one row, then multiply by the number of rows."}; },
+      hint: "Count the squares in one row, then count the rows. Multiply.", answer: `${nSq}`});
+    S.push({type: "in", title: "Find the displacement", text: "Δx = (number of squares) × (value of one square)", inputs: [["dx", "Δx =", "m"]],
+      check(v) { if (near(v.dx, p.dx)) return {ok: true, msg: `Δx = ${nSq} × ${fmt(p.sq)} m = ${fmt(p.dx)} m`};
+        if (near(v.dx, nSq)) return {ok: false, msg: `That's the number of squares. Each square is worth ${fmt(p.sq)} m, so multiply.`};
+        return {ok: false, msg: "Multiply your square count by what one square is worth."}; },
+      hint: `${nSq} × ${fmt(p.sq)} m`, answer: `${fmt(p.dx)} m`});
+    S.push({type: "in", title: "Check with the shortcut", text: "The shape is a rectangle. Base (Δt) × height (v) = ?", inputs: [["dt", "Δt =", "s"], ["v", "v =", "m/s"], ["dx", "Δx =", "m"]],
+      check(v) { const seg = p.segs[0]; if (!near(v.dt, seg[2] - seg[0])) return {ok: false, msg: "Δt is how long the motion lasts: read where the line starts and stops on the t-axis."};
+        if (!near(v.v, seg[1])) return {ok: false, msg: "v is the height of the line. Read it off the v-axis."};
+        if (!near(v.dx, p.dx)) return {ok: false, msg: "Multiply Δt × v."}; return {ok: true, msg: `${fmt(v.v)} m/s × ${fmt(v.dt)} s = ${fmt(p.dx)} m. Same answer as counting!`}; },
+      hint: "Rectangle area = base × height = Δt × v.", answer: `Δx = v × Δt = ${fmt(p.dx)} m`});
+    return S;
+  }
+
+  if (p.L === 3) {
+    const seg = p.segs.find(s => s[1] !== 0);
+    S.push({type: "in", title: "Use the shortcut", text: `Find Δt (from ${p.a} s to ${p.b} s) and v, then multiply.`, inputs: [["dt", "Δt =", "s"], ["v", "v =", "m/s"], ["dx", "Δx =", "m"]],
+      check(v) {
+        if (near(v.dt, p.b) && p.a > 0) return {ok: false, msg: `Δt is a duration, not a clock reading: ${p.b} s − ${p.a} s.`};
+        if (!near(v.dt, p.b - p.a)) return {ok: false, msg: `Δt = t_final − t_initial = ${p.b} − ${p.a}.`};
+        if (!near(v.v, seg[1])) return {ok: false, msg: "Read the height of the line between the dashed lines."};
+        if (!near(v.dx, p.dx)) return {ok: false, msg: "Multiply v × Δt. It should match your number of shaded squares × 1 m."};
+        return {ok: true, msg: `Δx = ${fmt(seg[1])} m/s × ${fmt(p.b - p.a)} s = ${fmt(p.dx)} m`}; },
+      hint: "Δt = later clock reading − earlier clock reading.", answer: `${fmt(p.dx)} m`});
+    return S;
+  }
+
+  // L4, L5: piecewise
+  const areas = p.segs.map(s => areaBetween([s], p.a, p.b));
+  S.push({type: "in", title: "Find each piece", text: "Area of each rectangle = Δt × v. Keep the sign: below the axis is negative.",
+    inputs: areas.map((_, i) => ["p" + i, `piece ${i + 1} =`, "m"]),
+    check(v) { for (let i = 0; i < areas.length; i++) { const got = v["p" + i];
+        if (near(got, -areas[i]) && areas[i] < 0) return {ok: false, msg: `Piece ${i + 1} is below the time axis, so its area is negative.`};
+        if (!near(got, areas[i])) { const s = p.segs[i]; return {ok: false, msg: `Piece ${i + 1}: it lasts ${fmt(s[2] - s[0])} s at ${fmt(s[1])} m/s. Multiply.`}; } }
+      return {ok: true, msg: areas.map(a => sgn(a) + " m").join(",  ")}; },
+    hint: "Draw a vertical line where the velocity changes. Each side is its own rectangle.", answer: areas.map(a => sgn(a) + " m").join(", ")});
+  S.push({type: "in", title: "Total displacement", text: "Add the pieces WITH their signs.", inputs: [["dx", "Δx =", "m"]],
+    check(v) { if (near(v.dx, p.dx)) return {ok: true, msg: `Δx = ${areas.map(a => "(" + sgn(a) + ")").join(" + ")} = ${sgn(p.dx)} m`};
+      if (near(v.dx, p.dist) && p.L === 5) return {ok: false, msg: "That's the distance. Displacement subtracts the area below the axis."};
+      return {ok: false, msg: "Add your piece areas, keeping their signs."}; }, hint: "A negative piece makes the total smaller.", answer: `${sgn(p.dx)} m`});
+  if (p.L === 5) {
+    S.push({type: "in", title: "Distance traveled", text: "Add the SIZES of the pieces (ignore the signs).", inputs: [["d", "distance =", "m"]],
+      check(v) { if (near(v.d, p.dist)) return {ok: true, msg: `Distance = ${areas.map(a => fmt(Math.abs(a))).join(" + ")} = ${fmt(p.dist)} m`};
+        if (near(v.d, p.dx)) return {ok: false, msg: "That's the displacement. Distance counts the backward part as positive."};
+        return {ok: false, msg: "Add the pieces as if they were all positive."}; }, hint: "Distance is never negative.", answer: `${fmt(p.dist)} m`});
+    S.push({type: "in", title: "Final position", text: `${p.short} started at x = ${p.xi} m. Where does it end up? x_f = x_i + Δx`, inputs: [["xf", "x_f =", "m"]],
+      check(v) { if (near(v.xf, p.xi + p.dx)) return {ok: true, msg: `x_f = ${p.xi} m + (${sgn(p.dx)} m) = ${fmt(p.xi + p.dx)} m`};
+        if (near(v.xf, p.dx)) return {ok: false, msg: "That's the change in position. Add the starting position."};
+        return {ok: false, msg: "Start position plus displacement."}; }, hint: `${p.xi} + (${fmt(p.dx)})`, answer: `${fmt(p.xi + p.dx)} m`});
+  }
+  return S;
+}
+
+function slopeSteps(p) {
+  const S = [];
+  if (p.L === 5) {
+    p.userV = [null, null, null];
+    p.segs.forEach((s, i) => {
+      const dx = s[3] - s[1], dt = s[2] - s[0], v = dx / dt;
+      S.push({type: "in", title: `Segment ${i + 1} (${s[0]}–${s[2]} s)`, text: "Rise (Δx), run (Δt), then slope v = Δx ÷ Δt.",
+        inputs: [["dx", "Δx =", "m"], ["dt", "Δt =", "s"], ["v", "v =", "m/s"]],
+        check(u) { if (near(u.dx, -dx) && dx !== 0) return {ok: false, msg: "Check the sign of the rise: x_f − x_i. Downhill is negative."};
+          if (!near(u.dx, dx)) return {ok: false, msg: `Rise = x at ${s[2]} s minus x at ${s[0]} s.`};
+          if (!near(u.dt, dt)) return {ok: false, msg: `Run = ${s[2]} s − ${s[0]} s.`};
+          if (!near(u.v, v) && near(u.v, dt / dx)) return {ok: false, msg: "Flipped! Velocity is rise ÷ run = Δx ÷ Δt."};
+          if (!near(u.v, v)) return {ok: false, msg: "Divide rise by run."};
+          p.userV[i] = v; drawVt(); return {ok: true, msg: `v = ${sgn(dx)} m ÷ ${dt} s = ${sgn(v)} m/s. It's on your v–t graph now.`}; },
+        hint: dx === 0 ? "Flat line: the position doesn't change." : "Count squares up or down for the rise, across for the run.", answer: `${sgn(dx)} m, ${dt} s, ${sgn(v)} m/s`});
+    });
+    const net = p.segs[2][3] - p.segs[0][1];
+    S.push({type: "in", title: "Check with area", text: "Find the total area under YOUR v–t graph (with signs). It should equal x_f − x_i from the x–t graph.",
+      inputs: [["a", "area =", "m"]],
+      check(u) { if (near(u.a, net)) { P.vtShade = true; drawVt(); return {ok: true, msg: `Area = ${p.segs.map(s => "(" + sgn(s[3] - s[1]) + ")").join(" + ")} = ${sgn(net)} m, and x_f − x_i = ${fmt(p.segs[2][3])} − ${fmt(p.segs[0][1])} = ${sgn(net)} m. They match!`}; }
+        return {ok: false, msg: "Each piece: v × Δt. Add them with signs."}; }, hint: "Slope and area undo each other.", answer: `${sgn(net)} m`});
+    return S;
+  }
+  const s = p.segs[0], rise = s[3] - s[1], run = s[2] - s[0];
+  S.push({type: "points", title: "Pick two points on the line", text: "Click two places where the line crosses a grid corner. A slope triangle will appear.",
+    check() { if (picks.length < 2) return {ok: false, msg: "Click two points on the line first."}; return {ok: true, msg: `Points (${fmt(picks[0].t)} s, ${fmt(picks[0].y)} m) and (${fmt(picks[1].t)} s, ${fmt(picks[1].y)} m).`}; },
+    hint: "The dots at the ends of the line are always safe choices.", auto() { picks = [{t: s[0], y: s[1]}, {t: s[2], y: s[3]}]; refreshOverlay(); }});
+  S.push({type: "in", title: "Run (across)", text: "Count squares across × seconds per square.", inputs: [["run", "Δt =", "s"]],
+    check(u) { const want = picks[1].t - picks[0].t; if (near(u.run, want)) return {ok: true, msg: `Run: Δt = ${fmt(want)} s`};
+      if (near(u.run, want / p.dt)) return {ok: false, msg: "That's the number of squares. Multiply by seconds per square."};
+      return {ok: false, msg: "Count squares along the dashed run line."}; }, hint: "Later time − earlier time.", answer: () => `${fmt(picks[1].t - picks[0].t)} s`});
+  S.push({type: "in", title: "Rise (up or down)", text: "Rise = x_f − x_i. Up is +, down is −. Watch the value of one square!", inputs: [["rise", "Δx =", "m"]],
+    check(u) { const want = picks[1].y - picks[0].y;
+      if (near(u.rise, want)) return {ok: true, msg: `Rise: Δx = ${fmt(picks[1].y)} − ${fmt(picks[0].y)} = ${sgn(want)} m`};
+      if (near(u.rise, -want) && want !== 0) return {ok: false, msg: "Check the sign. Is the line going uphill or downhill?"};
+      if (near(u.rise, want / p.dy) && p.dy !== 1) return {ok: false, msg: `That's the number of squares. Each square up is ${p.dy} m.`};
+      if (near(u.rise, picks[1].y) && picks[0].y !== 0) return {ok: false, msg: "That's the final position. Rise is the CHANGE: subtract where it started."};
+      return {ok: false, msg: "Rise = second x − first x."}; }, hint: "Read x at each point on the x-axis labels, then subtract.", answer: () => `${sgn(picks[1].y - picks[0].y)} m`});
+  S.push({type: "in", title: "Velocity = slope", text: "v = rise ÷ run = Δx ÷ Δt", inputs: [["v", "v =", "m/s"]],
+    check(u) { const v = p.v;
+      if (near(u.v, v)) return {ok: true, msg: `v = ${sgn(rise)} m ÷ ${fmt(run)} s = ${sgn(v)} m/s${v === 0 ? " (standing still)" : v < 0 ? " (moving in the − direction)" : ""}`};
+      if (v !== 0 && near(u.v, 1 / v)) return {ok: false, msg: "Flipped! It's rise ÷ run (meters ÷ seconds)."};
+      if (near(u.v, -v)) return {ok: false, msg: "Check the sign: uphill is +, downhill is −."};
+      if (near(u.v, s[3] / s[2]) && s[1] !== 0) return {ok: false, msg: "You divided the final position by the final time. Use the change in position."};
+      return {ok: false, msg: "Divide your rise by your run."}; }, hint: "Staircase check: for each 1 s across, how many meters up or down?", answer: `${sgn(p.v)} m/s`});
+  return S;
+}
+
+/* ---------------- right panel ---------------- */
+function renderRight() {
+  const right = $("#right"); right.innerHTML = "";
+  const wrap = document.createElement("div"); wrap.className = "steps"; right.appendChild(wrap);
+  STEPS.forEach((st, i) => {
+    const d = document.createElement("div"); d.className = "step " + (i < cur ? "done" : i === cur ? "active" : "locked");
+    d.innerHTML = `<h3><span class="n">${i < cur ? "✓" : i + 1}</span>${st.title}</h3>`;
+    if (i < cur) { const a = document.createElement("p"); a.className = "answer"; a.textContent = st.passed || ""; d.appendChild(a); wrap.appendChild(d); return; }
+    const t = document.createElement("p"); t.textContent = st.text; d.appendChild(t);
+    if (i === cur) {
+      if (st.type === "in") {
+        const row = document.createElement("form"); row.className = "inputs"; row.id = "f" + i;
+        st.inputs.forEach(([k, lab, unit]) => { const l = document.createElement("label"); l.innerHTML = `<span>${lab}</span><input id="in-${i}-${k}" inputmode="decimal" autocomplete="off" value="${String(st.vals?.[k] ?? "").replace(/[^0-9.\-−–, ]/g, "")}"><span class="unit">${unit}</span>`; row.appendChild(l); });
+        const go = document.createElement("button"); go.className = "btn"; go.type = "submit"; go.textContent = "Check"; row.appendChild(go);
+        row.onsubmit = e => { e.preventDefault(); const vals = {}; st.vals = {}; st.inputs.forEach(([k]) => { const raw = $(`#in-${i}-${k}`).value; st.vals[k] = raw; vals[k] = parse(raw); });
+          if (Object.values(vals).some(Number.isNaN)) { st.fb = {cls: "no", msg: "Type a number in every box (use − for negative)."}; renderRight(); return; }
+          judge(st, st.check(vals)); };
+        d.appendChild(row);
+      } else {
+        const row = document.createElement("div"); row.className = "row";
+        const go = document.createElement("button"); go.className = "btn"; go.textContent = st.type === "shade" ? "Check my shading" : "Use these points";
+        go.onclick = () => judge(st, st.check());
+        row.appendChild(go);
+        if (st.auto) { const a = document.createElement("button"); a.className = "btn quiet"; a.textContent = st.type === "shade" ? "Shade it for me" : "Pick for me"; a.onclick = () => { st.auto(); st.fb = {cls: "hint", msg: "Done. Look at what changed, then check it."}; renderRight(); }; row.appendChild(a); }
+        d.appendChild(row);
+      }
+      const row2 = document.createElement("div"); row2.className = "row";
+      const hb = document.createElement("button"); hb.className = "btn ghost"; hb.textContent = "Hint"; hb.onclick = () => { st.fb = {cls: "hint", msg: st.hint}; st.tries = (st.tries || 0); renderRight(); };
+      row2.appendChild(hb);
+      if ((st.tries || 0) >= 3 && st.answer) { const sb = document.createElement("button"); sb.className = "btn quiet"; sb.textContent = "Show answer";
+        sb.onclick = () => { const a = typeof st.answer === "function" ? st.answer() : st.answer; st.fb = {cls: "hint", msg: "Answer: " + a + ". Type it in to keep going."}; state.streak[state.mode][state.level] = 0; renderRight(); }; row2.appendChild(sb); }
+      d.appendChild(row2);
+      if (st.fb) { const f = document.createElement("div"); f.className = "fb " + st.fb.cls; f.textContent = st.fb.msg; f.setAttribute("role", "status"); d.appendChild(f); }
+    }
+    wrap.appendChild(d);
+  });
+  if (cur >= STEPS.length) {
+    const lv = state.level, list = state.mode === "area" ? AREA_LEVELS : SLOPE_LEVELS;
+    const st = state.streak[state.mode][lv] || 0;
+    const w = document.createElement("div"); w.className = "win";
+    w.innerHTML = `<strong>Nice work!</strong><span>${st >= 3 && lv < list.length ? `That's ${st} in a row on Level ${lv}. Ready for Level ${lv + 1}?` : `Solved ${state.wins[state.mode][lv]} on this level. Try another one.`}</span>`;
+    const row = document.createElement("div"); row.className = "row";
+    const again = document.createElement("button"); again.className = "btn"; again.textContent = "Another problem"; again.onclick = newProblem; row.appendChild(again);
+    if (lv < list.length) { const nx = document.createElement("button"); nx.className = st >= 3 ? "btn" : "btn ghost"; nx.textContent = `Go to Level ${lv + 1}`; nx.onclick = () => { state.level = lv + 1; newProblem(); }; row.appendChild(nx); }
+    w.appendChild(row); right.appendChild(w);
+  }
+  const f = right.querySelector("input"); if (f && document.activeElement?.tagName !== "INPUT") f.focus({preventScroll: true});
+}
+
+function judge(st, res) {
+  if (res.ok) {
+    st.passed = res.msg; st.fb = null; cur++;
+    if (cur >= STEPS.length) {
+      const m = state.mode, l = state.level;
+      state.wins[m][l] = (state.wins[m][l] || 0) + 1;
+      state.streak[m][l] = (state.streak[m][l] || 0) + (STEPS.some(s => (s.tries || 0) >= 3) ? 0 : 1);
+      renderLevels();
+    }
+    refreshOverlay();
+  } else { st.tries = (st.tries || 0) + 1; st.fb = {cls: "no", msg: res.msg}; }
+  renderRight();
+}
+
+function setMode(m) { state.mode = m; state.level = 1; $("#m-area").setAttribute("aria-pressed", m === "area"); $("#m-slope").setAttribute("aria-pressed", m === "slope"); newProblem(); }
+$("#m-area").onclick = () => setMode("area");
+$("#m-slope").onclick = () => setMode("slope");
+newProblem();
+})();
+</script>
+</body>
+</html>
