@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crash Box Challenge — Uniform Acceleration Lab</title>
+<style>
+  .viz-root {
+    color-scheme: light;
+    --surface-1: #fcfcfb; --surface-2: #f2f1ec; --page: #f9f9f7;
+    --text-primary: #0b0b0b; --text-secondary: #52514e; --text-muted: #898781;
+    --grid: #e1e0d9; --axis: #c3c2b7;
+    --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a;
+    --border: rgba(11,11,11,0.10);
+    --good: #006300; --bad: #b3261e;
+    --track: #f08a24; --floor: #ded9cd; --box: #c9a978; --box-edge: #8a6d43; --beam: #d62a2a; --zone: rgba(27,175,122,.28);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .viz-root {
+      color-scheme: dark;
+      --surface-1: #1a1a19; --surface-2: #232322; --page: #0d0d0d;
+      --text-primary: #ffffff; --text-secondary: #c3c2b7; --text-muted: #898781;
+      --grid: #2c2c2a; --axis: #383835;
+      --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70;
+      --border: rgba(255,255,255,0.10); --good: #0ca30c; --bad: #f2635a;
+      --track: #c96d14; --floor: #2a2a27; --box: #7a6446; --box-edge: #b8976a; --beam: #ff5a5a; --zone: rgba(25,158,112,.35);
+    }
+  }
+  :root[data-theme="dark"] .viz-root {
+    color-scheme: dark;
+    --surface-1: #1a1a19; --surface-2: #232322; --page: #0d0d0d;
+    --text-primary: #ffffff; --text-secondary: #c3c2b7; --text-muted: #898781;
+    --grid: #2c2c2a; --axis: #383835;
+    --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70;
+    --border: rgba(255,255,255,0.10); --good: #0ca30c; --bad: #f2635a;
+    --track: #c96d14; --floor: #2a2a27; --box: #7a6446; --box-edge: #b8976a; --beam: #ff5a5a; --zone: rgba(25,158,112,.35);
+  }
+  * { box-sizing: border-box; }
+  body.viz-root { margin: 0; padding: 16px; background: var(--page); color: var(--text-primary);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 14px; }
+  header h1 { font-size: 20px; margin: 0 0 2px; font-weight: 650; }
+  header p { margin: 0 0 12px; color: var(--text-secondary); font-size: 13px; max-width: 95ch; }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+  .controls label { color: var(--text-secondary); font-size: 12.5px; }
+  select, button, input[type=number] { font: inherit; font-size: 13px; background: var(--surface-1); color: var(--text-primary);
+    border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; }
+  select, button { cursor: pointer; }
+  button:hover, select:hover { border-color: var(--text-muted); }
+  button.primary { border-color: var(--series-1); font-weight: 600; }
+  button:disabled, input:disabled { opacity: .45; cursor: not-allowed; }
+  button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--series-1); outline-offset: 1px; }
+  .layout { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-start; }
+  .panel { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 12px; min-width: 0; }
+  .panel h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); margin: 0 0 10px; font-weight: 600; }
+  #scenePanel { flex: 1 1 620px; min-width: 300px; }
+  #sidePanel { flex: 0 1 300px; min-width: 260px; display: flex; flex-direction: column; gap: 12px; }
+  svg { display: block; width: 100%; height: auto; }
+  svg text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .sl { margin-bottom: 10px; }
+  .sl .row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .sl .nm { font-size: 12.5px; color: var(--text-secondary); }
+  .sl .val { font-variant-numeric: tabular-nums; font-weight: 600; }
+  input[type=range] { width: 100%; accent-color: var(--series-1); }
+  .kv { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; font-size: 13px; }
+  .kv span:nth-child(odd) { color: var(--text-secondary); }
+  .kv span:nth-child(even) { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
+  .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
+  .tile { background: var(--surface-2); border-radius: 10px; padding: 8px 10px; }
+  .tile .lab { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; }
+  .tile .num { font-size: 19px; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .msg { margin-top: 10px; padding: 9px 11px; border-radius: 10px; background: var(--surface-2); font-size: 13.5px; line-height: 1.45; }
+  .msg.good { color: var(--good); font-weight: 600; }
+  .msg.bad { color: var(--bad); font-weight: 600; }
+  .row2 { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .stepper { display: flex; align-items: center; gap: 6px; }
+  .stepper button { width: 32px; padding: 4px 0; }
+  .logwrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+  th, td { border-bottom: 1px solid var(--border); padding: 5px 8px; text-align: right; white-space: nowrap; }
+  th { color: var(--text-muted); font-weight: 600; font-size: 11.5px; text-align: right; }
+  th:first-child, td:first-child, td.l, th.l { text-align: left; }
+  tr.newdesign td { border-top: 2px solid var(--series-2); }
+  .hint { font-size: 12px; color: var(--text-muted); margin-top: 6px; line-height: 1.4; }
+  .graphs { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; margin-top: 12px; }
+  @media (max-width: 640px) { .graphs { grid-template-columns: minmax(0, 1fr); } .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .gtitle { font-size: 12px; color: var(--text-muted); margin: 0 0 4px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+  ol.work { margin: 0; padding-left: 18px; line-height: 1.6; font-size: 13px; }
+</style>
+</head>
+<body class="viz-root">
+<header>
+  <h1>Crash Box Challenge</h1>
+  <p>A Hot Wheels car rolls down a ramp, crosses a short runway past photogate A, and crashes into a box you design. The box (car inside) skids to a stop. Calibrate with the photogates, find the pattern, then predict the release point that lands the box’s leading edge in the target zone.</p>
+</header>
+<div class="controls">
+  <label>Mode
+    <select id="mode"><option value="cal">Calibrate</option><option value="chal">Challenge</option></select>
+  </label>
+  <label>Playback
+    <select id="speed"><option value="0.25">¼ speed</option><option value="1">Real time</option></select>
+  </label>
+  <label><input type="checkbox" id="showSpeeds"> Show speeds in log</label>
+  <button id="newBtn">New lab setup</button>
+  <button id="copyBtn">Copy data</button>
+</div>
+
+<div class="layout">
+  <section class="panel" id="scenePanel">
+    <h2>Side view</h2>
+    <svg id="scene" viewBox="0 75 1000 225" role="img" aria-label="Ramp, runway, photogates and box"></svg>
+    <div class="tiles">
+      <div class="tile"><div class="lab">Gate A time</div><div class="num" id="tA">—</div></div>
+      <div class="tile"><div class="lab">Gate B time</div><div class="num" id="tB">—</div></div>
+      <div class="tile"><div class="lab">Skid distance d</div><div class="num" id="dOut">—</div></div>
+    </div>
+    <div class="msg" id="msg">Set a release distance and press <b>Release the car</b>. Gate A times the car (its flag is its own length). Gate B times the 1.0 cm card on the box right after the crash.</div>
+    <div class="graphs">
+      <div><p class="gtitle">Velocity–time, last run</p><svg id="vt" viewBox="0 0 420 220" role="img" aria-label="velocity-time graph of the last run"></svg></div>
+      <div><p class="gtitle">Skid distance vs release distance (this box)</p><svg id="dl" viewBox="0 0 420 220" role="img" aria-label="skid distance versus release distance"></svg></div>
+    </div>
+  </section>
+
+  <aside id="sidePanel">
+    <section class="panel">
+      <h2>Your box</h2>
+      <div class="sl"><div class="row"><span class="nm">Washers (4.5 g each)</span>
+        <span class="stepper"><button id="wMinus" aria-label="fewer washers">−</button><span class="val" id="wVal">1</span><button id="wPlus" aria-label="more washers">+</button></span></div></div>
+      <div class="sl"><div class="row"><span class="nm">Bottom material</span>
+        <select id="mat"></select></div></div>
+      <div class="kv">
+        <span>Box mass</span><span id="boxMass">—</span>
+        <span>Car mass</span><span id="carMass">—</span>
+        <span>Flag A (car length)</span><span>0.070 m</span>
+        <span>Flag B (card)</span><span>0.010 m</span>
+      </div>
+      <p class="hint">Change the box and your old calibration no longer applies. New designs start a new section in the log.</p>
+    </section>
+    <section class="panel" id="relPanel">
+      <h2>Release</h2>
+      <div class="sl"><div class="row"><span class="nm">Release distance L (along track)</span><span class="val" id="Lval">0.50 m</span></div>
+        <input type="range" id="L" min="0.05" max="1.00" step="0.01" value="0.50" aria-label="release distance"></div>
+      <div id="chalBox" hidden>
+        <div class="kv" style="margin-bottom:8px"><span>Target: box must slide</span><span id="Dval">—</span><span>Zone width</span><span>6 cm</span></div>
+        <div class="row2"><label for="pred" class="nm">Your predicted L (m)</label>
+          <input type="number" id="pred" step="0.01" min="0.05" max="1" style="width:90px">
+          <button id="lockBtn">Lock prediction</button></div>
+        <p class="hint">You must lock a prediction before the scored run. The slider jumps to your value.</p>
+      </div>
+      <div class="row2" style="margin-top:8px">
+        <button id="goBtn" class="primary" style="flex:1">▶ Release the car</button>
+        <button id="nextBtn" hidden>Next target</button>
+      </div>
+    </section>
+    <section class="panel" id="solPanel" hidden></section>
+  </aside>
+</div>
+
+<section class="panel" style="margin-top:14px">
+  <h2>Run log</h2>
+  <div class="logwrap"><table id="log"><thead></thead><tbody></tbody></table></div>
+  <p class="hint">Copy data puts the log on your clipboard as tab-separated text that pastes straight into a spreadsheet.</p>
+</section>
+
+<script>
+/* ===================== PHYSICS CORE =====================
+   Uniform acceleration in three phases plus a measured "hit":
+   ramp:   from rest, a_ramp = g (sinθ − c_roll cosθ),  v_car² = 2 a_ramp L
+   runway: constant speed v_car (photogate A, flag = car length)
+   crash:  v_box = k v_car, k = e · m_car / (m_car + m_box)   (sticky crash, e < 1 = small bounce loss)
+   skid:   a_box = −μ g,  d = v_box² / (2 μ g)                  (photogate B, flag = 1.0 cm card)
+   ⇒ d = (k² a_ramp / μ g) · L : skid distance is proportional to release distance.
+   Pure functions; no DOM. Testable in Node.
+======================================================== */
+const PHYS = (() => {
+  const g = 9.80, FLAG_A = 0.070, FLAG_B = 0.010, M_CAR = 0.036, M_BOX0 = 0.020, M_W = 0.0045;
+  const MATERIALS = [
+    {id: "wax", name: "Wax paper", mu: 0.18},
+    {id: "card", name: "Plain cardstock", mu: 0.32},
+    {id: "tape", name: "Masking tape", mu: 0.42},
+    {id: "felt", name: "Felt", mu: 0.50},
+    {id: "sand", name: "Sandpaper", mu: 0.60},
+  ];
+  function rng(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+  function newSetup(seed) {
+    const r = rng(seed);
+    const muScale = {}; MATERIALS.forEach(m => muScale[m.id] = 0.92 + 0.16 * r());
+    return { seed, theta: (13 + 4 * r()) * Math.PI / 180, roll: 0.03, e: 0.95 + 0.04 * r(), muScale };
+  }
+  const boxMass = w => M_BOX0 + w * M_W;
+  const rampAccel = s => g * (Math.sin(s.theta) - s.roll * Math.cos(s.theta));
+  const hitFactor = (s, w) => s.e * M_CAR / (M_CAR + boxMass(w));
+  const boxDecel = (s, mat) => MATERIALS.find(m => m.id === mat).mu * s.muScale[mat] * g;
+  const slope = (s, w, mat) => hitFactor(s, w) ** 2 * rampAccel(s) / boxDecel(s, mat);
+  function noise(r, pct) { return 1 + pct * ((r() + r() + r()) / 1.5 - 1); }   // ≈ ±pct, peaked at 0
+  function run(s, w, mat, L, r) {
+    const aR = rampAccel(s) * noise(r, 0.02);
+    const vCar = Math.sqrt(2 * aR * L);
+    const k = hitFactor(s, w) * noise(r, 0.06);
+    const vBox = k * vCar;
+    const aB = boxDecel(s, mat) * noise(r, 0.08);
+    const d = vBox * vBox / (2 * aB);
+    return { L, aR, vCar, k, vBox, aB, d,
+      tA: Math.round(FLAG_A / vCar * 1e4) / 1e4, tB: Math.round(FLAG_B / vBox * 1e4) / 1e4, dMeas: Math.round(d * 1000) / 1000,
+      tRamp: vCar / aR, tSkid: vBox / aB };
+  }
+  function requiredL(s, w, mat, D) { return D / slope(s, w, mat); }
+  return { g, FLAG_A, FLAG_B, M_CAR, MATERIALS, newSetup, boxMass, rampAccel, hitFactor, boxDecel, slope, run, requiredL, rng };
+})();
+if (typeof module !== "undefined") module.exports = PHYS;
+
+/* ===================== STATE ===================== */
+const $ = id => document.getElementById(id);
+const st = {
+  setup: PHYS.newSetup(Date.now() % 1e9), r: PHYS.rng(Date.now() % 7919 + 17),
+  washers: 1, mat: "card", designId: 1, lastDesignKey: "1|card",
+  log: [], last: null, busy: false,
+  target: null, locked: null, attempts: 0,
+};
+const RUNWAY = 0.15, BOX_LEN = 0.09, TABLE_END = 0.62;   // m: runway before box; box length; skid room before the table edge
+const designKey = () => st.washers + "|" + st.mat;
+const matName = id => PHYS.MATERIALS.find(m => m.id === id).name;
+const f = (x, n = 2) => (Math.round(x * 10 ** n) / 10 ** n).toFixed(n).replace("-", "−");
+
+/* ===================== SCENE ===================== */
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, a, p) { const e = document.createElementNS(NS, tag); for (const k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; }
+const css = v => getComputedStyle(document.body).getPropertyValue(v).trim();
+const S = 500;                 // px per meter
+let G = {};
+function geom() {
+  const th = st.setup.theta, trackLen = 1.0;
+  const floorY = 255, rampBottomX = 30 + trackLen * Math.cos(th) * S;
+  const startX = rampBottomX + RUNWAY * S;   // box back edge
+  return { th, floorY, rampBottomX, startX, top: { x: 30, y: floorY - trackLen * Math.sin(th) * S },
+    alongRamp: s => ({ x: rampBottomX - s * Math.cos(th) * S, y: floorY - s * Math.sin(th) * S }) };
+}
+function drawScene() {
+  const svg = $("scene"); svg.innerHTML = ""; const g = geom(); G = g;
+  el("rect", { x: 0, y: g.floorY, width: 1000, height: 45, fill: css("--floor") }, svg);
+  // table edge
+  const edgeX = g.startX + (BOX_LEN + TABLE_END) * S;
+  if (edgeX < 1000) el("rect", { x: edgeX, y: g.floorY, width: 1000 - edgeX, height: 45, fill: css("--page") }, svg);
+  // ramp support + track
+  el("line", { x1: g.top.x, y1: g.top.y, x2: g.top.x, y2: g.floorY, stroke: css("--axis"), "stroke-width": 4 }, svg);
+  el("line", { x1: g.top.x, y1: g.top.y, x2: g.rampBottomX, y2: g.floorY, stroke: css("--track"), "stroke-width": 6, "stroke-linecap": "round" }, svg);
+  el("line", { x1: g.rampBottomX, y1: g.floorY, x2: g.startX, y2: g.floorY, stroke: css("--track"), "stroke-width": 6 }, svg);
+  // ramp tick marks every 10 cm
+  for (let s = 0.1; s <= 1.0001; s += 0.1) { const p = g.alongRamp(s);
+    el("line", { x1: p.x, y1: p.y, x2: p.x - 7 * Math.sin(g.th), y2: p.y - 7 * Math.cos(g.th) - 4, stroke: css("--text-muted"), "stroke-width": 1 }, svg);
+    if (Math.round(s * 10) % 2 === 0) { const t = el("text", { x: p.x - 10, y: p.y - 14, "font-size": 10, fill: css("--text-muted"), "text-anchor": "middle" }, svg); t.textContent = Math.round(s * 100); } }
+  const tt = el("text", { x: g.top.x + 4, y: g.top.y - 22, "font-size": 10.5, fill: css("--text-muted") }, svg); tt.textContent = "cm along track";
+  // ruler under skid region (cm from box start)
+  for (let c = 0; c <= 60; c += 5) { const x = g.startX + BOX_LEN * S + c / 100 * S; if (x > 995) break;
+    el("line", { x1: x, y1: g.floorY, x2: x, y2: g.floorY + (c % 10 ? 6 : 11), stroke: css("--text-muted"), "stroke-width": 1 }, svg);
+    if (c % 10 === 0) { const t = el("text", { x, y: g.floorY + 24, "font-size": 10, fill: css("--text-muted"), "text-anchor": "middle" }, svg); t.textContent = c; } }
+  const rl = el("text", { x: g.startX + BOX_LEN * S, y: g.floorY + 38, "font-size": 10.5, fill: css("--text-muted") }, svg); rl.textContent = "cm the box has slid (leading edge)";
+  // target zone
+  if (st.mode === "chal" && st.target != null) {
+    const zc = g.startX + (BOX_LEN + st.target) * S;
+    el("rect", { x: zc - 0.03 * S, y: g.floorY - 70, width: 0.06 * S, height: 70, fill: css("--zone") }, svg);
+    const t = el("text", { x: zc, y: g.floorY - 76, "font-size": 11, fill: css("--series-3"), "text-anchor": "middle", "font-weight": 600 }, svg); t.textContent = "target";
+  }
+  // photogates
+  const gate = (x, h, id, label) => { const grp = el("g", { id }, svg);
+    el("rect", { x: x - 5, y: g.floorY - h - 12, width: 10, height: 12, fill: css("--text-secondary"), rx: 2 }, grp);
+    el("line", { x1: x, y1: g.floorY - h, x2: x, y2: g.floorY - 2, stroke: css("--beam"), "stroke-width": 1.5, "stroke-dasharray": "3 3", class: "beam", opacity: .55 }, grp);
+    const t = el("text", { x, y: g.floorY - h - 17, "font-size": 11, "text-anchor": "middle", fill: css("--text-secondary"), "font-weight": 600 }, grp); t.textContent = label; };
+  gate(g.startX - 0.025 * S, 34, "gateA", "A");
+  gate(g.startX + BOX_LEN * S * 0.45 + 14, 70, "gateB", "B");
+  // start line
+  el("line", { x1: g.startX, y1: g.floorY - 4, x2: g.startX, y2: g.floorY + 8, stroke: css("--text-primary"), "stroke-width": 2 }, svg);
+  // box + car groups
+  const box = el("g", { id: "box" }, svg);
+  el("rect", { x: 0, y: -40, width: BOX_LEN * S, height: 40, fill: css("--box"), stroke: css("--box-edge"), "stroke-width": 1.5, rx: 2, opacity: .9 }, box);
+  el("rect", { x: BOX_LEN * S - 6, y: -36, width: 4, height: 34, fill: css("--box-edge") }, box);
+  el("rect", { x: BOX_LEN * S * 0.45, y: -58, width: 5, height: 18, fill: css("--text-secondary") }, box);   // 1 cm flag (drawn wide enough to see)
+  for (let i = 0; i < st.washers; i++) el("rect", { x: 8 + i * 6, y: -7, width: 5, height: 5, fill: css("--text-muted") }, box);
+  const car = el("g", { id: "car" }, svg);
+  el("rect", { x: -0.07 * S, y: -16, width: 0.07 * S, height: 11, rx: 4, fill: css("--series-2") }, car);
+  el("rect", { x: -0.07 * S + 10, y: -22, width: 14, height: 7, rx: 2, fill: css("--series-2"), opacity: .8 }, car);
+  el("circle", { cx: -0.07 * S + 7, cy: -4, r: 4, fill: css("--text-primary") }, car);
+  el("circle", { cx: -8, cy: -4, r: 4, fill: css("--text-primary") }, car);
+  placeBox(0); placeCarAtRelease();
+}
+function placeBox(slid) { $("box").setAttribute("transform", `translate(${G.startX + slid * S},${G.floorY})`); }
+function placeCarAtRelease() { placeCarRamp(parseFloat($("L").value)); }
+function placeCarRamp(sAlong) { const p = G.alongRamp(sAlong); const deg = G.th * 180 / Math.PI;
+  $("car").setAttribute("transform", `translate(${p.x},${p.y}) rotate(${deg})`); }
+function placeCarFlat(xm) { $("car").setAttribute("transform", `translate(${G.rampBottomX + xm * S},${G.floorY})`); }
+function flash(id) { const b = document.querySelector(`#${id} .beam`); if (!b) return; b.setAttribute("opacity", 1); b.setAttribute("stroke-width", 3); setTimeout(() => { b.setAttribute("opacity", .55); b.setAttribute("stroke-width", 1.5); }, 250); }
+
+/* ===================== RUN + ANIMATION ===================== */
+function release() {
+  if (st.busy) return;
+  if (st.mode === "chal" && st.locked == null) { say("Lock a prediction first. In the challenge, every scored run needs one.", "bad"); return; }
+  const L = st.mode === "chal" ? st.locked : parseFloat($("L").value);
+  const res = PHYS.run(st.setup, st.washers, st.mat, L, st.r);
+  st.busy = true; setBusy(true);
+  const playback = parseFloat($("speed").value);
+  const innerGap = BOX_LEN - 0.008;                        // car front travels to the foam on the far wall
+  const tRunway = (RUNWAY + innerGap) / res.vCar;
+  const T = [res.tRamp, res.tRamp + tRunway, res.tRamp + tRunway + res.tSkid];
+  const offTable = res.d > TABLE_END;
+  let t0 = null, firedA = false, firedB = false;
+  const step = ts => {
+    if (t0 == null) t0 = ts; const t = (ts - t0) / 1000 * playback;
+    if (t < T[0]) { const s = L - 0.5 * res.aR * t * t; placeCarRamp(Math.max(s, 0)); }
+    else if (t < T[1]) { const x = res.vCar * (t - T[0]); placeCarFlat(x);
+      if (!firedA && x > RUNWAY - 0.025) { flash("gateA"); firedA = true; } }
+    else { const tt = Math.min(t - T[1], res.tSkid); const s = res.vBox * tt - 0.5 * res.aB * tt * tt;
+      const slid = offTable ? Math.min(s, TABLE_END + 0.02) : s;
+      placeBox(slid); placeCarFlat(RUNWAY + innerGap + slid);
+      if (!firedB && slid > 0.001) { flash("gateB"); firedB = true; } }
+    if (t < T[2] + 0.05) requestAnimationFrame(step); else finish(res, offTable);
+  };
+  requestAnimationFrame(step);
+}
+function finish(res, offTable) {
+  st.busy = false; setBusy(false); st.last = res;
+  $("tA").textContent = f(res.tA, 4) + " s"; $("tB").textContent = f(res.tB, 4) + " s";
+  $("dOut").textContent = offTable ? "off the table!" : f(res.dMeas, 3) + " m";
+  const key = designKey(); if (key !== st.lastDesignKey) { st.designId++; st.lastDesignKey = key; }
+  const row = { n: st.log.length + 1, mode: st.mode, design: st.designId, washers: st.washers, mat: st.mat, L: res.L, tA: res.tA, tB: res.tB,
+    d: offTable ? null : res.dMeas, vCar: PHYS.FLAG_A / res.tA, vBox: PHYS.FLAG_B / res.tB };
+  st.log.push(row); renderLog(); drawVt(res); drawDL();
+  if (st.mode === "chal") scoreAttempt(res, offTable);
+  else say(offTable ? "The box slid right off the end of the table. Shorter release, heavier box, or a grabbier bottom." :
+    `Recorded run ${row.n}. Try at least three different release distances with this box.`);
+}
+function setBusy(b) { ["goBtn", "L", "wMinus", "wPlus", "mat", "mode", "newBtn", "lockBtn", "pred"].forEach(id => $(id).disabled = b || (id === "L" && st.mode === "chal")); }
+function say(html, cls) { const m = $("msg"); m.className = "msg" + (cls ? " " + cls : ""); m.innerHTML = html; }
+
+/* ===================== CHALLENGE ===================== */
+function newTarget() {
+  st.target = Math.round((0.12 + 0.14 * st.r()) * 100) / 100; st.locked = null;
+  $("Dval").textContent = f(st.target, 2) + " m"; $("pred").value = ""; $("pred").disabled = false; $("lockBtn").disabled = false;
+  $("nextBtn").hidden = true; $("solPanel").hidden = true; drawScene();
+  say(`New target: the box must slide <b>${f(st.target, 2)} m</b> (±3 cm). Use your calibration for this box, lock a release distance, then release.`);
+}
+function lockPred() {
+  const v = parseFloat($("pred").value);
+  if (!(v >= 0.05 && v <= 1.0)) { say("Enter a release distance between 0.05 m and 1.00 m. If your math says you need more than 1.00 m, your box needs a redesign.", "bad"); return; }
+  st.locked = v; $("L").value = v; $("Lval").textContent = f(v) + " m"; placeCarAtRelease();
+  $("pred").disabled = true; $("lockBtn").disabled = true; say(`Prediction locked: L = ${f(v)} m. Release when ready.`);
+}
+function scoreAttempt(res, offTable) {
+  st.attempts++;
+  const miss = offTable ? null : res.dMeas - st.target;
+  if (offTable) say("Off the table! Way too fast. Check your hit factor and your box acceleration.", "bad");
+  else if (Math.abs(miss) <= 0.03) say(`In the zone! The box slid ${f(res.dMeas, 3)} m; the target was ${f(st.target, 2)} m (miss ${f(miss * 100, 1)} cm).`, "good");
+  else say(`Missed by ${f(Math.abs(miss) * 100, 1)} cm ${miss > 0 ? "long" : "short"}. The box slid ${f(res.dMeas, 3)} m. Which number in your chain would explain a miss in that direction?`, "bad");
+  $("nextBtn").hidden = false; showSolution(res);
+}
+function showSolution(res) {
+  const s = st.setup, w = st.washers, m = st.mat;
+  const aR = PHYS.rampAccel(s), k = PHYS.hitFactor(s, w), aB = PHYS.boxDecel(s, m), sl = PHYS.slope(s, w, m);
+  const vb = Math.sqrt(2 * aB * st.target), vc = vb / k, L = vc * vc / (2 * aR);
+  const p = $("solPanel"); p.hidden = false;
+  p.innerHTML = `<h2>Worked solution (true lab values)</h2><ol class="work">
+    <li>Ramp acceleration a<sub>ramp</sub> = ${f(aR)} m/s²; hit factor k = ${f(k)}; box acceleration a<sub>box</sub> = −${f(aB)} m/s².</li>
+    <li>Box speed needed to slide ${f(st.target, 2)} m: v<sub>box</sub> = √(2 × ${f(aB)} × ${f(st.target, 2)}) = ${f(vb, 3)} m/s.</li>
+    <li>Car speed needed: v<sub>car</sub> = ${f(vb, 3)} ÷ ${f(k)} = ${f(vc, 3)} m/s.</li>
+    <li>Release distance: L = ${f(vc, 3)}² ÷ (2 × ${f(aR)}) = <b>${f(L)} m</b>${L > 1 ? " — longer than the track, so this box cannot reach the target. Redesign" : ""}.</li>
+    <li>Graph check: slope = k² a<sub>ramp</sub> ÷ |a<sub>box</sub>| = ${f(sl, 3)}, so L = ${f(st.target, 2)} ÷ ${f(sl, 3)} = ${f(st.target / sl)} m.</li>
+    <li>You released at ${f(res.L)} m. Every run also has a little real-world scatter (about ±2% in k, ±3% in the skid).</li></ol>`;
+}
+
+/* ===================== GRAPHS ===================== */
+function axes(svg, xmax, ymax, xl, yl, xt, yt) {
+  svg.innerHTML = ""; const L = 44, B = 190, W = 360, H = 165;
+  const X = x => L + x / xmax * W, Y = y => B - y / ymax * H;
+  for (let i = 0; i <= 5; i++) { const x = xmax * i / 5, y = ymax * i / 5;
+    el("line", { x1: X(x), y1: B, x2: X(x), y2: B - H, stroke: css("--grid") }, svg);
+    el("line", { x1: L, y1: Y(y), x2: L + W, y2: Y(y), stroke: css("--grid") }, svg);
+    const a = el("text", { x: X(x), y: B + 14, "font-size": 10.5, fill: css("--text-muted"), "text-anchor": "middle" }, svg); a.textContent = xt(x);
+    const b = el("text", { x: L - 6, y: Y(y) + 4, "font-size": 10.5, fill: css("--text-muted"), "text-anchor": "end" }, svg); b.textContent = yt(y); }
+  el("line", { x1: L, y1: B, x2: L + W, y2: B, stroke: css("--axis"), "stroke-width": 1.5 }, svg);
+  el("line", { x1: L, y1: B, x2: L, y2: B - H, stroke: css("--axis"), "stroke-width": 1.5 }, svg);
+  const t1 = el("text", { x: L + W / 2, y: 214, "font-size": 11.5, fill: css("--text-secondary"), "text-anchor": "middle" }, svg); t1.textContent = xl;
+  const t2 = el("text", { x: 12, y: B - H / 2, "font-size": 11.5, fill: css("--text-secondary"), "text-anchor": "middle", transform: `rotate(-90 12 ${B - H / 2})` }, svg); t2.textContent = yl;
+  return { X, Y };
+}
+function drawVt(res) {
+  const svg = $("vt");
+  if (!res) { axes(svg, 1.5, 2.5, "t (s)", "v (m/s)", x => x.toFixed(1), y => y.toFixed(1)); return; }
+  const tRun = RUNWAY / res.vCar, t1 = res.tRamp, t2 = t1 + tRun, t3 = t2 + res.tSkid;
+  const xmax = Math.max(0.5, Math.ceil(t3 * 5) / 5), ymax = Math.max(1, Math.ceil(res.vCar * 2) / 2);
+  const { X, Y } = axes(svg, xmax, ymax, "t (s)", "v (m/s)", x => x.toFixed(1), y => y.toFixed(1));
+  el("polygon", { points: `${X(0)},${Y(0)} ${X(t1)},${Y(res.vCar)} ${X(t1)},${Y(0)}`, fill: css("--series-2"), opacity: .15 }, svg);
+  el("polygon", { points: `${X(t2)},${Y(0)} ${X(t2)},${Y(res.vBox)} ${X(t3)},${Y(0)}`, fill: css("--series-1"), opacity: .18 }, svg);
+  el("polyline", { points: `${X(0)},${Y(0)} ${X(t1)},${Y(res.vCar)} ${X(t2)},${Y(res.vCar)}`, fill: "none", stroke: css("--series-2"), "stroke-width": 2.5 }, svg);
+  el("line", { x1: X(t2), y1: Y(res.vCar), x2: X(t2), y2: Y(res.vBox), stroke: css("--text-muted"), "stroke-width": 1.5, "stroke-dasharray": "4 3" }, svg);
+  el("polyline", { points: `${X(t2)},${Y(res.vBox)} ${X(t3)},${Y(0)}`, fill: "none", stroke: css("--series-1"), "stroke-width": 2.5 }, svg);
+  const c = el("text", { x: X(t2) + 6, y: Y((res.vCar + res.vBox) / 2), "font-size": 11, fill: css("--text-secondary") }, svg); c.textContent = "crash";
+  const a1 = el("text", { x: X(t1 * 0.62), y: Y(res.vCar * 0.18), "font-size": 10.5, fill: css("--series-2"), "text-anchor": "middle" }, svg); a1.textContent = "area = L";
+  const a2 = el("text", { x: X(t2 + res.tSkid * 0.35), y: Y(res.vBox * 0.18), "font-size": 10.5, fill: css("--series-1"), "text-anchor": "middle" }, svg); a2.textContent = "area = d";
+}
+function drawDL() {
+  const svg = $("dl"); const pts = st.log.filter(r => r.design === st.designId && r.d != null && designKey() === r.washers + "|" + r.mat);
+  const ymax = Math.max(0.2, Math.ceil(Math.max(0, ...pts.map(p => p.d)) * 10 + 0.5) / 10);
+  const { X, Y } = axes(svg, 1.0, ymax, "release distance L (m)", "skid d (m)", x => x.toFixed(1), y => y.toFixed(2));
+  el("circle", { cx: X(0), cy: Y(0), r: 3.5, fill: "none", stroke: css("--text-muted"), "stroke-width": 1.5 }, svg);
+  pts.forEach(p => el("circle", { cx: X(p.L), cy: Y(p.d), r: 4.5, fill: p.mode === "chal" ? css("--series-3") : css("--series-1") }, svg));
+  if (st.mode === "chal" && st.target != null) {
+    el("line", { x1: X(0), y1: Y(st.target), x2: X(1), y2: Y(st.target), stroke: css("--series-3"), "stroke-dasharray": "5 4", "stroke-width": 1.5 }, svg);
+    const t = el("text", { x: X(1) - 4, y: Y(st.target) - 5, "font-size": 10.5, fill: css("--series-3"), "text-anchor": "end" }, svg); t.textContent = "target";
+  }
+  if (!pts.length) { const t = el("text", { x: 224, y: 100, "font-size": 12, fill: css("--text-muted"), "text-anchor": "middle" }, svg); t.textContent = "Your calibration runs for this box appear here"; }
+}
+
+/* ===================== LOG ===================== */
+function renderLog() {
+  const sp = $("showSpeeds").checked;
+  const hd = ["Run", "Mode", "Box", "L (m)", "Gate A (s)", "Gate B (s)", "d (m)"].concat(sp ? ["v_car (m/s)", "v_box (m/s)"] : []);
+  $("log").tHead.innerHTML = "<tr>" + hd.map((h, i) => `<th class="${i < 3 ? "l" : ""}">${h}</th>`).join("") + "</tr>";
+  let prev = null;
+  $("log").tBodies[0].innerHTML = st.log.map(r => { const nd = prev !== null && prev !== r.design; prev = r.design;
+    return `<tr class="${nd ? "newdesign" : ""}"><td>${r.n}</td><td class="l">${r.mode === "chal" ? "Challenge" : "Calibrate"}</td>
+      <td class="l">#${r.design}: ${r.washers} washer${r.washers === 1 ? "" : "s"}, ${matName(r.mat).toLowerCase()}</td>
+      <td>${f(r.L)}</td><td>${f(r.tA, 4)}</td><td>${f(r.tB, 4)}</td><td>${r.d == null ? "off table" : f(r.d, 3)}</td>
+      ${sp ? `<td>${f(r.vCar, 3)}</td><td>${f(r.vBox, 3)}</td>` : ""}</tr>`; }).join("") ||
+    `<tr><td colspan="${hd.length}" class="l" style="color:var(--text-muted)">No runs yet.</td></tr>`;
+}
+function copyData() {
+  const sp = $("showSpeeds").checked;
+  const rows = [["run", "mode", "design", "washers", "bottom", "L_m", "gateA_s", "gateB_s", "d_m"].concat(sp ? ["v_car_mps", "v_box_mps"] : [])];
+  st.log.forEach(r => rows.push([r.n, r.mode, r.design, r.washers, matName(r.mat), r.L.toFixed(2), r.tA.toFixed(4), r.tB.toFixed(4), r.d == null ? "" : r.d.toFixed(3)]
+    .concat(sp ? [r.vCar.toFixed(3), r.vBox.toFixed(3)] : [])));
+  const txt = rows.map(r => r.join("\t")).join("\n");
+  const done = () => say("Copied. Paste into a spreadsheet.");
+  if (navigator.clipboard) navigator.clipboard.writeText(txt).then(done, () => fallbackCopy(txt)); else fallbackCopy(txt);
+}
+function fallbackCopy(txt) { const ta = document.createElement("textarea"); ta.value = txt; document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); say("Copied. Paste into a spreadsheet."); } catch (e) { say("Copy was blocked by the browser. Select the table and copy it by hand."); } ta.remove(); }
+
+/* ===================== WIRING ===================== */
+function updateDesign() {
+  $("wVal").textContent = st.washers; $("boxMass").textContent = f(PHYS.boxMass(st.washers) * 1000, 1) + " g";
+  $("carMass").textContent = f(PHYS.M_CAR * 1000, 1) + " g"; drawScene(); drawDL();
+  if (st.mode === "chal" && st.locked == null) say("You changed the box. Your calibration was for a different box. Recalibrate before you predict.");
+}
+PHYS.MATERIALS.forEach(m => { const o = document.createElement("option"); o.value = m.id; o.textContent = m.name; $("mat").appendChild(o); });
+$("mat").value = st.mat;
+$("wMinus").onclick = () => { if (st.washers > 0) { st.washers--; updateDesign(); } };
+$("wPlus").onclick = () => { if (st.washers < 6) { st.washers++; updateDesign(); } };
+$("mat").onchange = e => { st.mat = e.target.value; updateDesign(); };
+$("L").oninput = e => { $("Lval").textContent = f(parseFloat(e.target.value)) + " m"; placeCarAtRelease(); placeBox(0); };
+$("goBtn").onclick = () => { placeBox(0); release(); };
+$("lockBtn").onclick = lockPred;
+$("nextBtn").onclick = newTarget;
+$("showSpeeds").onchange = renderLog;
+$("copyBtn").onclick = copyData;
+$("mode").onchange = e => { st.mode = e.target.value; const ch = st.mode === "chal";
+  $("chalBox").hidden = !ch; $("L").disabled = ch; $("solPanel").hidden = true; $("nextBtn").hidden = true;
+  if (ch) newTarget(); else { st.target = null; st.locked = null; drawScene(); drawDL(); say("Calibration mode: release from any distance. Gate times and skid distance are logged."); } };
+$("newBtn").onclick = () => { st.setup = PHYS.newSetup(Math.floor(Math.random() * 1e9)); st.log = []; st.designId = 1; st.lastDesignKey = designKey();
+  st.last = null; ["tA", "tB", "dOut"].forEach(id => $(id).textContent = "—"); renderLog(); drawVt(null);
+  if (st.mode === "chal") newTarget(); else { drawScene(); drawDL(); }
+  say("New lab setup: a different ramp angle and slightly different materials. Your old data no longer applies."); };
+const mq = window.matchMedia("(prefers-color-scheme: dark)"); if (mq.addEventListener) mq.addEventListener("change", () => { drawScene(); drawVt(st.last); drawDL(); });
+st.mode = "cal"; updateDesign(); drawVt(null); renderLog();
+</script>
+</body>
+</html>
