@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Slope Stack</title>
+<meta name="description" content="Match position, velocity and acceleration graphs by slope: parabola, diagonal, flat, zero line.">
+<style>
+body{margin:0}
+/* Layout: graph-paper lab notebook. Left = the x/v/a stack being built; right = answer cards. Stacks above cards on phones. */
+:root{
+  --paper:#eef4f2; --paper-2:#ffffff; --grid:#d5e3df; --ink:#16302b; --muted:#5b726c; --line:#b9cdc7;
+  --x:#2a5bd7; --v:#0d8559; --a:#c4410c;
+  --good:#0d8559; --bad:#c22f4b; --hl:#fff1b8;
+  --f-display:ui-rounded,"Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif;
+  --f-body:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0f1a19; --paper-2:#152321; --grid:#1d2e2b; --ink:#e3efec; --muted:#93aaa4; --line:#2e4540;
+  --x:#86a9ff; --v:#4fd1a1; --a:#ff9a5c; --good:#4fd1a1; --bad:#ff7891; --hl:#3d3610; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0f1a19; --paper-2:#152321; --grid:#1d2e2b; --ink:#e3efec; --muted:#93aaa4; --line:#2e4540;
+  --x:#86a9ff; --v:#4fd1a1; --a:#ff9a5c; --good:#4fd1a1; --bad:#ff7891; --hl:#3d3610; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px;display:flex;flex-direction:column;gap:18px}
+h1{font-family:var(--f-display);font-weight:800;font-size:clamp(30px,5vw,46px);line-height:1;margin:0;letter-spacing:-.02em}
+h1 .x{color:var(--x)} h1 .v{color:var(--v)} h1 .a{color:var(--a)}
+.top{display:flex;flex-wrap:wrap;gap:14px 28px;align-items:flex-end;justify-content:space-between}
+.sub{margin:6px 0 0;color:var(--muted);max-width:60ch}
+.ladder{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-family:var(--f-mono);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.ladder .step{display:flex;align-items:center;gap:6px;background:var(--paper-2);border:1px solid var(--line);border-radius:6px;padding:4px 8px}
+.ladder svg{width:28px;height:16px}
+.ladder .arr{color:var(--muted)}
+.controls{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;background:var(--paper-2);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.lbl{font-family:var(--f-mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.levels{display:flex;flex-wrap:wrap;gap:6px}
+.levels button{font:500 13px var(--f-body);color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer}
+.levels button[aria-pressed="true"]{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}
+.levels button .stars{font-size:11px;margin-left:4px;color:var(--a)}
+.levels button[aria-pressed="true"] .stars{color:var(--hl)}
+.slider{display:flex;align-items:center;gap:10px}
+.slider input{width:110px;accent-color:var(--x)}
+.slider output{font:700 15px var(--f-mono);min-width:5ch}
+.scorebox{margin-left:auto;display:flex;gap:18px;font-variant-numeric:tabular-nums}
+.scorebox div{display:flex;flex-direction:column;align-items:flex-end}
+.scorebox b{font:800 22px var(--f-display);line-height:1}
+.game{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.game{grid-template-columns:minmax(0,1fr)}.scorebox{margin-left:0}}
+.panel{background:var(--paper-2);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+.panel h2{font:800 20px var(--f-display);margin:0 0 2px}
+.prompt{margin:0 0 12px;color:var(--muted)}
+.stack{display:flex;flex-direction:column;gap:6px}
+.slot{border-radius:8px;padding:6px 8px 4px;border:1px dashed var(--line);position:relative}
+.slot.given,.slot.solved{border-style:solid}
+.slot.current{border:2px dashed var(--q);background:color-mix(in srgb,var(--q) 7%,transparent)}
+.slot-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12px}
+.slot-h .name{font-weight:600;color:var(--q)}
+.tag{font:700 10px var(--f-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.slot.solved .tag{color:var(--good)}
+.qmark{height:110px;display:grid;place-items:center;font:800 40px var(--f-display);color:var(--q);opacity:.55}
+.slot.locked .qmark{opacity:.2}
+.shapes{display:flex;flex-wrap:wrap;gap:4px;margin:2px 0 4px}
+.chip{font:500 11px var(--f-mono);padding:1px 6px;border-radius:4px;background:color-mix(in srgb,var(--q) 14%,transparent);color:var(--ink)}
+.arrowdown{font:700 11px var(--f-mono);color:var(--muted);text-align:center;letter-spacing:.06em}
+svg.g{width:100%;height:auto;display:block;touch-action:pan-y;cursor:crosshair}
+svg.g .gl{stroke:var(--grid);stroke-width:1}
+svg.g .ax{stroke:var(--muted);stroke-width:1.4}
+svg.g text{fill:var(--muted);font:500 10px var(--f-mono)}
+svg.g .ql{font:700 italic 15px var(--f-body)}
+svg.g .curve{fill:none;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
+svg.g .cur{stroke:var(--ink);stroke-width:1;stroke-dasharray:3 3;opacity:0}
+svg.g .dot{opacity:0;stroke:var(--paper-2);stroke-width:2}
+svg.g .tan{stroke:var(--ink);stroke-width:2;opacity:0}
+svg.g .rd{opacity:0;fill:var(--ink);font-weight:700}
+svg.g.on .cur,svg.g.on .dot,svg.g.on .rd{opacity:1}
+svg.g.on .tan{opacity:.8}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.card{font:inherit;color:inherit;text-align:left;background:var(--paper);border:2px solid var(--line);border-radius:10px;padding:8px;cursor:pointer;display:flex;flex-direction:column;gap:4px;transition:transform .12s,border-color .12s}
+.card:hover:not(:disabled){border-color:var(--q);transform:translateY(-2px)}
+.card:focus-visible{outline:3px solid var(--x);outline-offset:2px}
+.card .let{font:700 12px var(--f-mono);color:var(--muted)}
+.card.wrong{border-color:var(--bad);opacity:.6;cursor:not-allowed}
+.card.right{border-color:var(--good);background:color-mix(in srgb,var(--good) 10%,var(--paper))}
+.card:disabled{cursor:default}
+.feedback{margin-top:12px;border-radius:8px;padding:10px 12px;border-left:4px solid var(--muted);background:var(--paper);min-height:44px}
+.feedback.good{border-color:var(--good)} .feedback.bad{border-color:var(--bad)}
+.feedback p{margin:0}
+.feedback strong{font-family:var(--f-display)}
+.row{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;align-items:center}
+.btn{font:600 14px var(--f-body);border-radius:8px;padding:9px 16px;cursor:pointer;border:1px solid var(--ink);background:var(--ink);color:var(--paper-2)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn:focus-visible,.levels button:focus-visible{outline:3px solid var(--x);outline-offset:2px}
+.story{background:var(--hl);border-radius:8px;padding:10px 12px;margin-top:12px}
+.story b{font-family:var(--f-display);font-size:17px}
+.recap{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;margin-top:12px;align-items:center;font-size:13px}
+.recap .q{font:700 italic 16px var(--f-body)}
+.progress{display:flex;gap:4px;margin:4px 0 12px}
+.progress i{flex:1;height:5px;border-radius:3px;background:var(--line)}
+.progress i.done{background:var(--good)} .progress i.now{background:var(--x)}
+.end{text-align:center;padding:24px 8px}
+.end .big{font:800 52px var(--f-display);line-height:1;color:var(--a)}
+.rules{font-size:13px;color:var(--muted);margin:0;padding-left:18px}
+.rules li{margin:2px 0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Slope <span class="x">S</span><span class="v">t</span><span class="a">a</span>ck</h1>
+      <p class="sub">Each graph is the slope of the one above it. Pick the matching graph to build the full x–v–a stack. Drag across any graph to line up times and see the tangent slope.</p>
+    </div>
+    <div class="ladder" aria-label="Shape pattern going down the stack">
+      <span class="step"><svg viewBox="0 0 28 16"><path d="M2 14 Q14 14 26 2" fill="none" stroke="var(--x)" stroke-width="2.5"/></svg>Parabola</span><span class="arr">→</span>
+      <span class="step"><svg viewBox="0 0 28 16"><path d="M2 14 L26 2" fill="none" stroke="var(--v)" stroke-width="2.5"/></svg>Diagonal</span><span class="arr">→</span>
+      <span class="step"><svg viewBox="0 0 28 16"><path d="M2 5 L26 5" fill="none" stroke="var(--a)" stroke-width="2.5"/><path d="M2 13 L26 13" stroke="var(--muted)" stroke-width="1"/></svg>Flat</span><span class="arr">→</span>
+      <span class="step"><svg viewBox="0 0 28 16"><path d="M2 9 L26 9" fill="none" stroke="var(--muted)" stroke-width="2.5"/></svg>Zero line</span>
+    </div>
+  </header>
+
+  <section class="controls" aria-label="Game settings">
+    <div><div class="lbl">Level</div><div class="levels" id="levels"></div></div>
+    <div><div class="lbl"><label for="nchoice">Choices per question</label></div>
+      <div class="slider"><input id="nchoice" type="range" min="2" max="4" step="1" value="3"><output id="nout">3</output></div></div>
+    <div class="scorebox"><div><span class="lbl">Score</span><b id="score">0</b></div><div><span class="lbl">Streak</span><b id="streak">0</b></div></div>
+  </section>
+
+  <main class="game" id="game"></main>
+</div>
+
+<script>
+// ---------- physics ----------
+const T=10, N=201, DT=T/(N-1), TS=Array.from({length:N},(_,i)=>i*DT);
+const MOTIONS=[
+ // single-segment
+ {name:"Gus the Garden Snail",story:"Gus glides toward the lettuce at a perfectly steady pace.",v0:1.5,segs:[[10,0]],simple:1},
+ {name:"Moonwalking Mo",story:"Mo slides backward across the dance floor at a constant speed.",v0:-2,segs:[[10,0]],simple:1},
+ {name:"Sir Napsalot the Sloth",story:"Sir Napsalot is asleep on his branch. Zero motion, maximum vibes.",v0:0,segs:[[10,0]],simple:1},
+ {name:"Rocket-Skate Ruby",story:"Ruby fires up her rocket skates and speeds up from rest.",v0:0,segs:[[10,0.4]],simple:1},
+ {name:"Pickles the Cat",story:"Pickles spots a cucumber, skids, and slows to a stop right at the end.",v0:4,segs:[[10,-0.4]],simple:1},
+ {name:"Reverse-Gear Reggie",story:"Reggie the robot vacuum backs up from rest, faster and faster in reverse.",v0:0,segs:[[10,-0.4]],simple:1},
+ {name:"Pip the Penguin",story:"Pip belly-slides backward and gradually slows to a stop.",v0:-4,segs:[[10,0.4]],simple:1},
+ {name:"The Ramp Ball",story:"A ball rolled up a ramp slows down, stops at the top (t = 5 s), and rolls back down.",v0:3,segs:[[10,-0.6]],simple:1},
+ {name:"Gertrude the Goat",story:"Gertrude backs away from the fence, stops at t = 5 s, then charges forward.",v0:-3,segs:[[10,0.6]],simple:1},
+ // multi-segment
+ {name:"Drag-Racer Dmitri",story:"Dmitri waits at the red light for 4 s, then floors it.",v0:0,segs:[[4,0],[6,0.5]]},
+ {name:"Hamster Hank",story:"Hank sprints for 5 s, then brakes so he stops exactly at his food bowl.",v0:0,segs:[[5,0.6],[5,-0.6]]},
+ {name:"Cruise-Control Carl",story:"Carl merges onto the freeway, then holds a steady speed from t = 4 s.",v0:0,segs:[[4,0.5],[6,0]]},
+ {name:"Skateboard Sal",story:"Sal rolls along steadily, then drags a foot and stops at t = 10 s.",v0:3,segs:[[5,0],[5,-0.6]]},
+ {name:"Bumper-Car Bonnie",story:"Bonnie cruises forward, bounces off a wall (3 to 5 s), and cruises backward.",v0:2,segs:[[3,0],[2,-2],[5,0]]},
+ {name:"Elevator Elmo",story:"Elmo's elevator speeds up, cruises between floors, then slows to a stop.",v0:0,segs:[[3,0.6],[4,0],[3,-0.6]]},
+ {name:"Lawnmower Larry",story:"Larry reverses his mower down the driveway: speeds up, cruises, then eases to a stop.",v0:0,segs:[[4,-0.5],[2,0],[4,0.5]]},
+];
+function offset(X){const mn=Math.min(...X),mx=Math.max(...X),r=mx-mn;if(r<1e-6)return X.map(()=>5);return X.map(x=>x-mn+0.15*r);}
+function build(m){
+  const segs=[];let t=0,x=0,v=m.v0;
+  for(const [d,a] of m.segs){segs.push({ts:t,te:t+d,a,x0:x,v0:v,v1:v+a*d});x+=v*d+0.5*a*d*d;v+=a*d;t+=d;}
+  const X=[],V=[],A=[];
+  for(const tt of TS){const s=segs.find(s=>tt<s.te-1e-9)||segs[segs.length-1];const d=tt-s.ts;
+    X.push(s.x0+s.v0*d+0.5*s.a*d*d);V.push(s.v0+s.a*d);A.push(s.a);}
+  return {...m,segs,xraw:X,x:offset(X),v:V,a:A};
+}
+// ---------- shape language ----------
+const Z=1e-9;
+function segShape(s,q){
+  const vm=(s.v0+s.v1)/2, vMax=Math.max(Math.abs(s.v0),Math.abs(s.v1));
+  if(q==="x"){if(Math.abs(s.a)>Z)return s.a>0?"concave-up parabola":"concave-down parabola";
+    if(vMax>Z)return vm>0?"diagonal sloping up":"diagonal sloping down";return "flat";}
+  if(q==="v"){if(Math.abs(s.a)>Z)return s.a>0?"diagonal sloping up":"diagonal sloping down";
+    if(vMax>Z)return vm>0?"flat above the axis":"flat below the axis";return "zero line";}
+  if(Math.abs(s.a)>Z)return s.a>0?"flat above the axis":"flat below the axis";return "zero line";
+}
+const family=l=>l.includes("parabola")?"parabola":l.includes("diagonal")?"diagonal":l==="zero line"?"zero line":"flat";
+function pieces(m,q){const out=[];for(const s of m.segs){const l=segShape(s,q);const last=out[out.length-1];
+  if(last&&last.l===l)last.te=s.te;else out.push({l,ts:s.ts,te:s.te});}return out;}
+function shapeText(m,q){const p=pieces(m,q);if(p.length===1)return "a "+p[0].l;
+  return p.map(o=>`${o.l} (${o.ts}–${o.te} s)`).join(", then ");}
+
+// ---------- distractors ----------
+const norm=a=>{const M=Math.max(...a.map(Math.abs));return M<Z?a.map(()=>0):a.map(v=>v/M)};
+const rms=(a,b)=>Math.sqrt(a.reduce((s,v,i)=>s+(v-b[i])**2,0)/a.length);
+const diff=a=>a.slice(1).map((v,i)=>v-a[i]);
+function distinct(a,b,q){if(rms(norm(a),norm(b))<0.12)return false;
+  if(q==="x"&&rms(norm(diff(a)),norm(diff(b)))<0.12)return false;return true;}
+const GEN=[TS.map(()=>1),TS.map(()=>-1),TS.map(()=>0),TS.map(t=>t/5-1),TS.map(t=>1-t/5),TS.map(t=>(t/10)**2),TS.map(t=>1-(t/10-1)**2),TS.map(t=>-((t/10)**2))];
+const REASON={
+ v:{flip:"Sign flip. Where x slopes upward, v must be above the axis; where x slopes down, v is below it.",
+    copy:"This copies the x-graph's shape. v is the slope of x, so each step down the stack is one shape simpler.",
+    skip:"This skips a step: it's shaped like the acceleration. v is the slope of x.",
+    rev:"Right pieces, wrong timing. A turn, kink, or vertex happens at the same time on every graph.",
+    other:"This velocity belongs to a different motion. Check the slope of x at a few times: steep, shallow, flat? Up or down?"},
+ a:{flip:"Sign flip. When v is rising, a is positive; when v is falling, a is negative.",
+    copy:"This copies the v-graph's shape. a is the slope of v, so it should be one shape simpler.",
+    skip:"This looks like the position graph. a is the slope of v, two steps below x.",
+    rev:"Right pieces, wrong timing. Line the stacks up: changes happen at the same time on all three graphs.",
+    other:"This acceleration belongs to a different motion. Is v rising, falling, or level? That's the sign of a."},
+ x:{flip:"Wrong direction. When v is above the axis, x goes up; when v is below the axis, x goes down.",
+    copy:"This copies the v-graph's shape. Going up the stack, each step is one shape more complex, and x's slope must equal v.",
+    skip:"This is shaped like an acceleration graph. Position is two steps above a; its slope must match v.",
+    rev:"Right pieces, wrong timing. Events happen at the same time on every graph.",
+    other:"This position belongs to a different motion. Check it: at each time, does its slope equal v?"}
+};
+const WEIGHT={copy:5,flip:5,skip:3,rev:3,other:2,gen:1};
+function candidates(m,target){
+  const C=[], R=REASON[target], others=MOTIONS.filter(o=>o.name!==m.name).map(build);
+  const rnd=()=>others[Math.floor(Math.random()*others.length)];
+  if(target==="v"){C.push({c:m.v.map(n=>-n),k:"flip"},{c:m.x,k:"copy"},{c:m.a,k:"skip"},{c:m.v.slice().reverse(),k:"rev"});}
+  if(target==="a"){C.push({c:m.a.map(n=>-n),k:"flip"},{c:m.v,k:"copy"},{c:m.x,k:"skip"},{c:m.a.slice().reverse(),k:"rev"});}
+  if(target==="x"){C.push({c:offset(m.xraw.map(n=>-n)),k:"flip"},{c:m.v,k:"copy"},{c:m.a,k:"skip"},{c:m.x.slice().reverse(),k:"rev"});}
+  for(let i=0;i<3;i++)C.push({c:rnd()[target],k:"other"});
+  for(const g of GEN)C.push({c:target==="x"?g.map(n=>n+1.2):g,k:"gen"});
+  return C.map(o=>({...o,reason:R[o.k]||R.other}));
+}
+function makeOptions(m,target,n){
+  const correct={c:m[target],k:"correct"};const chosen=[correct];
+  let pool=candidates(m,target).filter(o=>distinct(o.c,correct.c,target));
+  while(chosen.length<n&&pool.length){
+    const tot=pool.reduce((s,o)=>s+WEIGHT[o.k],0);let r=Math.random()*tot,idx=0;
+    for(;idx<pool.length;idx++){r-=WEIGHT[pool[idx].k];if(r<=0)break;}
+    const pick=pool[Math.min(idx,pool.length-1)];chosen.push(pick);
+    pool=pool.filter(o=>o!==pick&&distinct(o.c,pick.c,target));
+  }
+  for(let i=chosen.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[chosen[i],chosen[j]]=[chosen[j],chosen[i]];}
+  return chosen;
+}
+
+// ---------- graphs ----------
+const W=320,H=150,L=28,R=310,TOP=10,BOT=128,MID=(TOP+BOT)/2,AMP=(BOT-TOP)/2-6;
+const QN={x:"Position",v:"Velocity",a:"Acceleration"};
+const pxI=i=>L+(R-L)*i/(N-1);
+const pyV=(v,M)=>MID-(M<Z?0:v/M*AMP);
+function graph(arr,q,tangent=false){
+  const M=Math.max(...arr.map(Math.abs));
+  let g="";for(let s=1;s<=10;s++){const X=L+(R-L)*s/10;g+=`<line class="gl" x1="${X}" y1="${TOP}" x2="${X}" y2="${BOT}"/>`;}
+  g+=`<line class="gl" x1="${L}" y1="${MID-AMP}" x2="${R}" y2="${MID-AMP}"/><line class="gl" x1="${L}" y1="${MID+AMP}" x2="${R}" y2="${MID+AMP}"/>`;
+  let ticks="";for(let s=0;s<=10;s+=2)ticks+=`<text x="${L+(R-L)*s/10}" y="${H-6}" text-anchor="middle">${s}</text>`;
+  const pts=arr.map((v,i)=>pxI(i).toFixed(1)+","+pyV(v,M).toFixed(1)).join(" ");
+  const el=document.createElementNS("http://www.w3.org/2000/svg","svg");
+  el.setAttribute("viewBox",`0 0 ${W} ${H}`);el.setAttribute("class","g");el.setAttribute("role","img");
+  el.setAttribute("aria-label",`${QN[q]} versus time graph`);
+  el.innerHTML=`${g}<line class="ax" x1="${L}" y1="${TOP}" x2="${L}" y2="${BOT}"/><line class="ax" x1="${L}" y1="${MID}" x2="${R}" y2="${MID}"/>
+   <text class="ql" x="6" y="${MID+5}" style="fill:var(--${q})">${q}</text><text x="${R}" y="${MID-5}" text-anchor="end">t (s)</text>${ticks}
+   <polyline class="curve" points="${pts}" style="stroke:var(--${q})"/>
+   <line class="cur" x1="0" y1="${TOP}" x2="0" y2="${BOT}"/><line class="tan" x1="0" y1="0" x2="0" y2="0"/>
+   <circle class="dot" r="4.5" style="fill:var(--${q})"/><text class="rd" x="${R}" y="${TOP+10}" text-anchor="end"></text>`;
+  el._d={arr,M,tangent};
+  el.addEventListener("pointermove",e=>{const b=el.getBoundingClientRect();const p=(e.clientX-b.left)/b.width*W;setCursor((p-L)/(R-L)*T);});
+  el.addEventListener("pointerleave",()=>setCursor(null));
+  return el;
+}
+function setCursor(t){
+  document.querySelectorAll("svg.g").forEach(el=>{
+    if(t===null||t<0||t>T){el.classList.remove("on");return;}
+    el.classList.add("on");const {arr,M,tangent}=el._d;const i=Math.round(t/DT);
+    const X=pxI(i),Y=pyV(arr[i],M);
+    const c=el.querySelector(".cur");c.setAttribute("x1",X);c.setAttribute("x2",X);
+    const d=el.querySelector(".dot");d.setAttribute("cx",X);d.setAttribute("cy",Y);
+    el.querySelector(".rd").textContent=`t = ${(i*DT).toFixed(1)} s`;
+    const tn=el.querySelector(".tan");
+    if(tangent){const i0=Math.max(0,i-1),i1=Math.min(N-1,i+1);
+      const dx=pxI(i1)-pxI(i0),dy=pyV(arr[i1],M)-pyV(arr[i0],M);const len=Math.hypot(dx,dy)||1;const k=34/len;
+      tn.setAttribute("x1",X-dx*k);tn.setAttribute("y1",Y-dy*k);tn.setAttribute("x2",X+dx*k);tn.setAttribute("y2",Y+dy*k);}
+    else{tn.setAttribute("x1",0);tn.setAttribute("x2",0);tn.setAttribute("y1",0);tn.setAttribute("y2",0);}
+  });
+}
+
+// ---------- game state ----------
+const SIMPLE=MOTIONS.map((m,i)=>m.simple?i:-1).filter(i=>i>=0), MULTI=MOTIONS.map((m,i)=>m.simple?-1:i).filter(i=>i>=0);
+const LEVELS=[
+ {name:"Rookie Ramp",given:"x",pool:SIMPLE,blurb:"Start from position. One kind of motion per graph."},
+ {name:"Turnaround Track",given:"x",pool:MULTI,blurb:"Start from position. Motions change partway through."},
+ {name:"Velocity Valley",given:"v",pool:SIMPLE,blurb:"Start from velocity. Go UP the stack to x, then down to a."},
+ {name:"Grand Prix",given:"v",pool:MULTI,blurb:"Start from velocity, with multi-part motions."},
+ {name:"Mystery Mix",given:"mix",pool:[...SIMPLE,...MULTI],blurb:"Anything goes: either starting graph, any motion."},
+];
+const ROUNDS=6;
+const S={lvl:0,n:3,score:0,streak:0,round:0,order:[],lvlScore:0,m:null,given:"x",steps:[],si:0,solved:{},opts:[],misses:0,done:false};
+let best={};try{best=JSON.parse(localStorage.getItem("slopestack-best")||"{}")}catch(e){best={}}
+const starsFor=p=>p>=0.85?3:p>=0.6?2:1;
+
+function renderLevels(){
+  const box=document.getElementById("levels");box.innerHTML="";
+  LEVELS.forEach((L,i)=>{const b=document.createElement("button");b.type="button";b.setAttribute("aria-pressed",i===S.lvl);
+    const st=best[i]?"★".repeat(best[i]):"";b.innerHTML=`${i+1}. ${L.name}${st?`<span class="stars">${st}</span>`:""}`;
+    b.onclick=()=>startLevel(i);box.appendChild(b);});
+}
+function startLevel(i){
+  S.lvl=i;S.round=0;S.lvlScore=0;S.done=false;
+  const p=LEVELS[i].pool.slice();for(let k=p.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[p[k],p[j]]=[p[j],p[k]];}
+  while(p.length<ROUNDS)p.push(...p);S.order=p.slice(0,ROUNDS);renderLevels();newRound();
+}
+function newRound(){
+  S.m=build(MOTIONS[S.order[S.round]]);const g=LEVELS[S.lvl].given;
+  S.given=g==="mix"?(Math.random()<0.5?"x":"v"):g;S.steps=S.given==="x"?["v","a"]:["x","a"];
+  S.si=0;S.solved={[S.given]:true};S.misses=0;S.finished=false;S.opts=makeOptions(S.m,S.steps[0],S.n);S.fb=null;S.hint=false;render();
+}
+function pick(i){
+  const o=S.opts[i];if(o.used||S.finished)return;const q=S.steps[S.si];
+  if(o.k==="correct"){
+    const pts=S.misses===0?10:S.misses===1?5:2;S.score+=pts;S.lvlScore+=pts;
+    S.streak=S.misses===0?S.streak+1:0;o.used="right";S.solved[q]=true;
+    S.fb={good:true,html:`<p><strong>Correct! +${pts}</strong> ${correctMsg(q)}</p>`};
+    S.locked=true;
+  }else{S.misses++;S.streak=0;o.used="wrong";S.fb={good:false,html:`<p><strong>Not that one.</strong> ${o.reason}</p>`};}
+  render();
+}
+function correctMsg(q){
+  const m=S.m;
+  if(q==="v")return `x is ${shapeText(m,"x")}, so its slope, v, is ${shapeText(m,"v")}.`;
+  if(q==="x")return `v is ${shapeText(m,"v")}, so x (the graph whose slope is v) is ${shapeText(m,"x")}. The starting height of x can't be read from v.`;
+  return `v is ${shapeText(m,"v")}, so its slope, a, is ${shapeText(m,"a")}.`;
+}
+function advance(){
+  S.locked=false;S.fb=null;S.hint=false;
+  if(S.si<S.steps.length-1){S.si++;S.misses=0;S.opts=makeOptions(S.m,S.steps[S.si],S.n);}
+  else S.finished=true;
+  render();
+}
+function nextRound(){S.round++;if(S.round>=ROUNDS){S.done=true;const pct=S.lvlScore/(ROUNDS*20);const st=starsFor(pct);
+  if(!best[S.lvl]||st>best[S.lvl]){best[S.lvl]=st;try{localStorage.setItem("slopestack-best",JSON.stringify(best))}catch(e){}}
+  renderLevels();render();}else newRound();}
+
+const HINT={
+ v:"v is the slope of x. Drag across the x-graph and watch the tangent line: steep upward means large positive v, flat means v = 0, downward means negative v.",
+ a:"a is the slope of v. Is v rising (a > 0), falling (a < 0), or level (a = 0)? A straight diagonal has a constant slope, so a is flat.",
+ x:"x's slope must equal v. Where v is above the axis, x rises; where v = 0, x is flat; where v is a diagonal, x curves into a parabola."
+};
+
+// ---------- render ----------
+function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;}
+function render(){
+  document.getElementById("score").textContent=S.score;document.getElementById("streak").textContent=S.streak;
+  const game=document.getElementById("game");game.innerHTML="";
+  if(S.done){const pct=S.lvlScore/(ROUNDS*20),st=starsFor(pct);
+    const p=el("section","panel end");p.style.gridColumn="1 / -1";
+    p.innerHTML=`<div class="lbl">Level ${S.lvl+1} complete: ${LEVELS[S.lvl].name}</div><div class="big">${"★".repeat(st)}${"☆".repeat(3-st)}</div>
+      <p>${S.lvlScore} of ${ROUNDS*20} points</p>`;
+    const r=el("div","row");r.style.justifyContent="center";
+    const again=el("button","btn ghost","Replay level");again.onclick=()=>startLevel(S.lvl);r.appendChild(again);
+    if(S.lvl<LEVELS.length-1){const nx=el("button","btn",`Next: ${LEVELS[S.lvl+1].name} →`);nx.onclick=()=>startLevel(S.lvl+1);r.appendChild(nx);}
+    p.appendChild(r);game.appendChild(p);return;}
+
+  // stack
+  const left=el("section","panel");
+  left.appendChild(el("h2","",`Motion ${S.round+1} of ${ROUNDS}`));
+  const pr=el("div","progress");for(let i=0;i<ROUNDS;i++)pr.appendChild(el("i",i<S.round?"done":i===S.round?"now":""));left.appendChild(pr);
+  const stack=el("div","stack");const cur=S.finished?null:S.steps[S.si];
+  ["x","v","a"].forEach((q,idx)=>{
+    if(idx>0)stack.appendChild(el("div","arrowdown",`↓ slope of ${["x","v"][idx-1]}`));
+    const known=S.solved[q];const cls=q===S.given?"given":known?"solved":q===cur?"current":"locked";
+    const s=el("div","slot "+cls);s.style.setProperty("--q",`var(--${q})`);
+    s.appendChild(el("div","slot-h",`<span class="name">${QN[q]}, ${q}(t)</span><span class="tag">${cls==="given"?"given":cls==="solved"?"✓ solved":cls==="current"?"find this":"later"}</span>`));
+    if(known){s.appendChild(graph(S.m[q],q,true));
+      if(S.finished){const sh=el("div","shapes");pieces(S.m,q).forEach(o=>{const c=el("span","chip",pieces(S.m,q).length>1?`${o.ts}–${o.te} s: ${family(o.l)}`:family(o.l));c.style.setProperty("--q",`var(--${q})`);sh.appendChild(c)});s.appendChild(sh);}}
+    else s.appendChild(el("div","qmark","?"));
+    stack.appendChild(s);});
+  left.appendChild(stack);
+
+  // right side
+  const right=el("section","panel");
+  if(S.finished){
+    right.appendChild(el("h2","","Stack complete!"));
+    right.appendChild(el("div","story",`<b>${S.m.name}</b><br>${S.m.story}`));
+    const rc=el("div","recap");
+    ["x","v","a"].forEach(q=>{rc.appendChild(el("span","q",q)).style.color=`var(--${q})`;rc.appendChild(el("span","",shapeText(S.m,q).replace(/^a /,"")));});
+    right.appendChild(rc);
+    right.appendChild(el("ul","rules",`<li>Going down, each graph is the slope of the one above, and one shape simpler.</li><li>Flat x means v = 0. Flat v means a = 0 (not "no motion").</li><li>Drag across the stack: turns and kinks line up at the same time on all three.</li>`));
+    const r=el("div","row");const b=el("button","btn",S.round<ROUNDS-1?"Next motion →":"See results →");b.onclick=nextRound;r.appendChild(b);right.appendChild(r);
+    game.append(left,right);setTimeout(()=>b.focus({preventScroll:true}),0);return;}
+  const q=cur,from=q==="a"?"v":S.given==="v"&&q==="x"?"v":"x";
+  right.appendChild(el("h2","",`Which is the ${QN[q].toLowerCase()} graph?`));
+  right.appendChild(el("p","prompt",q==="x"?`Go up the stack: find the x-graph whose slope matches the v-graph.`:`Go down the stack: find the slope of the ${from}-graph. ${LEVELS[S.lvl].blurb}`));
+  const cards=el("div","cards");
+  S.opts.forEach((o,i)=>{const c=el("button","card"+(o.used?" "+o.used:""));c.type="button";c.style.setProperty("--q",`var(--${q})`);
+    c.disabled=!!o.used||S.locked;c.setAttribute("aria-label",`Choice ${"ABCD"[i]}`);
+    c.appendChild(el("span","let","ABCD"[i]));c.appendChild(graph(o.c,q));c.onclick=()=>pick(i);cards.appendChild(c);});
+  right.appendChild(cards);
+  const fb=el("div","feedback"+(S.fb?(S.fb.good?" good":" bad"):""),S.fb?S.fb.html:(S.hint?`<p>${HINT[q]}</p>`:`<p>Tap a graph. Drag across any graph to compare the same moment in time.</p>`));
+  right.appendChild(fb);
+  const r=el("div","row");
+  if(S.locked){const b=el("button","btn",S.si<S.steps.length-1?`Next: find ${S.steps[S.si+1]} →`:"Finish stack →");b.onclick=advance;r.appendChild(b);setTimeout(()=>b.focus({preventScroll:true}),0);}
+  else{const h=el("button","btn ghost","Hint");h.onclick=()=>{S.hint=true;S.fb=null;render();};r.appendChild(h);}
+  right.appendChild(r);
+  game.append(left,right);
+}
+
+// ---------- controls ----------
+const slider=document.getElementById("nchoice"),nout=document.getElementById("nout");
+slider.addEventListener("input",()=>{S.n=+slider.value;nout.textContent=S.n;
+  if(!S.done&&!S.finished&&!S.locked){S.opts=makeOptions(S.m,S.steps[S.si],S.n);S.misses=0;S.fb=null;render();}});
+startLevel(0);
+</script>
+</body>
+</html>
