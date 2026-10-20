@@ -171,6 +171,10 @@ const MOTIONS=[
  {name:"Hamster Hank",story:"Hank sprints for 5 s, then brakes so he stops exactly at his food bowl.",v0:0,emoji:"🐹",face:"move",segs:[[5,0.6],[5,-0.6]]},
  {name:"Cruise-Control Carl",story:"Carl merges onto the freeway, then holds a steady speed from t = 4 s.",v0:0,emoji:"🚗",face:"move",segs:[[4,0.5],[6,0]]},
  {name:"Skateboard Sal",story:"Sal rolls along steadily, then drags a foot and stops at t = 10 s.",v0:3,emoji:"🛹",face:"move",segs:[[5,0],[5,-0.6]]},
+ {name:"Moving-Walkway Wes",story:"Wes strolls steadily onto the airport walkway, then starts jogging faster and faster at t = 4 s.",v0:1,emoji:"🚶",face:"move",segs:[[4,0],[6,0.5]]},
+ {name:"Boomerang Bo",story:"Bo's boomerang flies out, slows to a stop at t = 5 s, and gets stuck in a tree.",v0:3,emoji:"🪃",face:"none",segs:[[5,-0.6],[5,0]]},
+ {name:"Toboggan Toby",story:"Toby slides backward down the hill, speeding up, then hits flat snow and glides at a steady speed.",v0:0,emoji:"🛷",face:"move",segs:[[5,-0.6],[5,0]]},
+ {name:"Frog Fred",story:"Fred sits on his lily pad for 3 s, then gets scared and speeds off backward.",v0:0,emoji:"🐸",face:"none",segs:[[3,0],[7,-0.5]]},
  {name:"Bumper-Car Bonnie",story:"Bonnie cruises forward, bounces off a wall (3 to 5 s), and cruises backward.",v0:2,emoji:"🚙",face:"+",segs:[[3,0],[2,-2],[5,0]]},
  {name:"Elevator Elmo",story:"Elmo's elevator rises: speeds up, cruises between floors, then slows to a stop. (Here, + is up.)",v0:0,emoji:"🛗",face:"none",vertical:1,segs:[[3,0.6],[4,0],[3,-0.6]]},
  {name:"Lawnmower Larry",story:"Larry reverses his mower down the driveway: speeds up, cruises, then eases to a stop.",v0:0,emoji:"🚜",face:"+",segs:[[4,-0.5],[2,0],[4,0.5]]},
@@ -290,11 +294,12 @@ function setCursor(t){
 
 // ---------- game state ----------
 const SIMPLE=MOTIONS.map((m,i)=>m.simple?i:-1).filter(i=>i>=0), MULTI=MOTIONS.map((m,i)=>m.simple?-1:i).filter(i=>i>=0);
+const TWO=MULTI.filter(i=>MOTIONS[i].segs.length===2);
 const LEVELS=[
  {name:"Rookie Ramp",given:"x",pool:SIMPLE,blurb:"Start from position. One kind of motion per graph."},
- {name:"Turnaround Track",given:"x",pool:MULTI,blurb:"Start from position. Motions change partway through."},
+ {name:"Turnaround Track",given:"x",pool:TWO,blurb:"Start from position. Two-part motions: one kind of motion, then another."},
  {name:"Velocity Valley",given:"v",pool:SIMPLE,blurb:"Start from velocity. Go UP the stack to x, then down to a."},
- {name:"Grand Prix",given:"v",pool:MULTI,blurb:"Start from velocity, with multi-part motions."},
+ {name:"Grand Prix",given:"v",pool:MULTI,blurb:"Start from velocity. Motions can have two or three parts."},
  {name:"Mystery Mix",given:"mix",pool:[...SIMPLE,...MULTI],blurb:"Anything goes: either starting graph, any motion."},
 ];
 const ROUNDS=6;
