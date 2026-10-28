@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Unit 4 Lab 1: Energy in Elastic Systems</title>
+<meta name="description" content="Student lab: stretch a spring, graph force against stretch, and use the area under the graph to find the energy stored.">
+<style>
+/* Layout: one long lab-notebook sheet on a graph-paper desk.
+   Sketch + pies, apparatus, data table, live graph, analysis, energy question, turn in. */
+:root{
+  color-scheme:light;
+  --desk:#dbe5ea; --deskline:rgba(31,95,134,.10);
+  --paper:#fbfcfa; --field:#ffffff; --ink:#18232d; --muted:#4f5f6b; --line:#bfccd3; --rule:#18232d;
+  --steel:#1f5f86; --steel-soft:#e4f0f7; --amber:#c27800; --amber-fill:#f2a50c;
+  --ok:#17794a; --ok-soft:#e5f5ec; --bad:#b3261e; --bad-soft:#fbe9e7; --warn:#8a5300; --warn-soft:#fff2dc;
+  --c-eel:#18907c; --c-therm:#d9501f; --c-ek:#2c6bd0; --c-eg:#8656c4; --c-chem:#4a9524;
+  --serif:"Iowan Old Style","Charter","Palatino Linotype",Georgia,serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark;
+  --desk:#0b1319; --deskline:rgba(111,183,227,.08);
+  --paper:#111d26; --field:#16252f; --ink:#e8eef2; --muted:#9db0bc; --line:#2f4656; --rule:#e8eef2;
+  --steel:#74bbe6; --steel-soft:#16303f; --amber:#f2a50c; --amber-fill:#f2a50c;
+  --ok:#4cc58a; --ok-soft:#14301f; --bad:#ff8a80; --bad-soft:#3a1d1b; --warn:#f2b94b; --warn-soft:#35290f;
+  --c-eel:#35c2aa; --c-therm:#ff7a4d; --c-ek:#6a9bff; --c-eg:#b48cf0; --c-chem:#7cc650}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-padding-top:64px}
+body{margin:0;background-color:var(--desk);
+  background-image:linear-gradient(var(--deskline) 1px,transparent 1px),linear-gradient(90deg,var(--deskline) 1px,transparent 1px);
+  background-size:28px 28px;color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55}
+p{margin:0}
+.bar{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:2px solid var(--rule);display:flex;flex-wrap:wrap;gap:4px 18px;align-items:center;justify-content:space-between;padding:8px 16px}
+.bar nav{display:flex;flex-wrap:wrap;gap:2px 16px}
+.bar a{color:var(--ink);text-decoration:none;font-weight:600;font-size:.92rem;padding:4px 0;border-bottom:2px solid transparent}
+.bar a:hover{border-bottom-color:var(--steel)}
+.bar #saved{font-size:.82rem;color:var(--muted)}
+.sheet{max-width:880px;margin:28px auto 80px;background:var(--paper);border:2px solid var(--rule);padding:0 clamp(16px,4vw,44px) 40px}
+header{padding-top:8px}
+.spring{display:block;width:100%;height:auto;touch-action:none;margin:0 0 6px}
+.spring .wall{fill:none;stroke:var(--rule);stroke-width:3}
+.spring .coil{fill:none;stroke:var(--steel);stroke-width:5;stroke-linejoin:round;stroke-linecap:round}
+.spring .knob{fill:var(--amber-fill);stroke:var(--rule);stroke-width:3;cursor:grab}
+.spring .knob:focus-visible{outline:none;stroke:var(--steel);stroke-width:6}
+.spring-cap{font-size:.88rem;color:var(--muted);margin-bottom:18px}
+h1{font-family:var(--serif);font-size:clamp(2.2rem,6vw,3.5rem);line-height:1.04;letter-spacing:-.015em;margin:0 0 10px;font-weight:700}
+.ask{font-family:var(--serif);font-style:italic;font-size:1.3rem;line-height:1.35;margin:0 0 6px}
+.meta{color:var(--muted);font-size:.95rem;margin-bottom:20px}
+.idgrid{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,1.3fr) minmax(0,1fr);gap:12px;margin-bottom:26px}
+label.f{display:flex;flex-direction:column;gap:4px;font-weight:600;font-size:.92rem;min-width:0}
+input[type=text],input[type=date],input[type=number],textarea,select{font:inherit;color:var(--ink);background:var(--field);border:1.5px solid var(--line);border-radius:6px;padding:7px 9px;width:100%;min-width:0}
+textarea{min-height:7.5rem;resize:vertical;line-height:1.45}
+input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid var(--steel);outline-offset:2px}
+.question{border:2px solid var(--rule);border-left-width:10px;padding:14px 18px;margin:0 0 8px;background:var(--steel-soft)}
+.question p+p{margin-top:8px}
+section{padding-top:36px;margin-top:36px;border-top:4px double var(--rule)}
+h2{font-family:var(--serif);font-size:clamp(1.6rem,4vw,2.1rem);line-height:1.15;margin:0 0 14px;letter-spacing:-.01em}
+h3{font-family:var(--serif);font-size:1.15rem;margin:0 0 6px}
+.q{margin-top:22px;display:flex;flex-direction:column;gap:8px}
+.q .qt b.n{font-family:var(--serif);font-size:1.15rem;margin-right:6px}
+.sub{color:var(--muted);font-size:.92rem}
+ul.plain{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:4px}
+ol.steps{margin:0;padding-left:1.5em;display:flex;flex-direction:column;gap:8px}
+ol.steps li::marker{font-family:var(--serif);font-weight:700}
+.rules{border:2px solid var(--bad);background:var(--bad-soft);padding:14px 18px;margin-top:20px;display:flex;flex-direction:column;gap:8px}
+.rules h3{color:var(--bad);margin:0}
+.btn{font:inherit;font-weight:700;cursor:pointer;border-radius:6px;border:2px solid var(--steel);background:var(--steel);color:#fff;padding:8px 16px;text-decoration:none;display:inline-block}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn{color:#06141d}}
+.btn.ghost{background:transparent;color:var(--steel)}
+.btn.sm{padding:5px 12px;font-size:.9rem}
+.btn.big{font-size:1.05rem;padding:10px 22px}
+.btn:disabled{opacity:.6;cursor:default}
+.btn[aria-pressed="true"]{background:var(--amber-fill);border-color:var(--rule);color:#18232d}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px}
+.sketch{width:100%;aspect-ratio:5/3;display:block;border:2px solid var(--rule);background:var(--field);touch-action:none;cursor:crosshair}
+.pies{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.pie{border:2px solid var(--rule);padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--field)}
+.pie svg{width:100%;max-width:210px;height:auto;margin:0 auto;display:block}
+.pie .ring{fill:none;stroke:var(--line);stroke-dasharray:4 4;stroke-width:1.5}
+.pie .empty{fill:none;stroke:var(--muted);stroke-width:2}
+.pie .sl{display:grid;grid-template-columns:auto minmax(0,1fr) 1.6em;gap:8px;align-items:center;font-size:.88rem}
+.pie .sl i{width:12px;height:12px;display:inline-block;border:1.5px solid var(--rule)}
+.pie .sl input{width:100%;accent-color:var(--steel)}
+.pie .sl output{font-family:var(--mono);text-align:right}
+.pies-note{font-size:.9rem;color:var(--muted);margin:8px 0 10px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.88rem;margin-bottom:8px}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+.legend i{width:12px;height:12px;display:inline-block;border:1.5px solid var(--rule)}
+.tablewrap{overflow-x:auto;border:2px solid var(--rule);background:var(--field)}
+table.data{border-collapse:collapse;width:100%;min-width:640px}
+table.data th{font-family:var(--serif);text-align:left;padding:8px 10px;border-bottom:2px solid var(--rule);background:var(--steel-soft)}
+table.data td{padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+table.data td.n{font-family:var(--serif);font-weight:700;width:3.2em}
+table.data input{font-family:var(--mono);font-variant-numeric:tabular-nums}
+table.data td.chk{font-size:.86rem;min-width:15em}
+.good{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
+.fb{font-size:.92rem;min-height:1.2em}
+.note{border-left:6px solid var(--amber-fill);background:var(--warn-soft);padding:10px 14px;margin-top:12px;font-size:.95rem}
+.graphwrap{border:2px solid var(--rule);background:var(--field);margin-top:10px}
+.graphwrap svg{display:block;width:100%;height:auto;touch-action:none}
+.graphwrap .readout{font-family:var(--mono);font-size:.85rem;color:var(--muted);padding:4px 10px;border-top:1px solid var(--line);min-height:1.9em}
+.g-grid{stroke:var(--line);stroke-width:1}
+.g-minor{stroke:var(--line);stroke-width:.5;opacity:.6}
+.g-axis{stroke:var(--rule);stroke-width:2.5}
+.g-tick{font:13px var(--mono);fill:var(--muted)}
+.g-lab{font:600 16px var(--sans);fill:var(--ink)}
+.g-lab.ph{fill:var(--muted);font-style:italic;font-weight:400}
+.g-pt{fill:var(--steel);stroke:var(--paper);stroke-width:2}
+.g-line{stroke:var(--c-therm);stroke-width:3.5;fill:none}
+.g-fit{stroke:var(--muted);stroke-width:2.5;stroke-dasharray:8 6;fill:none}
+.g-h{fill:var(--paper);stroke:var(--c-therm);stroke-width:4;cursor:grab}
+.g-h:focus-visible{outline:none;stroke:var(--steel);stroke-width:6}
+.g-a1{fill:var(--c-eel);opacity:.38}.g-a2{fill:var(--amber-fill);opacity:.5}
+.g-note{font:600 14px var(--sans);fill:var(--ink)}
+.calc{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 18px;margin-top:4px}
+.calc .pt{display:flex;flex-wrap:wrap;gap:8px;align-items:end;border:1.5px solid var(--line);padding:10px;background:var(--field)}
+.calc .pt>strong{width:100%;font-family:var(--serif)}
+.calc .pt label.f{flex:1 1 7em}
+.inl{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:end}
+.inl label.f{flex:1 1 9em}
+.inl .u{flex:0 1 7em}
+.eq{display:flex;flex-wrap:wrap;gap:8px;align-items:end;font-family:var(--serif);font-size:1.2rem;border:2px solid var(--rule);padding:12px 14px;background:var(--field)}
+.eq label.f{font-family:var(--sans);flex:1 1 7em}
+.eq span.sym{padding-bottom:9px}
+.msg{font-size:.95rem}
+footer{margin-top:34px;padding-top:12px;border-top:2px solid var(--rule);font-size:.88rem;color:var(--muted)}
+@media (max-width:680px){.idgrid,.calc,.pies{grid-template-columns:minmax(0,1fr)}}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+@media print{
+  body{background:#fff}.bar,.tools,.btn,#turnin,.spring-cap,.nofx{display:none!important}
+  .sheet{border:0;margin:0;max-width:none;padding:0}
+  section{break-inside:auto}.q,.graphwrap,.pie{break-inside:avoid}
+  :root{--paper:#fff;--field:#fff}
+}
+</style>
+</head>
+<body>
+<div class="bar">
+  <nav aria-label="Lab sections">
+    <a href="#before">Before you start</a><a href="#data">Data</a><a href="#graph">Graph</a><a href="#analysis">Analysis</a><a href="#energy">Energy</a><a href="#turnin">Turn in</a>
+  </nav>
+  <span id="saved" role="status">Autosaves in this browser</span>
+</div>
+
+<main class="sheet">
+<header>
+  <svg class="spring" id="spring" viewBox="0 0 720 130" role="group" aria-label="A spring you can stretch. Drag the knob to pull it, then let go.">
+    <path class="wall" d="M26 14V116M14 22L26 34M14 44L26 56M14 66L26 78M14 88L26 100"/>
+    <path class="coil" id="coil" d=""/>
+    <rect class="knob" id="knob" x="0" y="43" width="24" height="44" rx="8" tabindex="0" role="slider" aria-label="Spring stretch demo. Arrow keys pull, Enter lets go." aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"/>
+  </svg>
+  <p class="spring-cap nofx">Pull the knob and let go. Something was stored while you pulled. That is today's question.</p>
+  <h1>Energy in Elastic Systems</h1>
+  <p class="ask">How hard is it to stretch a spring, and where does the energy go?</p>
+  <p class="meta">Unit 4, Lab 1</p>
+  <div class="idgrid">
+    <label class="f">Name<input type="text" data-k="name" autocomplete="name"></label>
+    <label class="f">Date<input type="date" data-k="date"></label>
+    <label class="f">Period<input type="text" data-k="period" inputmode="numeric"></label>
+  </div>
+  <aside class="question">
+    <p><b>The question.</b> Pull a spring and let it go, and it snaps back. Something was stored while you pulled, and something came back out.</p>
+    <p><b>Your job:</b> find out how the force needed to stretch a spring depends on how far it is stretched, and then find a way to say how much energy is stored.</p>
+  </aside>
+</header>
+
+<!-- ================= BEFORE ================= -->
+<section id="before">
+  <h2>Before you collect anything</h2>
+
+  <div class="q">
+    <p class="qt"><b class="n">1.</b>Your group has been given a particular spring. Pull it gently. What is the relationship you expect between how far you stretch it and how hard you have to pull? Sketch it.</p>
+    <canvas class="sketch" id="sketch" aria-label="Sketch pad. Draw with your mouse, finger, or stylus."></canvas>
+    <div class="tools nofx">
+      <button class="btn sm ghost" id="undo" type="button">Undo stroke</button>
+      <button class="btn sm ghost" id="clear" type="button">Clear sketch</button>
+      <span class="sub">Draw your own axes and label them.</span>
+    </div>
+    <label class="f">Can't draw it well here? Describe your sketch in words (this is also what gets sent when you submit).<textarea data-k="sketchwords" style="min-height:4.5rem"></textarea></label>
+  </div>
+
+  <div class="q">
+    <p class="qt"><b class="n">2.</b>Where is the energy going while you stretch it? Draw an energy pie chart for the spring before you pull and while you are holding it stretched.</p>
+    <p class="pies-note">The system is the spring. The area of the whole pie stands for the total energy stored in the system, so a bigger pie means more energy. Drag the sliders to build each pie.</p>
+    <div class="legend" id="legend"></div>
+    <div class="pies"><div class="pie" id="pieA"></div><div class="pie" id="pieB"></div></div>
+    <label class="f">In a sentence or two, explain how your two pies differ and where the new energy came from.<textarea data-k="pieswhy"></textarea></label>
+  </div>
+</section>
+
+<!-- ================= APPARATUS ================= -->
+<section id="apparatus">
+  <h2>Apparatus</h2>
+  <ul class="plain">
+    <li>Your assigned spring. Do not swap with another group, because the whole class needs different springs.</li>
+    <li>Spring scale, or force sensor and interface</li>
+    <li>Meter stick or ruler with a millimeter scale</li>
+    <li>A stand or clamp to hold one end of the spring</li>
+  </ul>
+  <div class="rules" role="note">
+    <h3>Two rules that protect the data and the equipment</h3>
+    <p><b>Do not over-stretch the spring.</b> Once a spring is pulled past its limit it never goes back, and every group after you gets a broken spring. If the coils start separating unevenly, stop.</p>
+    <p><b>Do not record a data point for an unstretched spring.</b> The 0,0 point is not data. It is an assumption, and forcing your line through it hides one of the most interesting things this lab can show you.</p>
+  </div>
+</section>
+
+<!-- ================= PROCEDURE ================= -->
+<section id="procedure">
+  <h2>Procedure</h2>
+  <ol class="steps">
+    <li>Attach one end of the spring so it cannot move. Measure the length of the spring with nothing pulling it. This is your <b>reference length</b>.</li>
+    <li>Pull the free end with the spring scale. Read the force and measure the new length.</li>
+    <li>The <b>stretch</b> is the new length minus the reference length. It is a change, not a total.</li>
+    <li>Repeat for at least six different stretches, spread across the range your spring can take safely.</li>
+  </ol>
+</section>
+
+<!-- ================= DATA ================= -->
+<section id="data">
+  <h2>Data</h2>
+  <div class="inl" style="max-width:26em"><label class="f">Reference length of unstretched spring (m)<input type="text" inputmode="decimal" data-k="ref" placeholder="meters"></label></div>
+  <p class="sub" style="margin:10px 0">Enter every length in meters. Rows with a check tell you if the numbers agree with each other. They can't tell you if a measurement is right.</p>
+  <div class="tablewrap"><table class="data">
+    <thead><tr><th>Run</th><th>Length (m)</th><th>Stretch x (m)</th><th>Force F (N)</th><th>Check</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table></div>
+  <div class="row" style="margin-top:10px"><button class="btn sm ghost" id="addrow" type="button">Add a run</button><span class="sub" id="runcount"></span></div>
+  <div class="note" id="halfway" hidden><b>Halfway there.</b> Stay gentle with the spring. If the coils start separating unevenly, stop.</div>
+  <div class="note" id="overnote" hidden></div>
+</section>
+
+<!-- ================= GRAPH ================= -->
+<section id="graph">
+  <h2>Graph</h2>
+  <p>Plot force against stretch, with stretch on the horizontal axis. Your points appear as you fill in the table. Label both axes with a quantity and a unit, then drag the two handles to place a best-fit line. <b>Do not force your line through the origin.</b></p>
+  <div class="inl" style="margin-top:12px">
+    <label class="f">Horizontal axis label<input type="text" data-k="axisX" placeholder="quantity (unit)"></label>
+    <label class="f">Vertical axis label<input type="text" data-k="axisY" placeholder="quantity (unit)"></label>
+  </div>
+  <p class="fb" id="fbaxis"></p>
+  <div class="graphwrap"><svg id="g1" viewBox="0 0 820 560" role="img" aria-label="Graph of force against stretch with a draggable best-fit line"></svg><div class="readout" id="ro1"></div></div>
+  <div class="tools nofx">
+    <button class="btn sm" id="chkline" type="button">Check my line</button>
+    <button class="btn sm ghost" id="showfit" type="button" aria-pressed="false">Show the computer's fit</button>
+    <button class="btn sm ghost" id="resetline" type="button">Reset line</button>
+  </div>
+  <p class="msg" id="linemsg" role="status" style="margin-top:8px"></p>
+  <p class="sub">Keyboard: Tab to a handle, then use the arrow keys (Shift for bigger steps).</p>
+</section>
+
+<!-- ================= ANALYSIS ================= -->
+<section id="analysis">
+  <h2>Analysis</h2>
+
+  <div class="q">
+    <p class="qt"><b class="n">1.</b>Find the slope of your line. Show two points, the subtraction on the top and on the bottom, and the units.</p>
+    <div class="calc">
+      <div class="pt"><strong>Point 1 (on your line)</strong>
+        <label class="f">x₁ (m)<input type="text" inputmode="decimal" data-k="s_x1"></label>
+        <label class="f">F₁ (N)<input type="text" inputmode="decimal" data-k="s_F1"></label></div>
+      <div class="pt"><strong>Point 2 (on your line)</strong>
+        <label class="f">x₂ (m)<input type="text" inputmode="decimal" data-k="s_x2"></label>
+        <label class="f">F₂ (N)<input type="text" inputmode="decimal" data-k="s_F2"></label></div>
+    </div>
+    <div class="inl">
+      <label class="f">Top: F₂ − F₁ (N)<input type="text" inputmode="decimal" data-k="s_dF"></label>
+      <label class="f">Bottom: x₂ − x₁ (m)<input type="text" inputmode="decimal" data-k="s_dx"></label>
+      <label class="f">Slope (number)<input type="text" inputmode="decimal" data-k="s_m"></label>
+      <label class="f u">Units<input type="text" data-k="s_mu" placeholder="e.g. N/m"></label>
+    </div>
+    <p class="fb" id="fbslope"></p>
+  </div>
+
+  <div class="q">
+    <p class="qt"><b class="n">2.</b>Say what your slope means in one sentence that does not use the word “slope.”</p>
+    <textarea data-k="a2" aria-label="Question 2 answer"></textarea>
+  </div>
+
+  <div class="q">
+    <p class="qt"><b class="n">3.</b>What is the vertical intercept of your line? If it is not zero, say what that means about your particular spring, physically.</p>
+    <div class="inl"><label class="f">Vertical intercept (number)<input type="text" inputmode="decimal" data-k="a3_b"></label><label class="f u">Units<input type="text" data-k="a3_u"></label></div>
+    <p class="fb" id="fbint"></p>
+    <textarea data-k="a3" aria-label="Question 3 explanation"></textarea>
+  </div>
+
+  <div class="q">
+    <p class="qt"><b class="n">4.</b>Write the equation of your line, with your numbers and their units in it.</p>
+    <div class="eq"><span class="sym">F =</span>
+      <label class="f">slope<input type="text" inputmode="decimal" data-k="a4_m"></label>
+      <label class="f u">units<input type="text" data-k="a4_mu"></label>
+      <span class="sym">· x +</span>
+      <label class="f">intercept<input type="text" inputmode="decimal" data-k="a4_b"></label>
+      <label class="f u">units<input type="text" data-k="a4_bu"></label></div>
+    <p class="fb" id="fbeq"></p>
+  </div>
+</section>
+
+<!-- ================= ENERGY ================= -->
+<section id="energy">
+  <h2>The energy question</h2>
+  <p class="sub">This is your graph again. Use the buttons to shade regions on it. Move the line in the Graph section above if you need to.</p>
+  <div class="tools nofx" style="margin:10px 0 0">
+    <button class="btn sm ghost" id="shArea" type="button" aria-pressed="false">Shade 0 to largest stretch</button>
+    <button class="btn sm ghost" id="shHalves" type="button" aria-pressed="false">Show the two halves</button>
+  </div>
+  <div class="graphwrap"><svg id="g2" viewBox="0 0 820 560" role="img" aria-label="Your graph with optional shaded areas under the line"></svg><div class="readout" id="ro2"></div></div>
+
+  <div class="q">
+    <p class="qt"><b class="n">5.</b>Shade the area under your graph from a stretch of zero out to the largest stretch you measured. Calculate that area, and <b>multiply the units as well as the numbers.</b></p>
+    <label class="f">Show your work (shape, numbers, units)<textarea data-k="e5w"></textarea></label>
+    <div class="inl"><label class="f">Area (number)<input type="text" inputmode="decimal" data-k="e5_v"></label><label class="f u">Units, multiplied out<input type="text" data-k="e5_u"></label></div>
+    <p class="fb" id="fbarea"></p>
+  </div>
+
+  <div class="q">
+    <p class="qt"><b class="n">6.</b>What quantity did you just calculate? How do the units tell you?</p>
+    <textarea data-k="e6" aria-label="Question 6 answer"></textarea>
+  </div>
+
+  <div class="q">
+    <p class="qt"><b class="n">7.</b>Go back to your pie charts above. As the stretch doubles, what happens to the size of the pie? Answer from the area on your graph, not from memory.</p>
+    <textarea data-k="e7" aria-label="Question 7 answer"></textarea>
+  </div>
+
+  <div class="q">
+    <p class="qt"><b class="n">8.</b>Calculate the energy stored in stretching your spring the FIRST half of your maximum stretch, and then the energy stored in stretching it the SECOND half. Are they the same? Show both areas on the graph.</p>
+    <div class="inl">
+      <label class="f">First half, 0 to ½ max (number)<input type="text" inputmode="decimal" data-k="e8_1"></label>
+      <label class="f">Second half, ½ max to max (number)<input type="text" inputmode="decimal" data-k="e8_2"></label>
+      <label class="f u">Units<input type="text" data-k="e8_u"></label>
+      <label class="f u">Same?<select data-k="e8_same"><option value="">Choose</option><option value="yes">Yes</option><option value="no">No</option></select></label>
+    </div>
+    <p class="fb" id="fbhalves"></p>
+    <label class="f">Show your work and explain what you found<textarea data-k="e8w"></textarea></label>
+  </div>
+</section>
+
+<!-- ================= TURN IN ================= -->
+<section id="turnin">
+  <h2>Turn it in</h2>
+  <p id="submitintro">Make sure your name and period are filled in at the top, then press <b>Submit to Mr. C</b>. Mr. C gets a PDF of the text of your lab: your data, your line, and your written answers.</p>
+  <div class="row" id="submitrow" style="margin-top:10px"><button class="btn big" id="submit" type="button">Submit to Mr. C</button><button class="btn ghost" id="submitno" type="button" hidden>Not yet</button><span class="msg" id="submitmsg" role="status"></span></div>
+  <p class="sub" style="margin-top:14px">Your sketch, pies, and graph are pictures, and pictures don't go through Submit. Press <b>Print or save as PDF</b> to keep a copy that includes them. If Submit doesn't work, use <b>Copy my lab</b> and paste it into the Canvas assignment.</p>
+  <div class="row" style="margin-top:8px"><button class="btn ghost" id="print" type="button">Print or save as PDF</button><button class="btn ghost" id="copy" type="button">Copy my lab</button><span class="msg" id="copymsg" role="status"></span></div>
+  <textarea id="copyfallback" hidden readonly style="min-height:160px;margin-top:8px" aria-label="Lab text to copy"></textarea>
+</section>
+
+<footer>Modeling Physical Science • Unit 4 • Lab 1 — Energy in elastic systems</footer>
+</main>
+
+<noscript><p style="padding:20px;background:#fff;color:#000">This lab needs JavaScript. Turn it on in your browser and reload the page.</p></noscript>
+
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const STORE="u4-lab1-elastic-energy-v1";
+let S={v:{},n:7,pies:{a:{},b:{}},strokes:[],line:null,submittedAt:null};
+try{const raw=localStorage.getItem(STORE);if(raw){const o=JSON.parse(raw);if(o&&typeof o==="object"){S=Object.assign(S,o);S.v=S.v||{};S.pies=S.pies||{};S.pies.a=S.pies.a||{};S.pies.b=S.pies.b||{};S.strokes=S.strokes||[];S.n=Math.min(12,Math.max(7,+S.n||7))}}}catch(e){}
+function save(){try{localStorage.setItem(STORE,JSON.stringify(S));$("saved").textContent="Autosaves in this browser"}catch(e){$("saved").textContent="Can't save in this browser. Use Copy my lab before you leave."}}
+
+/* ---------- helpers ---------- */
+const num=s=>{if(s==null)return NaN;s=String(s).trim().replace(",",".");if(s==="")return NaN;const n=Number(s);return isFinite(n)?n:NaN};
+const near=(a,b,rel,abs)=>Math.abs(a-b)<=Math.max(abs||0,(rel||0)*Math.max(Math.abs(a),Math.abs(b)));
+const sig=n=>String(Number(n.toPrecision(3)));
+const U=s=>String(s||"").toLowerCase().replace(/\s+/g,"").replace(/[·•×.⋅]/g,"*").replace(/⁻¹/g,"^-1").replace(/−/g,"-");
+const isNm=s=>/^n\*?m$/.test(U(s));
+const isJ=s=>/^(j|joule|joules)$/.test(U(s));
+const isNperM=s=>{const t=U(s);return t==="n/m"||/^n\*?m\^?-1$/.test(t)||t==="n/meter"||t==="newtons/meter"};
+const isN=s=>/^(n|newton|newtons)$/.test(U(s));
+const g=k=>{const v=S.v[k];return v==null||String(v).trim()===""?"__":String(v).trim()};
+function niceStep(raw){const p=Math.pow(10,Math.floor(Math.log10(raw)));const m=raw/p;return (m<=1?1:m<=2?2:m<=5?5:10)*p}
+function lsq(p){const n=p.length;if(n<2)return null;let sx=0,sy=0,sxx=0,sxy=0;p.forEach(q=>{sx+=q.x;sy+=q.F;sxx+=q.x*q.x;sxy+=q.x*q.F});const d=n*sxx-sx*sx;if(Math.abs(d)<1e-15)return null;const m=(n*sxy-sx*sy)/d;return{m,b:(sy-m*sx)/n}}
+
+/* ---------- fields: restore + autosave ---------- */
+function bind(root){root.querySelectorAll("[data-k]").forEach(el=>{const k=el.dataset.k,v=S.v[k];
+  if(v!=null)el.value=v;
+  if(el.dataset.bound)return;el.dataset.bound="1";
+  el.addEventListener("input",()=>{S.v[k]=el.value;save();validate()});
+  el.addEventListener("change",()=>{S.v[k]=el.value;save();validate()});});}
+if(!S.v.date){const d=new Date();S.v.date=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+
+/* ---------- data table ---------- */
+function buildRows(){let h="";for(let i=1;i<=S.n;i++){
+  h+=`<tr data-r="${i}"><td class="n">${i}</td>
+  <td><input type="text" inputmode="decimal" data-k="r${i}_L" aria-label="Run ${i} length in meters"></td>
+  <td><input type="text" inputmode="decimal" data-k="r${i}_x" aria-label="Run ${i} stretch in meters"></td>
+  <td><input type="text" inputmode="decimal" data-k="r${i}_F" aria-label="Run ${i} force in newtons"></td>
+  <td class="chk" id="rc${i}"></td></tr>`}
+  $("rows").innerHTML=h;bind($("rows"));$("addrow").disabled=S.n>=12}
+function points(){const out=[];for(let i=1;i<=S.n;i++){const x=num(S.v["r"+i+"_x"]),F=num(S.v["r"+i+"_F"]);
+  if(isNaN(x)||isNaN(F)||x<0||F<0||(x===0&&F===0))continue;out.push({x,F,i})}return out}
+function rowStatus(i){const L=num(S.v["r"+i+"_L"]),x=num(S.v["r"+i+"_x"]),F=num(S.v["r"+i+"_F"]),ref=num(S.v.ref);
+  const any=[S.v["r"+i+"_L"],S.v["r"+i+"_x"],S.v["r"+i+"_F"]].some(v=>v!=null&&String(v).trim()!=="");
+  if(!any)return["",""];
+  if(x===0&&F===0)return["bad","0, 0 is not a measurement. Take a real reading or clear this row. It is not plotted."];
+  if(!isNaN(x)&&x<0)return["bad","Stretch can't be negative. It is the new length minus the reference length."];
+  if(!isNaN(F)&&F<0)return["bad","Force can't be negative here. Re-read the scale."];
+  if(isNaN(x)||isNaN(F))return["warn","Fill in the stretch and the force."];
+  if(!isNaN(L)&&L>3)return["warn","That length is over 3 m. Did you type centimeters? This table uses meters."];
+  if(!isNaN(L)&&!isNaN(ref)){const d=L-ref,tol=Math.max(0.0006,0.01*Math.abs(d));
+    if(near(x,d,0,tol))return["good","✓ Stretch matches length minus reference length."];
+    if(near(x,L,0,tol))return["bad","That is the total length. Stretch is a change: new length minus reference length."];
+    return["bad","Stretch doesn't match length minus reference length. Check your subtraction."]}
+  if(!isNaN(L)&&isNaN(ref))return["warn","Enter the reference length above so this row can be checked."];
+  if(x>0&&F===0)return["warn","A stretch with zero force? Re-read the scale."];
+  return["good","✓"]}
+
+/* ---------- axes + graph ---------- */
+const GW=820,GH=560,ML=84,MR=22,MT=22,MB=74,PW=GW-ML-MR,PH=GH-MT-MB;
+function axisRange(pts){let xm=0,ym=0;pts.forEach(p=>{xm=Math.max(xm,p.x);ym=Math.max(ym,p.F)});
+  if(xm<=0)xm=0.2;if(ym<=0)ym=10;
+  const sx=niceStep(xm*1.1/6),sy=niceStep(ym*1.1/6);
+  return{sx,sy,xmax:Math.ceil(xm*1.05/sx-1e-9)*sx,ymax:Math.ceil(ym*1.05/sy-1e-9)*sy,xm}}
+const lineEq=()=>{const L=S.line;if(!L)return null;const dx=L.x2-L.x1;if(Math.abs(dx)<1e-12)return null;const m=(L.y2-L.y1)/dx;return{m,b:L.y1-m*L.x1}};
+const Fat=(e,x)=>e.m*x+e.b;
+const area=(e,a,b)=>e.m*(b*b-a*a)/2+e.b*(b-a);
+function initLine(pts,R){if(S.line&&S.lineTouched)return;   /* until the student moves it, the starting line follows the data */
+  const s=pts.slice().sort((a,b)=>a.x-b.x),a=s[0],z=s[s.length-1];
+  if(pts.length<2||Math.abs(z.x-a.x)<1e-12){if(!S.lineTouched)S.line=null;return}
+  S.line={x1:a.x,y1:a.F,x2:z.x,y2:z.F}}
+function clampLine(R){const L=S.line;if(!L)return;
+  const cx=v=>Math.min(R.xmax,Math.max(0,v)),cy=v=>Math.min(R.ymax,Math.max(0,v));
+  L.x1=cx(L.x1);L.x2=cx(L.x2);L.y1=cy(L.y1);L.y2=cy(L.y2)}
+let showFit=false,shade="none",focusH=null;
+function graph(svg,opt){
+  const pts=points(),R=axisRange(pts);initLine(pts,R);clampLine(R);
+  const X=x=>ML+x/R.xmax*PW,Y=y=>MT+PH-y/R.ymax*PH;
+  const dx=Math.max(0,-Math.floor(Math.log10(R.sx)+1e-9)),dy=Math.max(0,-Math.floor(Math.log10(R.sy)+1e-9));
+  const nx=Math.round(R.xmax/R.sx),ny=Math.round(R.ymax/R.sy);
+  let s=`<defs><clipPath id="cp-${svg.id}"><rect x="${ML}" y="${MT}" width="${PW}" height="${PH}"/></clipPath></defs>`;
+  for(let k=0;k<=nx;k++){const x=k*R.sx;s+=`<line class="g-grid" x1="${X(x)}" y1="${MT}" x2="${X(x)}" y2="${MT+PH}"/>`;
+    if(k<nx)s+=`<line class="g-minor" x1="${X(x+R.sx/2)}" y1="${MT}" x2="${X(x+R.sx/2)}" y2="${MT+PH}"/>`;
+    s+=`<text class="g-tick" x="${X(x)}" y="${MT+PH+20}" text-anchor="middle">${x.toFixed(dx)}</text>`}
+  for(let k=0;k<=ny;k++){const y=k*R.sy;s+=`<line class="g-grid" x1="${ML}" y1="${Y(y)}" x2="${ML+PW}" y2="${Y(y)}"/>`;
+    if(k<ny)s+=`<line class="g-minor" x1="${ML}" y1="${Y(y+R.sy/2)}" x2="${ML+PW}" y2="${Y(y+R.sy/2)}"/>`;
+    s+=`<text class="g-tick" x="${ML-10}" y="${Y(y)+4}" text-anchor="end">${y.toFixed(dy)}</text>`}
+  s+=`<line class="g-axis" x1="${ML}" y1="${MT+PH}" x2="${ML+PW}" y2="${MT+PH}"/><line class="g-axis" x1="${ML}" y1="${MT}" x2="${ML}" y2="${MT+PH}"/>`;
+  const ax=(S.v.axisX||"").trim(),ay=(S.v.axisY||"").trim();
+  s+=`<text class="g-lab${ax?"":" ph"}" x="${ML+PW/2}" y="${GH-14}" text-anchor="middle">${esc(ax||"Label this axis")}</text>`;
+  s+=`<text class="g-lab${ay?"":" ph"}" transform="translate(20 ${MT+PH/2}) rotate(-90)" text-anchor="middle">${esc(ay||"Label this axis")}</text>`;
+  const e=lineEq();
+  if(opt.shade&&e&&pts.length){const xm=Math.max(...pts.map(p=>p.x)),poly=(a,b,c)=>`<polygon class="${c}" points="${X(a)},${Y(0)} ${X(a)},${Y(Math.max(0,Fat(e,a)))} ${X(b)},${Y(Math.max(0,Fat(e,b)))} ${X(b)},${Y(0)}"/>`;
+    if(opt.shade==="area")s+=poly(0,xm,"g-a2");
+    if(opt.shade==="halves"){s+=poly(0,xm/2,"g-a1")+poly(xm/2,xm,"g-a2");
+      s+=`<text class="g-note" x="${X(xm/4)}" y="${Y(0)-8}" text-anchor="middle">first half</text><text class="g-note" x="${X(xm*3/4)}" y="${Y(0)-8}" text-anchor="middle">second half</text>`}}
+  if(e&&opt.fit){const f=lsq(pts);if(f)s+=`<line class="g-fit" clip-path="url(#cp-${svg.id})" x1="${X(0)}" y1="${Y(f.b)}" x2="${X(R.xmax)}" y2="${Y(f.m*R.xmax+f.b)}"/>`}
+  if(e)s+=`<line class="g-line" clip-path="url(#cp-${svg.id})" x1="${X(0)}" y1="${Y(Fat(e,0))}" x2="${X(R.xmax)}" y2="${Y(Fat(e,R.xmax))}"/>`;
+  pts.forEach(p=>{s+=`<circle class="g-pt" cx="${X(p.x)}" cy="${Y(p.F)}" r="7"><title>Run ${p.i}: x = ${p.x} m, F = ${p.F} N</title></circle>`});
+  if(opt.interactive&&S.line){[1,2].forEach(h=>{const L=S.line,hx=L["x"+h],hy=L["y"+h];
+    s+=`<circle class="g-h" data-h="${h}" cx="${X(hx)}" cy="${Y(hy)}" r="12" tabindex="0" role="slider" aria-label="Line handle ${h}. Stretch ${sig(hx)} meters, force ${sig(hy)} newtons. Arrow keys move it."/>`})}
+  if(!pts.length)s+=`<text class="g-lab ph" x="${ML+PW/2}" y="${MT+PH/2}" text-anchor="middle">Your data points will appear here.</text>`;
+  svg.innerHTML=s;svg._R=R;
+  if(focusH&&svg.id==="g1"){const el=svg.querySelector(`[data-h="${focusH}"]`);if(el)el.focus({preventScroll:true})}}
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function redraw(){graph($("g1"),{interactive:true,fit:showFit});graph($("g2"),{interactive:false,shade:shade})}
+function toData(svg,ev){const pt=svg.createSVGPoint();pt.x=ev.clientX;pt.y=ev.clientY;const p=pt.matrixTransform(svg.getScreenCTM().inverse()),R=svg._R;
+  return{x:(p.x-ML)/PW*R.xmax,y:(MT+PH-p.y)/PH*R.ymax}}
+(function wireGraph(){
+  const svg=$("g1");let drag=null;
+  svg.addEventListener("pointerdown",ev=>{const h=ev.target.closest&&ev.target.closest("[data-h]");if(!h)return;drag=h.dataset.h;focusH=drag;S.lineTouched=true;svg.setPointerCapture(ev.pointerId);ev.preventDefault()});
+  svg.addEventListener("pointermove",ev=>{const d=toData(svg,ev),R=svg._R;
+    $("ro1").textContent=(d.x>=0&&d.x<=R.xmax&&d.y>=0&&d.y<=R.ymax)?`Cursor: x = ${sig(d.x)} m, F = ${sig(d.y)} N`:"";
+    if(!drag||!S.line)return;const cx=Math.min(R.xmax,Math.max(0,d.x)),cy=Math.min(R.ymax,Math.max(0,d.y));
+    S.line["x"+drag]=cx;S.line["y"+drag]=cy;redraw();validate()});
+  const end=()=>{if(drag){drag=null;save()}};
+  svg.addEventListener("pointerup",end);svg.addEventListener("pointercancel",end);
+  svg.addEventListener("pointerleave",()=>{$("ro1").textContent=""});
+  svg.addEventListener("keydown",ev=>{const h=ev.target.closest&&ev.target.closest("[data-h]");if(!h||!S.line)return;
+    const R=svg._R,st=ev.shiftKey?5:1,id=h.dataset.h;let dxs=0,dys=0;
+    if(ev.key==="ArrowRight")dxs=1;else if(ev.key==="ArrowLeft")dxs=-1;else if(ev.key==="ArrowUp")dys=1;else if(ev.key==="ArrowDown")dys=-1;else return;
+    ev.preventDefault();focusH=id;S.lineTouched=true;
+    S.line["x"+id]=Math.min(R.xmax,Math.max(0,S.line["x"+id]+dxs*st*R.sx/20));
+    S.line["y"+id]=Math.min(R.ymax,Math.max(0,S.line["y"+id]+dys*st*R.sy/20));save();redraw();validate()});
+  svg.addEventListener("blur",()=>{focusH=null},true);
+  const s2=$("g2");s2.addEventListener("pointermove",ev=>{const d=toData(s2,ev),R=s2._R;$("ro2").textContent=(d.x>=0&&d.x<=R.xmax&&d.y>=0&&d.y<=R.ymax)?`Cursor: x = ${sig(d.x)} m, F = ${sig(d.y)} N`:""});
+  s2.addEventListener("pointerleave",()=>{$("ro2").textContent=""});
+})();
+
+$("resetline").addEventListener("click",()=>{S.line=null;S.lineTouched=false;save();redraw();validate();$("linemsg").textContent="Line reset to a rough start. Drag the handles to improve it."});
+$("showfit").addEventListener("click",ev=>{showFit=!showFit;ev.currentTarget.setAttribute("aria-pressed",showFit);ev.currentTarget.textContent=showFit?"Hide the computer's fit":"Show the computer's fit";redraw()});
+$("chkline").addEventListener("click",()=>{const pts=points(),e=lineEq(),m=$("linemsg");
+  if(pts.length<2||!e){m.className="msg bad";m.textContent="Enter at least two data points first, then place your line.";return}
+  const f=lsq(pts),R=axisRange(pts);let above=0,below=0,ss=0,sf=0;
+  pts.forEach(p=>{const r=p.F-Fat(e,p.x);if(r>0)above++;else if(r<0)below++;ss+=r*r;const q=p.F-(f.m*p.x+f.b);sf+=q*q});
+  const rs=Math.sqrt(ss/pts.length),rf=Math.sqrt(sf/pts.length);
+  const thruOrigin=Math.abs(e.b)<0.01*R.ymax&&Math.abs(f.b)>0.04*R.ymax;
+  const msgs=[];let ok=true;
+  if(pts.length<6){msgs.push(`You have ${pts.length} data points. Collect at least six.`);ok=false}
+  if(thruOrigin){msgs.push("Your line runs through the origin, but your data do not. The origin is not a data point. Let the line follow the points.");ok=false}
+  if(rs>rf*1.3+0.012*R.ymax){msgs.push(`Your line misses the points. Right now ${above} sit above it and ${below} below. Aim for the line to run through the middle of the points along its whole length.`);ok=false}
+  m.className="msg "+(ok?"good":"warn");
+  m.textContent=ok?`Good line. ${above} points sit above it and ${below} below.`:msgs.join(" ")});
+
+/* ---------- validation + feedback ---------- */
+function setfb(id,cls,t){const el=$(id);if(!el)return;el.className="fb "+cls;el.textContent=t}
+const filled=k=>S.v[k]!=null&&String(S.v[k]).trim()!=="";
+function validate(){
+  const pts=points();
+  let cnt=0;for(let i=1;i<=S.n;i++){const[c,t]=rowStatus(i);const cell=$("rc"+i);if(cell){cell.className="chk "+c;cell.textContent=t}
+    if(filled("r"+i+"_x")||filled("r"+i+"_F"))cnt++}
+  $("runcount").textContent=`${pts.length} usable ${pts.length===1?"run":"runs"}. You need at least six.`;
+  $("halfway").hidden=!(cnt>=3&&cnt<=5);
+  // over-stretch watch
+  const on=$("overnote");on.hidden=true;
+  if(pts.length>=5){const s=pts.slice().sort((a,b)=>a.x-b.x),last=s[s.length-1],f=lsq(s.slice(0,-1));
+    const rng=Math.max(...s.map(p=>p.F))-Math.min(...s.map(p=>p.F));
+    if(f&&rng>0&&(last.F-(f.m*last.x+f.b))<-0.12*rng){on.hidden=false;on.innerHTML="<b>Check your largest stretch.</b> That point sits well below the trend of the others. If the coils are separating unevenly, stop stretching. A spring pulled past its limit stays ruined. Re-measure the point or leave it out."}}
+  // axis labels
+  const ax=(S.v.axisX||"").trim(),ay=(S.v.axisY||"").trim();
+  if(!ax&&!ay)setfb("fbaxis","","");
+  else{const bad=[];if(ax&&!/\(.+\)/.test(ax))bad.push("horizontal");if(ay&&!/\(.+\)/.test(ay))bad.push("vertical");
+    setfb("fbaxis",bad.length?"warn":"good",bad.length?`Write the unit in parentheses on the ${bad.join(" and ")} axis label, like Name (unit).`:"✓ Both labels have a quantity and a unit.")}
+  redrawOnly();
+  const e=lineEq(),R=$("g1")._R||axisRange(pts),xm=pts.length?Math.max(...pts.map(p=>p.x)):0;
+  const needLine=()=>{if(!e){return"Place your best-fit line on the graph first. Then your answers are checked against it."}return null};
+  // Q1 slope
+  (function(){const x1=num(S.v.s_x1),F1=num(S.v.s_F1),x2=num(S.v.s_x2),F2=num(S.v.s_F2),dF=num(S.v.s_dF),dX=num(S.v.s_dx),m=num(S.v.s_m);
+    if(!["s_x1","s_F1","s_x2","s_F2","s_dF","s_dx","s_m","s_mu"].some(filled))return setfb("fbslope","","");
+    const nl=needLine();if(nl)return setfb("fbslope","warn",nl);
+    const tolY=0.05*R.ymax,msgs=[];
+    if(!isNaN(x1)&&!isNaN(F1)&&Math.abs(Fat(e,x1)-F1)>tolY)msgs.push("Point 1 isn't on your line. Read both points off the line itself, not from your data table.");
+    if(!isNaN(x2)&&!isNaN(F2)&&Math.abs(Fat(e,x2)-F2)>tolY)msgs.push("Point 2 isn't on your line. Read both points off the line itself.");
+    if(!isNaN(x1)&&!isNaN(x2)&&Math.abs(x2-x1)<0.4*R.xmax)msgs.push("Choose points farther apart. A long run makes the subtraction more accurate.");
+    if(!isNaN(dF)&&!isNaN(F1)&&!isNaN(F2)&&!near(dF,F2-F1,0.03,1e-9))msgs.push("Top: recompute F₂ − F₁.");
+    if(!isNaN(dX)&&!isNaN(x1)&&!isNaN(x2)&&!near(dX,x2-x1,0.03,1e-9))msgs.push("Bottom: recompute x₂ − x₁.");
+    if(!isNaN(m)&&!isNaN(dF)&&!isNaN(dX)&&dX!==0&&!near(m,dF/dX,0.03,1e-9))msgs.push("Slope is the top divided by the bottom.");
+    if(filled("s_mu")&&!isNperM(S.v.s_mu))msgs.push("Check the units. Force is in newtons and stretch is in meters, so slope is newtons per meter.");
+    if(msgs.length)return setfb("fbslope","warn",msgs.join(" "));
+    const all=!isNaN(x1)&&!isNaN(F1)&&!isNaN(x2)&&!isNaN(F2)&&!isNaN(dF)&&!isNaN(dX)&&!isNaN(m)&&filled("s_mu");
+    setfb("fbslope",all?"good":"","" + (all?"✓ Your points, subtraction, and units are consistent with your line.":""))})();
+  // Q3 intercept
+  (function(){const b=num(S.v.a3_b);if(!filled("a3_b")&&!filled("a3_u"))return setfb("fbint","","");
+    const nl=needLine();if(nl)return setfb("fbint","warn",nl);
+    if(isNaN(b))return setfb("fbint","warn","Enter the intercept as a number.");
+    const lb=Fat(e,0);if(!near(b,lb,0,Math.max(0.03*R.ymax,0.05*Math.abs(lb))))return setfb("fbint","warn","That doesn't match where your line crosses the vertical axis (where stretch is 0). Look at the line at x = 0.");
+    if(filled("a3_u")&&!isN(S.v.a3_u))return setfb("fbint","warn","Check the units. The intercept is a force, so it is in newtons.");
+    setfb("fbint","good",Math.abs(lb)<0.03*R.ymax?"✓ That matches your line. It is very close to zero, so say what that tells you about your spring.":"✓ That matches your line. It is not zero, so say what that means about your spring.")})();
+  // Q4 equation
+  (function(){const m=num(S.v.a4_m),b=num(S.v.a4_b);if(!["a4_m","a4_mu","a4_b","a4_bu"].some(filled))return setfb("fbeq","","");
+    const nl=needLine();if(nl)return setfb("fbeq","warn",nl);const msgs=[];
+    if(!isNaN(m)&&!near(m,e.m,0.08,0.02*R.ymax/R.xmax))msgs.push("The slope doesn't match your line.");
+    if(!isNaN(b)&&!near(b,e.b,0,Math.max(0.03*R.ymax,0.05*Math.abs(e.b))))msgs.push("The intercept doesn't match your line.");
+    if(filled("a4_mu")&&!isNperM(S.v.a4_mu))msgs.push("Slope units: newtons per meter.");
+    if(filled("a4_bu")&&!isN(S.v.a4_bu))msgs.push("Intercept units: newtons.");
+    if(msgs.length)return setfb("fbeq","warn",msgs.join(" "));
+    setfb("fbeq",!isNaN(m)&&!isNaN(b)&&filled("a4_mu")&&filled("a4_bu")?"good":"",!isNaN(m)&&!isNaN(b)&&filled("a4_mu")&&filled("a4_bu")?"✓ Your equation matches your line.":"")})();
+  // Q5 area
+  (function(){const v=num(S.v.e5_v);if(!filled("e5_v")&&!filled("e5_u"))return setfb("fbarea","","");
+    const nl=needLine();if(nl)return setfb("fbarea","warn",nl);if(!xm)return setfb("fbarea","warn","Enter your data first.");
+    const msgs=[];
+    if(!isNaN(v)){const A=area(e,0,xm),rect=Fat(e,xm)*xm;
+      if(!near(v,A,0.08,1e-9)){
+        if(near(v,rect,0.05,1e-9))msgs.push("That is the whole rectangle. Is the region under your line a rectangle?");
+        else if(near(v,2*A,0.06,1e-9))msgs.push("Your number is about twice the area under your line. Check the shape and its formula.");
+        else msgs.push("That doesn't match the shaded area under your line from 0 to your largest stretch. Check the shape, the numbers, and the arithmetic.")}}
+    if(filled("e5_u")){if(isJ(S.v.e5_u))msgs.push("Joule is the name for the result. First write what the units multiply to: newtons times meters.");
+      else if(!isNm(S.v.e5_u))msgs.push("Multiply the units too. What is newtons times meters?")}
+    if(msgs.length)return setfb("fbarea","warn",msgs.join(" "));
+    const ok=!isNaN(v)&&filled("e5_u");setfb("fbarea",ok?"good":"",ok?"✓ The area and the units check out.":"")})();
+  // Q8 halves
+  (function(){const a=num(S.v.e8_1),b=num(S.v.e8_2);if(!["e8_1","e8_2","e8_u","e8_same"].some(filled))return setfb("fbhalves","","");
+    const nl=needLine();if(nl)return setfb("fbhalves","warn",nl);if(!xm)return setfb("fbhalves","warn","Enter your data first.");
+    const msgs=[];
+    if(!isNaN(a)&&!near(a,area(e,0,xm/2),0.08,1e-9))msgs.push("The first half doesn't match the area under your line from 0 to half your largest stretch.");
+    if(!isNaN(b)&&!near(b,area(e,xm/2,xm),0.08,1e-9))msgs.push("The second half doesn't match the area under your line from half your largest stretch to the largest.");
+    if(filled("e8_u")&&!isNm(S.v.e8_u)&&!isJ(S.v.e8_u))msgs.push("Check the units: newtons times meters.");
+    if(!msgs.length&&!isNaN(a)&&!isNaN(b)&&S.v.e8_same){const eq=near(a,b,0.1,1e-9);
+      if(S.v.e8_same==="yes"&&!eq)msgs.push("Your two numbers aren't equal. Look at them again.");
+      if(S.v.e8_same==="no"&&eq)msgs.push("Your two numbers are almost equal. Look at them again.")}
+    if(msgs.length)return setfb("fbhalves","warn",msgs.join(" "));
+    const ok=!isNaN(a)&&!isNaN(b);setfb("fbhalves",ok?"good":"",ok?"✓ Both areas check out against your line.":"")})();
+}
+function redrawOnly(){redraw()}
+
+/* ---------- spring hero ---------- */
+(function(){
+  const REST=300,MAX=600,Y0=65;
+  const coil=$("coil"),knob=$("knob"),svg=$("spring");let tip=REST,raf=null,drag=false;
+  const reduce=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function draw(){const n=16,a=44,b=tip-6,amp=26-8*((tip-REST)/(MAX-REST));let d=`M28 ${Y0}L${a} ${Y0}`;
+    for(let i=1;i<n;i++){const x=a+(b-a)*i/n;d+=`L${x.toFixed(1)} ${Y0+(i%2?-amp:amp)}`}
+    d+=`L${b} ${Y0}L${tip} ${Y0}`;coil.setAttribute("d",d);knob.setAttribute("x",tip-4);
+    knob.setAttribute("aria-valuenow",Math.round((tip-REST)/(MAX-REST)*100))}
+  function release(){if(raf)cancelAnimationFrame(raf);const x0=tip;if(reduce||x0<=REST+1){tip=REST;draw();return}
+    const t0=performance.now();(function step(now){const t=(now-t0)/1000,k=Math.exp(-3.4*t)*Math.cos(2*Math.PI*1.7*t);
+      tip=REST+(x0-REST)*k;if(tip<REST-60)tip=REST-60;
+      if(t>2.4){tip=REST;draw();raf=null;return}draw();raf=requestAnimationFrame(step)})(t0)}
+  function setFromEvent(ev){const pt=svg.createSVGPoint();pt.x=ev.clientX;pt.y=ev.clientY;const p=pt.matrixTransform(svg.getScreenCTM().inverse());tip=Math.min(MAX,Math.max(REST,p.x));draw()}
+  knob.addEventListener("pointerdown",ev=>{if(raf)cancelAnimationFrame(raf);drag=true;knob.setPointerCapture(ev.pointerId);ev.preventDefault()});
+  knob.addEventListener("pointermove",ev=>{if(drag)setFromEvent(ev)});
+  const up=()=>{if(drag){drag=false;release()}};knob.addEventListener("pointerup",up);knob.addEventListener("pointercancel",up);
+  knob.addEventListener("keydown",ev=>{if(ev.key==="ArrowRight"||ev.key==="ArrowUp"){tip=Math.min(MAX,tip+15);draw();ev.preventDefault()}
+    else if(ev.key==="ArrowLeft"||ev.key==="ArrowDown"){tip=Math.max(REST,tip-15);draw();ev.preventDefault()}
+    else if(ev.key==="Enter"||ev.key===" "||ev.key==="Escape"){release();ev.preventDefault()}});
+  draw();
+})();
+
+/* ---------- sketch pad ---------- */
+(function(){
+  const cv=$("sketch"),ctx=cv.getContext("2d");let cur=null;
+  const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim()||"#000";
+  function size(){const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;cv.width=Math.max(1,Math.round(r.width*d));cv.height=Math.max(1,Math.round(r.height*d));paint()}
+  function paint(){const w=cv.width,h=cv.height,d=window.devicePixelRatio||1;ctx.clearRect(0,0,w,h);
+    ctx.strokeStyle=css("--line");ctx.lineWidth=1;const step=28*d;
+    for(let x=step;x<w;x+=step){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke()}
+    for(let y=step;y<h;y+=step){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}
+    ctx.strokeStyle=css("--ink");ctx.lineWidth=3*d;ctx.lineCap="round";ctx.lineJoin="round";
+    const all=cur?S.strokes.concat([cur]):S.strokes;
+    all.forEach(s=>{if(!s.length)return;ctx.beginPath();ctx.moveTo(s[0][0]*w,s[0][1]*h);if(s.length===1)ctx.lineTo(s[0][0]*w+.1,s[0][1]*h);s.forEach(p=>ctx.lineTo(p[0]*w,p[1]*h));ctx.stroke()})}
+  const pos=ev=>{const r=cv.getBoundingClientRect();return[(ev.clientX-r.left)/r.width,(ev.clientY-r.top)/r.height]};
+  cv.addEventListener("pointerdown",ev=>{cv.setPointerCapture(ev.pointerId);cur=[pos(ev)];paint();ev.preventDefault()});
+  cv.addEventListener("pointermove",ev=>{if(!cur)return;cur.push(pos(ev));paint()});
+  const end=()=>{if(cur){S.strokes.push(cur.map(p=>[+p[0].toFixed(4),+p[1].toFixed(4)]));cur=null;save();paint()}};
+  cv.addEventListener("pointerup",end);cv.addEventListener("pointercancel",end);
+  $("undo").addEventListener("click",()=>{S.strokes.pop();save();paint()});
+  $("clear").addEventListener("click",()=>{S.strokes=[];save();paint()});
+  window.addEventListener("resize",size);
+  if(window.matchMedia)matchMedia("(prefers-color-scheme: dark)").addEventListener&&matchMedia("(prefers-color-scheme: dark)").addEventListener("change",paint);
+  size();
+})();
+
+/* ---------- pies ---------- */
+const KINDS=[["eel","Eel","elastic","--c-eel"],["therm","Etherm","thermal","--c-therm"],["ek","Ek","kinetic","--c-ek"],["eg","Eg","gravitational","--c-eg"],["chem","Echem","chemical","--c-chem"]];
+$("legend").innerHTML=KINDS.map(k=>`<span><i style="background:var(${k[3]})"></i>${k[1]} (${k[2]})</span>`).join("");
+function pie(id,key,title){const el=$(id);
+  el.innerHTML=`<h3>${title}</h3><svg viewBox="-110 -110 220 220" role="img" aria-label="${title} energy pie"></svg>`+
+    KINDS.map(k=>`<div class="sl"><label for="${id}_${k[0]}"><i style="background:var(${k[3]})"></i> ${k[1]}</label><input type="range" min="0" max="10" step="1" id="${id}_${k[0]}" value="${S.pies[key][k[0]]||0}"><output id="${id}_${k[0]}_o">${S.pies[key][k[0]]||0}</output></div>`).join("");
+  const svg=el.querySelector("svg");
+  function draw(){const vals=KINDS.map(k=>+S.pies[key][k[0]]||0),tot=vals.reduce((a,b)=>a+b,0),R=100*Math.sqrt(tot/50);
+    let s=`<circle class="ring" r="100"/>`;
+    if(tot===0)s+=`<circle class="empty" r="3"/>`;
+    else{const nz=vals.filter(v=>v>0).length;if(nz===1){const i=vals.findIndex(v=>v>0);s+=`<circle r="${R}" style="fill:var(${KINDS[i][3]});stroke:var(--rule);stroke-width:2"/>`}
+      else{let a0=-Math.PI/2;vals.forEach((v,i)=>{if(!v)return;const a1=a0+v/tot*2*Math.PI,lg=a1-a0>Math.PI?1:0;
+        s+=`<path d="M0 0L${(R*Math.cos(a0)).toFixed(2)} ${(R*Math.sin(a0)).toFixed(2)}A${R} ${R} 0 ${lg} 1 ${(R*Math.cos(a1)).toFixed(2)} ${(R*Math.sin(a1)).toFixed(2)}Z" style="fill:var(${KINDS[i][3]});stroke:var(--rule);stroke-width:2"/>`;a0=a1})}}
+    svg.innerHTML=s;svg.setAttribute("aria-label",`${title} energy pie. `+(KINDS.map((k,i)=>vals[i]?`${k[1]} ${vals[i]}`:"").filter(Boolean).join(", ")||"empty"))}
+  KINDS.forEach(k=>{const inp=$(`${id}_${k[0]}`);inp.addEventListener("input",()=>{S.pies[key][k[0]]=+inp.value;$(`${id}_${k[0]}_o`).textContent=inp.value;save();draw()})});
+  draw()}
+pie("pieA","a","Before you pull");pie("pieB","b","Holding it stretched");
+
+/* ---------- shade buttons ---------- */
+function setShade(m){shade=shade===m?"none":m;$("shArea").setAttribute("aria-pressed",shade==="area");$("shHalves").setAttribute("aria-pressed",shade==="halves");redraw()}
+$("shArea").addEventListener("click",()=>setShade("area"));$("shHalves").addEventListener("click",()=>setShade("halves"));
+$("addrow").addEventListener("click",()=>{if(S.n<12){S.n++;save();buildRows();validate()}});
+
+/* ---------- report ---------- */
+function report(){const L=[],e=lineEq(),pts=points();
+  L.push("Unit 4 Lab 1: Energy in Elastic Systems");L.push(`Name: ${g("name")}   Period: ${g("period")}   Date: ${g("date")}`);L.push("");
+  L.push("BEFORE YOU COLLECT ANYTHING");
+  L.push("1. Expected relationship between stretch and force (sketch on screen; description below):");L.push(g("sketchwords"));
+  const pv=k=>KINDS.map(q=>`${q[1]} ${S.pies[k][q[0]]||0}`).join(", ");
+  L.push("2. Energy pies (sizes 0-10 per mode, spring is the system)");L.push(`   Before you pull: ${pv("a")}`);L.push(`   Holding it stretched: ${pv("b")}`);L.push(g("pieswhy"));L.push("");
+  L.push("DATA");L.push(`Reference length: ${g("ref")} m`);L.push("Run\tLength (m)\tStretch x (m)\tForce F (N)");
+  for(let i=1;i<=S.n;i++){if(!["_L","_x","_F"].some(s=>filled("r"+i+s)))continue;L.push(`${i}\t${g("r"+i+"_L")}\t${g("r"+i+"_x")}\t${g("r"+i+"_F")}`)}L.push("");
+  L.push("GRAPH");L.push(`Horizontal axis: ${g("axisX")}   Vertical axis: ${g("axisY")}`);
+  L.push(e?`Best-fit line from handles: slope ${sig(e.m)} N/m, intercept ${sig(e.b)} N (${pts.length} plotted points)`:"No best-fit line placed.");L.push("");
+  L.push("ANALYSIS");
+  L.push(`1. Point 1 (${g("s_x1")} m, ${g("s_F1")} N); Point 2 (${g("s_x2")} m, ${g("s_F2")} N); top ${g("s_dF")} N; bottom ${g("s_dx")} m; slope ${g("s_m")} ${g("s_mu")}`);
+  L.push("2. Meaning of the slope:");L.push(g("a2"));
+  L.push(`3. Vertical intercept: ${g("a3_b")} ${g("a3_u")}`);L.push(g("a3"));
+  L.push(`4. F = ${g("a4_m")} ${g("a4_mu")} · x + ${g("a4_b")} ${g("a4_bu")}`);L.push("");
+  L.push("THE ENERGY QUESTION");
+  L.push("5. Work:");L.push(g("e5w"));L.push(`   Area: ${g("e5_v")} ${g("e5_u")}`);
+  L.push("6. Quantity and units:");L.push(g("e6"));
+  L.push("7. Pie size as stretch doubles:");L.push(g("e7"));
+  L.push(`8. First half: ${g("e8_1")} ${g("e8_u")}; second half: ${g("e8_2")} ${g("e8_u")}; same? ${g("e8_same")}`);L.push(g("e8w"));
+  return L.join("\n")}
+
+$("print").addEventListener("click",()=>window.print());
+$("copy").addEventListener("click",()=>{const txt=report(),fb=$("copyfallback");
+  const fallback=()=>{fb.hidden=false;fb.value=txt;fb.focus();fb.select();$("copymsg").textContent="Press Ctrl+C (or Cmd+C) to copy, then paste it into the assignment."};
+  try{navigator.clipboard.writeText(txt).then(()=>{fb.hidden=true;$("copymsg").textContent="Copied. Paste it into the assignment."},fallback)}catch(e){fallback()}});
+
+/* ---------- submit (same Apps Script endpoint as the Kinematics Lab Guide) ---------- */
+const SUBMIT_URL="https://script.google.com/macros/s/AKfycbz9Z4ngptZkunZvRU5gY5RaD-vuHMa00WJuPgpnFxxC0CsHw0-J8m03cPp7HlTtQM_c/exec";
+(function(){
+  const btn=$("submit"),no=$("submitno"),msg=$("submitmsg");let armed=false;
+  if(!/^https:\/\/script\.google\.com\//.test(SUBMIT_URL)){$("submitrow").hidden=true;$("submitintro").hidden=true;return}
+  if(S.submittedAt)msg.textContent=`Last submitted ${S.submittedAt}. You can submit again if you change anything.`;
+  no.addEventListener("click",()=>{armed=false;no.hidden=true;btn.textContent="Submit to Mr. C";msg.textContent=""});
+  btn.addEventListener("click",async()=>{
+    const name=(S.v.name||"").trim(),period=(S.v.period||"").trim();
+    if(!name||!period){msg.className="msg bad";msg.textContent="Fill in your name and period at the top first.";document.querySelector('[data-k="name"]').focus();return}
+    msg.className="msg";
+    if(!armed){armed=true;no.hidden=false;btn.textContent="Yes, submit";msg.textContent=S.submittedAt?"You already submitted once. Send a new version?":"Ready to send your lab to Mr. C?";return}
+    armed=false;no.hidden=true;btn.disabled=true;btn.textContent="Sending…";msg.textContent="";
+    const body=JSON.stringify({name,period,report:report(),lab:"Unit 4 Lab 1 - Energy in Elastic Systems"});
+    const done=t=>{S.submittedAt=new Date().toLocaleString([],{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});save();btn.disabled=false;btn.textContent="Submit to Mr. C";msg.className="msg good";msg.textContent=t};
+    const fail=t=>{btn.disabled=false;btn.textContent="Submit to Mr. C";msg.className="msg bad";msg.textContent=t};
+    let j=null;
+    try{const r=await fetch(SUBMIT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body});j=await r.json()}catch(e){}
+    if(j){if(j.ok)done(`Submitted at ${new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})}. Mr. C got your PDF.`);else fail("It didn't go through. Try again, or use Copy my lab.")}
+    else{try{await fetch(SUBMIT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body});done("Sent. If your teacher says it didn't arrive, use Copy my lab instead.")}
+      catch(e2){fail("Couldn't send. Check your internet and try again, or use Copy my lab.")}}
+  });
+})();
+
+/* ---------- start ---------- */
+buildRows();
+bind(document.body);
+redraw();validate();save();
+})();
+</script>
+</body>
+</html>
