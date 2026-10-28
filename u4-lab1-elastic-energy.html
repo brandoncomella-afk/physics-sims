@@ -127,6 +127,21 @@ table.data td.chk{font-size:.86rem;min-width:15em}
 .eq label.f{font-family:var(--sans);flex:1 1 7em}
 .eq span.sym{padding-bottom:9px}
 .msg{font-size:.95rem}
+.b-clamp{fill:var(--line);stroke:var(--rule);stroke-width:2}
+.b-coil{fill:none;stroke:var(--steel);stroke-width:4.5;stroke-linejoin:round;stroke-linecap:round}
+.b-ruler{fill:var(--steel-soft);stroke:var(--rule);stroke-width:2}
+.b-tick{stroke:var(--rule);stroke-width:1.2}
+.b-lab{font:12px var(--mono);fill:var(--ink)}
+.b-ptr{stroke:var(--c-therm);stroke-width:2;stroke-dasharray:5 4}
+.b-ptrz{stroke:var(--c-therm);stroke-width:2.5}
+.b-sens{fill:var(--amber-fill);stroke:var(--rule);stroke-width:3;cursor:grab}
+.b-sens.warn{fill:#e8604a}
+.b-disp{fill:#10201a;stroke:var(--rule);stroke-width:2}
+.b-read{font:700 22px var(--mono);fill:#8dffb4}
+.b-cap{font:600 13px var(--sans);fill:var(--muted)}
+#bench-svg g.sens:focus-visible{outline:none}
+#bench-svg g.sens:focus-visible .b-sens{stroke:var(--steel);stroke-width:6}
+#bench-svg,#zoom{touch-action:none}
 footer{margin-top:34px;padding-top:12px;border-top:2px solid var(--rule);font-size:.88rem;color:var(--muted)}
 @media (max-width:680px){.idgrid,.calc,.pies{grid-template-columns:minmax(0,1fr)}}
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
@@ -173,7 +188,7 @@ footer{margin-top:34px;padding-top:12px;border-top:2px solid var(--rule);font-si
   <h2>Before you collect anything</h2>
 
   <div class="q">
-    <p class="qt"><b class="n">1.</b>Your group has been given a particular spring. Pull it gently. What is the relationship you expect between how far you stretch it and how hard you have to pull? Sketch it.</p>
+    <p class="qt"><b class="n">1.</b>Your group has been given a particular spring. Pull it gently on the <a href="#bench">virtual bench</a> in the Data section. What is the relationship you expect between how far you stretch it and how hard you have to pull? Sketch it.</p>
     <canvas class="sketch" id="sketch" aria-label="Sketch pad. Draw with your mouse, finger, or stylus."></canvas>
     <div class="tools nofx">
       <button class="btn sm ghost" id="undo" type="button">Undo stroke</button>
@@ -196,14 +211,14 @@ footer{margin-top:34px;padding-top:12px;border-top:2px solid var(--rule);font-si
 <section id="apparatus">
   <h2>Apparatus</h2>
   <ul class="plain">
-    <li>Your assigned spring. Do not swap with another group, because the whole class needs different springs.</li>
-    <li>Spring scale, or force sensor and interface</li>
-    <li>Meter stick or ruler with a millimeter scale</li>
-    <li>A stand or clamp to hold one end of the spring</li>
+    <li>Your assigned spring, chosen by letter on the <a href="#bench">virtual bench</a>. Your teacher gives you the letter. Do not switch to another letter, because the whole class needs different springs.</li>
+    <li>A virtual force sensor, attached to the free end of the spring</li>
+    <li>A virtual ruler with a millimeter scale, plus a zoom view of the free end of the spring</li>
+    <li>A virtual stand and clamp that hold the fixed end of the spring for you</li>
   </ul>
   <div class="rules" role="note">
     <h3>Two rules that protect the data and the equipment</h3>
-    <p><b>Do not over-stretch the spring.</b> Once a spring is pulled past its limit it never goes back, and every group after you gets a broken spring. If the coils start separating unevenly, stop.</p>
+    <p><b>Do not over-stretch the spring.</b> Once a spring is pulled past its limit it never goes back. That is true of the virtual spring too: it stays stretched out, or it breaks, and you have to swap in a replacement and re-measure. If the coils start separating unevenly, let go.</p>
     <p><b>Do not record a data point for an unstretched spring.</b> The 0,0 point is not data. It is an assumption, and forcing your line through it hides one of the most interesting things this lab can show you.</p>
   </div>
 </section>
@@ -212,8 +227,8 @@ footer{margin-top:34px;padding-top:12px;border-top:2px solid var(--rule);font-si
 <section id="procedure">
   <h2>Procedure</h2>
   <ol class="steps">
-    <li>Attach one end of the spring so it cannot move. Measure the length of the spring with nothing pulling it. This is your <b>reference length</b>.</li>
-    <li>Pull the free end with the spring scale. Read the force and measure the new length.</li>
+    <li>The virtual clamp holds one end of the spring so it cannot move. With nothing pulling the spring, read its length on the ruler. This is your <b>reference length</b>.</li>
+    <li>Pull the free end by dragging the force sensor. Hold it still, then read the force on the sensor and read the new length on the ruler (the zoom view shows the millimeter marks).</li>
     <li>The <b>stretch</b> is the new length minus the reference length. It is a change, not a total.</li>
     <li>Repeat for at least six different stretches, spread across the range your spring can take safely.</li>
   </ol>
@@ -222,8 +237,23 @@ footer{margin-top:34px;padding-top:12px;border-top:2px solid var(--rule);font-si
 <!-- ================= DATA ================= -->
 <section id="data">
   <h2>Data</h2>
+  <h3 id="bench">The virtual bench</h3>
+  <div class="inl" style="max-width:36em"><label class="f">Your spring (your teacher gives you a letter)<select data-k="spring" id="springsel"><option value="">Choose a letter</option><option value="A">Spring A</option><option value="B">Spring B</option><option value="C">Spring C</option><option value="D">Spring D</option><option value="E">Spring E</option><option value="F">Spring F</option></select></label></div>
+  <p class="sub" id="springnote" style="margin:6px 0 10px">Do not switch springs after you start. Other groups need the other springs.</p>
+  <div class="graphwrap"><svg id="bench-svg" viewBox="0 0 920 250" role="group" aria-label="Virtual bench: a spring held by a clamp at the left, with a force sensor on its free end and a ruler underneath"></svg>
+    <svg id="zoom" viewBox="0 0 920 140" role="img" aria-label="Zoom view of the ruler at the free end of the spring" style="border-top:1px solid var(--line)"></svg></div>
+  <div class="tools nofx">
+    <button class="btn sm ghost" id="b_m10" type="button">−1 cm</button><button class="btn sm ghost" id="b_m1" type="button">−1 mm</button>
+    <button class="btn sm ghost" id="b_p1" type="button">+1 mm</button><button class="btn sm ghost" id="b_p10" type="button">+1 cm</button>
+    <button class="btn sm" id="b_go" type="button">Let go</button>
+    <button class="btn sm ghost" id="b_new" type="button" hidden>Get a replacement spring</button>
+  </div>
+  <p class="msg" id="benchmsg" role="alert" style="margin-top:8px"></p>
+  <p class="sub">Drag the force sensor to pull the spring, or use the buttons. The spring stays where you put it until you press <b>Let go</b>. Read the length where the red line meets the ruler, in the zoom view. The sensor reading has a little noise, like a real one.</p>
+  <h3 style="margin-top:26px">Your measurements</h3>
   <div class="inl" style="max-width:26em"><label class="f">Reference length of unstretched spring (m)<input type="text" inputmode="decimal" data-k="ref" placeholder="meters"></label></div>
-  <p class="sub" style="margin:10px 0">Enter every length in meters. Rows with a check tell you if the numbers agree with each other. They can't tell you if a measurement is right.</p>
+  <p class="fb" id="fbref"></p>
+  <p class="sub" style="margin:10px 0">Enter every length in meters. The check column tells you if a row agrees with itself and with your spring. If it flags a row, read the ruler and the sensor again.</p>
   <div class="tablewrap"><table class="data">
     <thead><tr><th>Run</th><th>Length (m)</th><th>Stretch x (m)</th><th>Force F (N)</th><th>Check</th></tr></thead>
     <tbody id="rows"></tbody>
@@ -359,8 +389,8 @@ footer{margin-top:34px;padding-top:12px;border-top:2px solid var(--rule);font-si
 "use strict";
 const $=id=>document.getElementById(id);
 const STORE="u4-lab1-elastic-energy-v1";
-let S={v:{},n:7,pies:{a:{},b:{}},strokes:[],line:null,submittedAt:null};
-try{const raw=localStorage.getItem(STORE);if(raw){const o=JSON.parse(raw);if(o&&typeof o==="object"){S=Object.assign(S,o);S.v=S.v||{};S.pies=S.pies||{};S.pies.a=S.pies.a||{};S.pies.b=S.pies.b||{};S.strokes=S.strokes||[];S.n=Math.min(12,Math.max(7,+S.n||7))}}}catch(e){}
+let S={v:{},n:7,pies:{a:{},b:{}},strokes:[],line:null,submittedAt:null,sim:{dL:0,ks:1,ruined:false,replaced:0}};
+try{const raw=localStorage.getItem(STORE);if(raw){const o=JSON.parse(raw);if(o&&typeof o==="object"){S=Object.assign(S,o);S.v=S.v||{};S.pies=S.pies||{};S.pies.a=S.pies.a||{};S.pies.b=S.pies.b||{};S.strokes=S.strokes||[];S.sim=Object.assign({dL:0,ks:1,ruined:false,replaced:0},S.sim||{});S.n=Math.min(12,Math.max(7,+S.n||7))}}}catch(e){}
 function save(){try{localStorage.setItem(STORE,JSON.stringify(S));$("saved").textContent="Autosaves in this browser"}catch(e){$("saved").textContent="Can't save in this browser. Use Copy my lab before you leave."}}
 
 /* ---------- helpers ---------- */
@@ -381,7 +411,7 @@ function bind(root){root.querySelectorAll("[data-k]").forEach(el=>{const k=el.da
   if(v!=null)el.value=v;
   if(el.dataset.bound)return;el.dataset.bound="1";
   el.addEventListener("input",()=>{S.v[k]=el.value;save();validate()});
-  el.addEventListener("change",()=>{S.v[k]=el.value;save();validate()});});}
+  if(el.tagName==="SELECT")el.addEventListener("change",()=>{S.v[k]=el.value;save();validate()});});}   /* 'change' on text boxes would redraw the graph mid-focus-move */
 if(!S.v.date){const d=new Date();S.v.date=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 
 /* ---------- data table ---------- */
@@ -403,7 +433,9 @@ function rowStatus(i){const L=num(S.v["r"+i+"_L"]),x=num(S.v["r"+i+"_x"]),F=num(
   if(isNaN(x)||isNaN(F))return["warn","Fill in the stretch and the force."];
   if(!isNaN(L)&&L>3)return["warn","That length is over 3 m. Did you type centimeters? This table uses meters."];
   if(!isNaN(L)&&!isNaN(ref)){const d=L-ref,tol=Math.max(0.0006,0.01*Math.abs(d));
-    if(near(x,d,0,tol))return["good","✓ Stretch matches length minus reference length."];
+    if(near(x,d,0,tol)){const sp=simSpring();
+      if(sp&&!S.sim.dL&&!S.sim.ruined&&x>0.001&&!near(F,springForce(sp,x,false),0.1,0.25))return["warn","Stretch checks out, but that force doesn't go with that stretch for your spring. Read the sensor again."];
+      return["good","✓ Stretch matches length minus reference length."]}
     if(near(x,L,0,tol))return["bad","That is the total length. Stretch is a change: new length minus reference length."];
     return["bad","Stretch doesn't match length minus reference length. Check your subtraction."]}
   if(!isNaN(L)&&isNaN(ref))return["warn","Enter the reference length above so this row can be checked."];
@@ -476,7 +508,8 @@ function toData(svg,ev){const pt=svg.createSVGPoint();pt.x=ev.clientX;pt.y=ev.cl
     ev.preventDefault();focusH=id;S.lineTouched=true;
     S.line["x"+id]=Math.min(R.xmax,Math.max(0,S.line["x"+id]+dxs*st*R.sx/20));
     S.line["y"+id]=Math.min(R.ymax,Math.max(0,S.line["y"+id]+dys*st*R.sy/20));save();redraw();validate()});
-  svg.addEventListener("blur",()=>{focusH=null},true);
+  document.addEventListener("focusin",ev=>{const h=ev.target&&ev.target.closest&&ev.target.closest("#g1 [data-h]");focusH=h?h.dataset.h:null});
+  document.addEventListener("pointerdown",ev=>{if(!(ev.target.closest&&ev.target.closest("#g1 [data-h]")))focusH=null},true);
   const s2=$("g2");s2.addEventListener("pointermove",ev=>{const d=toData(s2,ev),R=s2._R;$("ro2").textContent=(d.x>=0&&d.x<=R.xmax&&d.y>=0&&d.y<=R.ymax)?`Cursor: x = ${sig(d.x)} m, F = ${sig(d.y)} N`:""});
   s2.addEventListener("pointerleave",()=>{$("ro2").textContent=""});
 })();
@@ -510,6 +543,11 @@ function validate(){
   if(pts.length>=5){const s=pts.slice().sort((a,b)=>a.x-b.x),last=s[s.length-1],f=lsq(s.slice(0,-1));
     const rng=Math.max(...s.map(p=>p.F))-Math.min(...s.map(p=>p.F));
     if(f&&rng>0&&(last.F-(f.m*last.x+f.b))<-0.12*rng){on.hidden=false;on.innerHTML="<b>Check your largest stretch.</b> That point sits well below the trend of the others. If the coils are separating unevenly, stop stretching. A spring pulled past its limit stays ruined. Re-measure the point or leave it out."}}
+  // reference length vs the bench
+  (function(){const sp=simSpring(),r=num(S.v.ref);if(!filled("ref")||!sp)return setfb("fbref","","");
+    if(isNaN(r))return setfb("fbref","warn","Enter the length as a number, in meters.");
+    if(near(r,sp.L0,0,0.003))return setfb("fbref","good","✓ That matches the ruler reading for your spring at rest.");
+    setfb("fbref","warn",S.sim.dL>0?"Your spring was stretched out for good, so its length at rest has changed. Read the ruler again, or get a replacement spring.":"That doesn't match your spring at rest. Press Let go, then read the ruler again. Remember the ruler is in centimeters and this box is in meters.")})();
   // axis labels
   const ax=(S.v.axisX||"").trim(),ay=(S.v.axisY||"").trim();
   if(!ax&&!ay)setfb("fbaxis","","");
@@ -654,7 +692,7 @@ function report(){const L=[],e=lineEq(),pts=points();
   L.push("1. Expected relationship between stretch and force (sketch on screen; description below):");L.push(g("sketchwords"));
   const pv=k=>KINDS.map(q=>`${q[1]} ${S.pies[k][q[0]]||0}`).join(", ");
   L.push("2. Energy pies (sizes 0-10 per mode, spring is the system)");L.push(`   Before you pull: ${pv("a")}`);L.push(`   Holding it stretched: ${pv("b")}`);L.push(g("pieswhy"));L.push("");
-  L.push("DATA");L.push(`Reference length: ${g("ref")} m`);L.push("Run\tLength (m)\tStretch x (m)\tForce F (N)");
+  L.push("DATA");L.push(`Spring: ${g("spring")} (replacement springs used: ${S.sim.replaced})`);L.push(`Reference length: ${g("ref")} m`);L.push("Run\tLength (m)\tStretch x (m)\tForce F (N)");
   for(let i=1;i<=S.n;i++){if(!["_L","_x","_F"].some(s=>filled("r"+i+s)))continue;L.push(`${i}\t${g("r"+i+"_L")}\t${g("r"+i+"_x")}\t${g("r"+i+"_F")}`)}L.push("");
   L.push("GRAPH");L.push(`Horizontal axis: ${g("axisX")}   Vertical axis: ${g("axisY")}`);
   L.push(e?`Best-fit line from handles: slope ${sig(e.m)} N/m, intercept ${sig(e.b)} N (${pts.length} plotted points)`:"No best-fit line placed.");L.push("");
@@ -697,6 +735,97 @@ const SUBMIT_URL="https://script.google.com/macros/s/AKfycbz9Z4ngptZkunZvRU5gY5R
     else{try{await fetch(SUBMIT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body});done("Sent. If your teacher says it didn't arrive, use Copy my lab instead.")}
       catch(e2){fail("Couldn't send. Check your internet and try again, or use Copy my lab.")}}
   });
+})();
+
+
+/* ---------- virtual bench ---------- */
+/* Hidden spring properties. D has pressed coils: it needs a few newtons before it starts to stretch. */
+const SPR={
+  A:{k:12,L0:0.150,F0:0,xlim:0.30},
+  B:{k:28,L0:0.120,F0:0,xlim:0.20},
+  C:{k:6.5,L0:0.160,F0:0,xlim:0.36},
+  D:{k:45,L0:0.100,F0:2.6,xlim:0.14},
+  E:{k:18,L0:0.140,F0:0,xlim:0.25},
+  F:{k:22,L0:0.130,F0:1.4,xlim:0.20}
+};
+const hash=i=>{const t=Math.sin(i*127.1+311.7)*43758.5453;return t-Math.floor(t)};
+function simSpring(){const id=S.v.spring,b=SPR[id];if(!b)return null;return{id,k:b.k*S.sim.ks,L0:b.L0+S.sim.dL,F0:b.F0,xlim:b.xlim}}
+function springForce(sp,x,noisy){if(x<0.0005)return 0;
+  let F=sp.F0+sp.k*Math.min(x,sp.xlim)+(x>sp.xlim?0.35*sp.k*(x-sp.xlim):0);
+  if(noisy)F+=(hash(Math.round(x*1000)+sp.id.charCodeAt(0)*17)-0.5)*2*(0.012*F+0.02);
+  return Math.max(0,F)}
+(function(){
+  const BX0=96,BSC=1000,AY=88,bs=$("bench-svg"),zs=$("zoom"),msg=$("benchmsg");
+  const reduce=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let pos=0,peak=0,anim=null,dragOff=null,kbFocus=false;
+  const say=(t,c)=>{msg.className="msg "+(c||"");msg.textContent=t};
+  const q=v=>Math.round(v*1000)/1000;
+  function setPos(v){const sp=simSpring();if(!sp||S.sim.ruined)return;if(anim){cancelAnimationFrame(anim);anim=null}
+    pos=q(Math.min(Math.max(v,0),sp.xlim*1.3));peak=Math.max(peak,pos);
+    if(pos>sp.xlim)say("Stop. The coils are separating unevenly. Let go now.","bad");else if(msg.classList.contains("bad"))say("");
+    draw()}
+  function draw(){const sp=simSpring();
+    $("b_new").hidden=!(S.sim.ruined||S.sim.dL>0);
+    ["b_m10","b_m1","b_p1","b_p10","b_go"].forEach(id=>$(id).disabled=!sp||S.sim.ruined);
+    if(!sp){bs.innerHTML=`<text class="b-cap" x="460" y="120" text-anchor="middle">Choose your spring letter above to load the bench.</text>`;zs.innerHTML="";return}
+    const x=pos,L=sp.L0+x,tip=BX0+L*BSC,over=Math.max(0,(x-sp.xlim)/sp.xlim);
+    const F=springForce(sp,x,true);
+    let s=`<rect class="b-clamp" x="14" y="150" width="70" height="14"/><rect class="b-clamp" x="30" y="40" width="14" height="112"/><rect class="b-clamp" x="30" y="${AY-14}" width="${BX0-30}" height="28"/>`;
+    const n=16,a=BX0+8,b=tip-8,amp=20-6*Math.min(1,x/sp.xlim);let d=`M${BX0} ${AY}L${a} ${AY}`;
+    for(let i=1;i<n;i++){const j=over>0?0.05*Math.sin(i*2.9)*Math.min(1,over*8):0;d+=`L${(a+(b-a)*(i/n+j)).toFixed(1)} ${AY+(i%2?-amp:amp)}`}
+    d+=`L${b} ${AY}L${tip} ${AY}`;
+    s+=`<path class="b-coil" d="${d}"/>`;
+    s+=`<line class="b-ptr" x1="${tip}" y1="${AY+22}" x2="${tip}" y2="170"/>`;
+    const rl=Math.round(0.76*BSC);
+    s+=`<rect class="b-ruler" x="${BX0}" y="170" width="${rl}" height="62"/>`;
+    for(let cm=0;cm*10<=rl;cm++){const px=BX0+cm*10,five=cm%5===0;s+=`<line class="b-tick" x1="${px}" y1="170" x2="${px}" y2="${170+(five?24:12)}"/>`;if(five&&cm>0)s+=`<text class="b-lab" x="${px}" y="214" text-anchor="middle">${cm}</text>`}
+    s+=`<text class="b-lab" x="${BX0+4}" y="214">0</text><text class="b-cap" x="${BX0+rl-4}" y="246" text-anchor="end">ruler, in cm (0 is at the clamp)</text>`;
+    s+=`<g class="sens" id="sens" transform="translate(${tip} 0)" tabindex="0" role="slider" aria-label="Force sensor on the free end of the spring. Arrow keys pull or release by one millimeter, Shift for one centimeter, Escape lets go." aria-valuemin="0" aria-valuemax="${Math.round(sp.xlim*1.3*1000)}" aria-valuenow="${Math.round(x*1000)}" aria-valuetext="Pulled ${Math.round(x*1000)} millimeters. Sensor reads ${F.toFixed(2)} newtons.">
+      <rect class="b-sens${over>0?" warn":""}" x="0" y="${AY-34}" width="96" height="68" rx="10"/><rect class="b-disp" x="8" y="${AY-24}" width="80" height="34" rx="4"/>
+      <text class="b-read" x="48" y="${AY+1}" text-anchor="middle">${F.toFixed(2)}</text><text class="b-cap" x="48" y="${AY+26}" text-anchor="middle" style="fill:#18232d">newtons</text></g>`;
+    if(S.sim.ruined)s+=`<text class="b-cap" x="${BX0+10}" y="40" style="fill:var(--bad);font-size:16px">This spring is ruined. Get a replacement spring.</text>`;
+    bs.innerHTML=s;
+    // zoom view: 120 mm window centered on the free end
+    const tmm=L*1000,sc=920/120;let z=`<rect class="b-ruler" x="0" y="40" width="920" height="84"/>`;
+    for(let k=Math.max(0,Math.floor(tmm-61));k<=Math.ceil(tmm+61);k++){const px=460+(k-tmm)*sc,h=k%10===0?40:k%5===0?28:17;
+      z+=`<line class="b-tick" x1="${px.toFixed(1)}" y1="40" x2="${px.toFixed(1)}" y2="${40+h}"/>`;
+      if(k%10===0&&px>18&&px<902)z+=`<text class="b-lab" x="${px.toFixed(1)}" y="${40+h+18}" text-anchor="middle" style="font-size:16px">${k/10}</text>`}
+    z+=`<line class="b-ptrz" x1="460" y1="6" x2="460" y2="124"/><polygon points="452,2 468,2 460,14" fill="var(--c-therm)"/><text class="b-cap" x="10" y="26">Zoom: marks are 1 mm apart. Numbers are cm.</text>`;
+    zs.innerHTML=z;
+    if(kbFocus){const el=$("sens");if(el)el.focus({preventScroll:true})}}
+  function letGo(){const sp=simSpring();if(!sp||S.sim.ruined)return;const pk=peak;peak=0;
+    if(pk>sp.xlim){
+      if(pk>sp.xlim*1.2){S.sim.ruined=true;say("That spring is ruined. It was pulled far past its limit. Get a replacement spring and re-measure.","bad")}
+      else{S.sim.dL=q(S.sim.dL+0.6*(pk-sp.xlim));S.sim.ks*=0.88;say("You pulled past the limit. The spring is stretched out for good: its rest length is longer and it is softer. Get a replacement spring, then re-measure your reference length.","bad")}
+      save()}
+    else say("");
+    const x0=pos;if(anim)cancelAnimationFrame(anim);
+    if(reduce||x0<0.002||S.sim.ruined){pos=0;draw();validate();return}
+    const t0=performance.now();(function step(now){const t=(now-t0)/1000;pos=Math.max(-0.0,x0*Math.exp(-4*t)*Math.cos(2*Math.PI*2*t));
+      if(t>1.3){pos=0;anim=null;draw();validate();return}draw();anim=requestAnimationFrame(step)})(t0)}
+  function newSpring(){if(anim){cancelAnimationFrame(anim);anim=null}S.sim={dL:0,ks:1,ruined:false,replaced:S.sim.replaced+1};pos=0;peak=0;save();
+    say("New spring installed. Press Let go first, then re-measure your reference length. Readings you took after the coils started separating don't count.","good");draw();validate()}
+  // drag
+  bs.addEventListener("pointerdown",ev=>{const sp=simSpring();if(!sp||S.sim.ruined||!(ev.target.closest&&ev.target.closest("#sens")))return;
+    const pt=bs.createSVGPoint();pt.x=ev.clientX;pt.y=ev.clientY;const p=pt.matrixTransform(bs.getScreenCTM().inverse());
+    dragOff=p.x-(BX0+(sp.L0+pos)*BSC);if(anim){cancelAnimationFrame(anim);anim=null}bs.setPointerCapture(ev.pointerId);ev.preventDefault()});
+  bs.addEventListener("pointermove",ev=>{if(dragOff==null)return;const sp=simSpring();if(!sp)return;
+    const pt=bs.createSVGPoint();pt.x=ev.clientX;pt.y=ev.clientY;const p=pt.matrixTransform(bs.getScreenCTM().inverse());
+    setPos((p.x-dragOff-BX0)/BSC-sp.L0)});
+  const endDrag=()=>{dragOff=null};bs.addEventListener("pointerup",endDrag);bs.addEventListener("pointercancel",endDrag);
+  document.addEventListener("focusin",ev=>{kbFocus=!!(ev.target&&ev.target.id==="sens")});
+  document.addEventListener("pointerdown",ev=>{if(!(ev.target.closest&&ev.target.closest("#sens")))kbFocus=false},true);
+  bs.addEventListener("keydown",ev=>{if(!(ev.target.id==="sens"))return;const st=ev.shiftKey?0.01:0.001;
+    if(ev.key==="ArrowRight"||ev.key==="ArrowUp"){setPos(pos+st);ev.preventDefault()}
+    else if(ev.key==="ArrowLeft"||ev.key==="ArrowDown"){setPos(pos-st);ev.preventDefault()}
+    else if(ev.key==="Escape"||ev.key==="Home"){letGo();ev.preventDefault()}});
+  $("b_m10").addEventListener("click",()=>setPos(pos-0.01));$("b_m1").addEventListener("click",()=>setPos(pos-0.001));
+  $("b_p1").addEventListener("click",()=>setPos(pos+0.001));$("b_p10").addEventListener("click",()=>setPos(pos+0.01));
+  $("b_go").addEventListener("click",letGo);$("b_new").addEventListener("click",newSpring);
+  $("springsel").addEventListener("change",ev=>{const v=ev.target.value;S.v.spring=v;S.sim={dL:0,ks:1,ruined:false,replaced:0};pos=0;peak=0;say("");save();draw();validate()});
+  if(!S.v.spring){const m=/spring=([A-F])/i.exec(location.hash||"");if(m){S.v.spring=m[1].toUpperCase();$("springsel").value=S.v.spring}}
+  if(S.sim.ruined)say("This spring is ruined. Get a replacement spring.","bad");
+  draw();
 })();
 
 /* ---------- start ---------- */
