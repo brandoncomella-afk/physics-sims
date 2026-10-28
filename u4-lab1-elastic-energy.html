@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Unit 4 Lab 1: Energy in Elastic Systems</title>
+<script>try{if(localStorage.getItem("u4-lab1-theme")==="dark")document.documentElement.setAttribute("data-theme","dark")}catch(e){}</script>
 <meta name="description" content="Student lab: stretch a spring, graph force against stretch, and use the area under the graph to find the energy stored.">
 <style>
 /* Layout: one long lab-notebook sheet on a graph-paper desk.
@@ -19,13 +20,13 @@
   --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+:root[data-theme="dark"]{
   color-scheme:dark;
   --desk:#0b1319; --deskline:rgba(111,183,227,.08);
   --paper:#111d26; --field:#16252f; --ink:#e8eef2; --muted:#9db0bc; --line:#2f4656; --rule:#e8eef2;
   --steel:#74bbe6; --steel-soft:#16303f; --amber:#f2a50c; --amber-fill:#f2a50c;
   --ok:#4cc58a; --ok-soft:#14301f; --bad:#ff8a80; --bad-soft:#3a1d1b; --warn:#f2b94b; --warn-soft:#35290f;
-  --c-eel:#35c2aa; --c-therm:#ff7a4d; --c-ek:#6a9bff; --c-eg:#b48cf0; --c-chem:#7cc650}}
+  --c-eel:#35c2aa; --c-therm:#ff7a4d; --c-ek:#6a9bff; --c-eg:#b48cf0; --c-chem:#7cc650}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html{scroll-padding-top:64px}
@@ -38,6 +39,9 @@ p{margin:0}
 .bar a{color:var(--ink);text-decoration:none;font-weight:600;font-size:.92rem;padding:4px 0;border-bottom:2px solid transparent}
 .bar a:hover{border-bottom-color:var(--steel)}
 .bar #saved{font-size:.82rem;color:var(--muted)}
+.bar .barr{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+#themebtn{padding:3px 12px}
+#themebtn[aria-pressed="true"]{background:var(--steel);border-color:var(--steel);color:#06141d}
 .sheet{max-width:880px;margin:28px auto 80px;background:var(--paper);border:2px solid var(--rule);padding:0 clamp(16px,4vw,44px) 40px}
 header{padding-top:8px}
 .spring{display:block;width:100%;height:auto;touch-action:none;margin:0 0 6px}
@@ -68,7 +72,8 @@ ol.steps li::marker{font-family:var(--serif);font-weight:700}
 .rules{border:2px solid var(--bad);background:var(--bad-soft);padding:14px 18px;margin-top:20px;display:flex;flex-direction:column;gap:8px}
 .rules h3{color:var(--bad);margin:0}
 .btn{font:inherit;font-weight:700;cursor:pointer;border-radius:6px;border:2px solid var(--steel);background:var(--steel);color:#fff;padding:8px 16px;text-decoration:none;display:inline-block}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn{color:#06141d}}
+:root[data-theme="dark"] .btn:not(.ghost){color:#06141d}
+:root[data-theme="dark"] .btn[aria-pressed="true"]{color:#18232d}
 .btn.ghost{background:transparent;color:var(--steel)}
 .btn.sm{padding:5px 12px;font-size:.9rem}
 .btn.big{font-size:1.05rem;padding:10px 22px}
@@ -115,7 +120,10 @@ table.data td.chk{font-size:.86rem;min-width:15em}
 .g-h{fill:var(--paper);stroke:var(--c-therm);stroke-width:4;cursor:grab}
 .g-h:focus-visible{outline:none;stroke:var(--steel);stroke-width:6}
 .g-a1{fill:var(--c-eel);opacity:.38}.g-a2{fill:var(--amber-fill);opacity:.5}
-.g-note{font:600 14px var(--sans);fill:var(--ink)}
+.g-note{font:700 14px var(--sans);fill:var(--ink);paint-order:stroke;stroke:var(--paper);stroke-width:4px;stroke-linejoin:round}
+:root[data-theme="dark"] .g-a1{opacity:.55}:root[data-theme="dark"] .g-a2{opacity:.6}
+:root[data-theme="dark"] .g-pt{stroke:var(--field)}
+:root[data-theme="dark"] .b-ruler{fill:#1d3a4b}
 .calc{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 18px;margin-top:4px}
 .calc .pt{display:flex;flex-wrap:wrap;gap:8px;align-items:end;border:1.5px solid var(--line);padding:10px;background:var(--field)}
 .calc .pt>strong{width:100%;font-family:var(--serif)}
@@ -149,7 +157,7 @@ footer{margin-top:34px;padding-top:12px;border-top:2px solid var(--rule);font-si
   body{background:#fff}.bar,.tools,.btn,#turnin,.spring-cap,.nofx{display:none!important}
   .sheet{border:0;margin:0;max-width:none;padding:0}
   section{break-inside:auto}.q,.graphwrap,.pie{break-inside:avoid}
-  :root{--paper:#fff;--field:#fff}
+  :root,:root[data-theme="dark"]{color-scheme:light;--paper:#fff;--field:#fff;--ink:#18232d;--muted:#4f5f6b;--line:#bfccd3;--rule:#18232d;--steel:#1f5f86;--steel-soft:#e4f0f7;--bad:#b3261e;--bad-soft:#fbe9e7;--ok:#17794a;--warn:#8a5300;--warn-soft:#fff2dc;--c-eel:#18907c;--c-therm:#d9501f;--c-ek:#2c6bd0;--c-eg:#8656c4;--c-chem:#4a9524}
 }
 </style>
 </head>
@@ -158,7 +166,7 @@ footer{margin-top:34px;padding-top:12px;border-top:2px solid var(--rule);font-si
   <nav aria-label="Lab sections">
     <a href="#before">Before you start</a><a href="#data">Data</a><a href="#graph">Graph</a><a href="#analysis">Analysis</a><a href="#energy">Energy</a><a href="#turnin">Turn in</a>
   </nav>
-  <span id="saved" role="status">Autosaves in this browser</span>
+  <span class="barr"><button class="btn sm ghost" id="themebtn" type="button" aria-pressed="false">Dark mode</button><span id="saved" role="status">Autosaves in this browser</span></span>
 </div>
 
 <main class="sheet">
@@ -658,7 +666,7 @@ function redrawOnly(){redraw()}
   $("undo").addEventListener("click",()=>{S.strokes.pop();save();paint()});
   $("clear").addEventListener("click",()=>{S.strokes=[];save();paint()});
   window.addEventListener("resize",size);
-  if(window.matchMedia)matchMedia("(prefers-color-scheme: dark)").addEventListener&&matchMedia("(prefers-color-scheme: dark)").addEventListener("change",paint);
+  window.addEventListener("themechange",paint);
   size();
 })();
 
@@ -827,6 +835,15 @@ function springForce(sp,x,noisy){if(x<0.0005)return 0;
   if(S.sim.ruined)say("This spring is ruined. Get a replacement spring.","bad");
   draw();
 })();
+
+/* ---------- light / dark toggle (light is the default) ---------- */
+(function(){const root=document.documentElement,btn=$("themebtn");
+  function sync(){const dark=root.getAttribute("data-theme")==="dark";btn.setAttribute("aria-pressed",dark);btn.textContent=dark?"Light mode":"Dark mode";btn.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode")}
+  btn.addEventListener("click",()=>{const dark=root.getAttribute("data-theme")!=="dark";
+    if(dark)root.setAttribute("data-theme","dark");else root.removeAttribute("data-theme");
+    try{localStorage.setItem("u4-lab1-theme",dark?"dark":"light")}catch(e){}
+    sync();window.dispatchEvent(new Event("themechange"))});
+  sync()})();
 
 /* ---------- start ---------- */
 buildRows();
