@@ -246,7 +246,7 @@
     <select id="subjectSelect" title="AP course"></select>
     <select id="typeSelect" title="Question"></select>
     <button id="editPartsBtn" title="Change how this type's points are split across parts">Edit parts</button>
-    <label class="file-btn" for="suggInput" title="Import suggested scores (from a co-grader, a TA, or an AI) to confirm or edit">Import suggested scores</label>
+    <label class="file-btn" for="suggInput" title="Import scores from any source (an AI grader, student self-grading, a TA or co-grader) to check and confirm">Import scores</label>
     <input type="file" id="suggInput" accept=".csv,text/csv">
     <span id="fileCount" class="hint"></span>
     <div class="spacer"></div>
@@ -398,8 +398,8 @@ P3,Hopper,Grace</pre>
     <h3 class="hh">4. Scoring guidelines (optional)</h3>
     <p>Click the <b>Scoring guide</b> tab above the PDF and upload the College Board scoring guidelines (PDF or image) for the question. Press <b>G</b> to flip between the student's work and the guide. One guide is saved per question.</p>
 
-    <h3 class="hh">5. Suggested scores (optional)</h3>
-    <p>If a co-grader, a TA or an AI has already scored the papers, import their scores as suggestions. They fill in for each student so you only check and confirm (press <b>Enter</b>). The CSV needs a header row:</p>
+    <h3 class="hh">5. Importing scores (optional)</h3>
+    <p>If the papers have already been scored somewhere else (by an AI grader like Claude, by students grading themselves, or by a TA or co-grader), click <b>Import scores</b>. The imported points fill in for each student as a starting point, so you only check, edit and confirm (press <b>Enter</b>). The CSV needs a header row:</p>
 <pre>Period,Student,Question,Points earned,Comment
 P1,"Curie, Marie",Q2,A1 A3 B1 B4 C1 C2 C3 D1,"A: Fw shorter than Fg at t2. B: ..."
 P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
@@ -414,7 +414,7 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     <p><b>Download CSV</b> saves every student's points, part scores and totals, sorted by period. <b>Open in Google Sheets</b> copies the same table and opens a blank Google Sheet; click cell A1 and paste.</p>
 
     <h3 class="hh">Keyboard shortcuts</h3>
-    <p><kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd>, <kbd>-</kbd>, <kbd>=</kbd> toggle points in order · <kbd>←</kbd>/<kbd>→</kbd> previous/next PDF · <kbd>Space</kbd> scroll · <kbd>N</kbd> or <kbd>/</kbd> name box · <kbd>Enter</kbd> confirm suggested scores · <kbd>G</kbd> scoring guide · <kbd>R</kbd> flip page</p>
+    <p><kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd>, <kbd>-</kbd>, <kbd>=</kbd> toggle points in order · <kbd>←</kbd>/<kbd>→</kbd> previous/next PDF · <kbd>Space</kbd> scroll · <kbd>N</kbd> or <kbd>/</kbd> name box · <kbd>Enter</kbd> confirm imported scores · <kbd>G</kbd> scoring guide · <kbd>R</kbd> flip page</p>
 
     <div class="actions">
       <button id="sampleRoster">Download sample roster CSV</button>
@@ -620,7 +620,7 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     document.getElementById("shortcutHint").innerHTML =
       'Shortcuts: <kbd>' + shown.join('</kbd> <kbd>') + '</kbd> toggle points in order' +
       (ids.length > KEYS.length ? ' (first 12 only)' : '') +
-      '. <kbd>←</kbd>/<kbd>→</kbd> move between PDFs; <kbd>Space</kbd> scrolls the PDF; <kbd>R</kbd> flips the page on screen (<kbd>Shift</kbd>+<kbd>R</kbd> turns it 90°). <kbd>G</kbd> switches between student work and the scoring guide. <kbd>/</kbd> or <kbd>N</kbd> jumps to the name box; <kbd>Enter</kbd> picks the highlighted name, or confirms suggested scores.';
+      '. <kbd>←</kbd>/<kbd>→</kbd> move between PDFs; <kbd>Space</kbd> scrolls the PDF; <kbd>R</kbd> flips the page on screen (<kbd>Shift</kbd>+<kbd>R</kbd> turns it 90°). <kbd>G</kbd> switches between student work and the scoring guide. <kbd>/</kbd> or <kbd>N</kbd> jumps to the name box; <kbd>Enter</kbd> picks the highlighted name, or confirms imported scores.';
     renderTypeSelect();
   }
 
@@ -686,7 +686,7 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     if (sg.points) document.querySelectorAll(".point-btn").forEach(function (b) {
       if (!sg.points[b.dataset.key]) return;
       b.classList.add("claude");
-      var m = document.createElement("span"); m.className = "cmark"; m.textContent = "S"; m.title = "The suggested scores gave this point";
+      var m = document.createElement("span"); m.className = "cmark"; m.textContent = "i"; m.title = "The imported scores gave this point";
       b.firstChild.appendChild(m);
     });
     var notes = splitComment(sg.comment);
@@ -697,7 +697,7 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
       if (sg.points) { var mp = (gradesOf(f)[state.type]) || {}; for (var q = 1; q <= pt.pts; q++) if (!!mp[pt.id + q] !== !!sg.points[pt.id + q]) same = false; }
       var chip = document.querySelector('.sugg-chip[data-part="' + pt.id + '"]');
       if (chip) {
-        chip.textContent = "Suggested: " + his + "/" + pt.pts;
+        chip.textContent = "Imported: " + his + "/" + pt.pts;
         chip.className = "sugg-chip " + (same ? "match" : "diff");
         chip.style.display = "";
       }
@@ -709,9 +709,9 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     banner.style.display = "flex";
     banner.classList.toggle("confirmed", conf);
     document.getElementById("suggMsg").innerHTML = conf
-      ? "✓ Confirmed. The suggestion was " + sg.total + "/" + maxFor(state.type) + (diffs ? "; you changed " + diffs + " part" + (diffs === 1 ? "" : "s") + "." : ".")
-      : "<b>Suggested scores are filled in</b> (" + sg.total + "/" + maxFor(state.type) + ")" +
-        (sg.points ? "; boxes marked <b>S</b> are the suggested points. Check them, then confirm with <b>Enter</b>." : ". Each part's points sit on its first boxes, so move them to the right points, then confirm with <b>Enter</b>.") +
+      ? "✓ Confirmed. The imported score was " + sg.total + "/" + maxFor(state.type) + (diffs ? "; you changed " + diffs + " part" + (diffs === 1 ? "" : "s") + "." : ".")
+      : "<b>Imported scores are filled in</b> (" + sg.total + "/" + maxFor(state.type) + ")" +
+        (sg.points ? "; boxes marked <b>i</b> are the imported points. Check them, then confirm with <b>Enter</b>." : ". Each part's points sit on its first boxes, so move them to the right points, then confirm with <b>Enter</b>.") +
         (sg.review ? '<br><span style="color:var(--warn)">⚑ ' + esc(sg.review) + '</span>' : "");
     document.getElementById("confirmBtn").textContent = conf ? "Undo confirm" : "✓ Confirm";
   }
@@ -793,7 +793,7 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
       save();
       prefillAll();
       refreshRubric(); renderFileList();
-      toast(count ? "Imported suggested scores for " + Object.keys(students).length + " students" : "No rows matched a question. Check the Question column (see How to set up files).");
+      toast(count ? "Imported scores for " + Object.keys(students).length + (Object.keys(students).length === 1 ? " student" : " students") : "No rows matched a question. Check the Question column (see How to set up files).");
       if (offRoster.length) showMessage("These names in the file aren't on your rosters, so they won't match a PDF until the names agree", offRoster.join("\n"));
     };
     r.readAsText(file);
@@ -864,7 +864,7 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
       var pending = suggestionFor(f, state.type) && !isConfirmed(f, state.type);
       row.innerHTML = '<span class="idx">' + (pos + 1) + '.</span>' +
         '<span class="fn" title="' + esc(f.name) + '">' + (g.period && g.name ? '<span style="color:var(--text-dim)">' + esc(g.period) + ' · </span>' : '') + esc(g.name || f.name) + (g.auto && g.name ? '<span class="auto" title="Picked from the filename; check it">auto</span>' : '') + '</span>' +
-        '<span class="status' + (pending ? " pending" : done ? " done" : "") + '" title="' + (pending ? "Suggested scores, not yet confirmed" : "") + '">' + (pending ? "? " : "") + totalOf(f, state.type) + '/' + max + '</span>';
+        '<span class="status' + (pending ? " pending" : done ? " done" : "") + '" title="' + (pending ? "Imported scores, not yet confirmed" : "") + '">' + (pending ? "? " : "") + totalOf(f, state.type) + '/' + max + '</span>';
       row.addEventListener("click", function () { selectFile(i); });
       list.appendChild(row);
     });
@@ -1603,7 +1603,7 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     downloadText("sample_roster.csv", "Period,Last Name,First Name\nP1,Curie,Marie\nP1,Feynman,Richard\nP1,Noether,Emmy\nP3,Franklin,Rosalind\nP3,Hopper,Grace\nP3,Carver,George Washington\n", "Sample roster");
   });
   document.getElementById("sampleScores").addEventListener("click", function () {
-    downloadText("sample_suggested_scores.csv", 'Period,Student,Question,Points earned,Comment\nP1,"Curie, Marie",Q1,A1 B1 B2 C1,"A: Correct. B: Both points. C: Only the first point."\nP3,"Franklin, Rosalind",Q1,A1 B1 C1 C2 D1,\n', "Sample suggested scores");
+    downloadText("sample_import_scores.csv", 'Period,Student,Question,Points earned,Comment\nP1,"Curie, Marie",Q1,A1 B1 B2 C1,"A: Correct. B: Both points. C: Only the first point."\nP3,"Franklin, Rosalind",Q1,A1 B1 C1 C2 D1,\n', "Sample import scores");
   });
 
   // ---------- Export ----------
@@ -1616,7 +1616,7 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
       pointIds(t).forEach(function (k) { header.push(TYPES[t].subject + " " + TYPES[t].short + " " + k); });
       partsFor(t).forEach(function (p) { header.push(TYPES[t].subject + " " + TYPES[t].short + " Part " + p.id); });
       header.push(TYPES[t].subject + " " + TYPES[t].short + " Total (/" + maxFor(t) + ")");
-      header.push(TYPES[t].subject + " " + TYPES[t].short + " Suggested total", TYPES[t].subject + " " + TYPES[t].short + " Confirmed");
+      header.push(TYPES[t].subject + " " + TYPES[t].short + " Imported total", TYPES[t].subject + " " + TYPES[t].short + " Confirmed");
     });
     if (types.length > 1) header.push("Grand Total");
     var table = [header];
