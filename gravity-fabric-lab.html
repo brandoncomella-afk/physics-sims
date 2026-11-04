@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gravity Fabric Lab</title>
+<meta name="description" content="Interactive rubber-sheet model of gravity: drop masses on a spacetime fabric, watch it dent, and see the Newtonian force pairs between bodies.">
+<style>
+/* Layout: one large stage (the fabric) beside a narrow lab-bench control column; stacks on phones. */
+:root {
+  --bg: #eceff6; --panel: #ffffff; --ink: #1b2340; --muted: #5a6382; --line: #d4d9e7;
+  --stage: #e3e8f3; --grid: #8592c2; --well: #5a3fd0; --force: #d4470e; --pair: #0a8573;
+  --chip: #f3f5fa;
+  --f-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --f-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --f-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0c0f1e; --panel: #141a2f; --ink: #e6e9f6; --muted: #9aa2c3; --line: #252c48;
+  --stage: #080b17; --grid: #4a5893; --well: #a093ff; --force: #ff8a4a; --pair: #3ed4bd;
+  --chip: #1b2240; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0c0f1e; --panel: #141a2f; --ink: #e6e9f6; --muted: #9aa2c3; --line: #252c48;
+  --stage: #080b17; --grid: #4a5893; --well: #a093ff; --force: #ff8a4a; --pair: #3ed4bd;
+  --chip: #1b2240; color-scheme: dark }
+
+* { box-sizing: border-box }
+html, body { background: var(--bg); color: var(--ink); margin: 0 }
+body { font-family: var(--f-body); font-size: 14px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-top: max(20px, env(safe-area-inset-top, 0px));
+  padding-bottom: max(28px, env(safe-area-inset-bottom, 0px)) }
+.wrap { max-width: 1280px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px }
+header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 20px }
+h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(30px, 4.4vw, 44px); line-height: 1; margin: 0; text-wrap: balance }
+h1 em { color: var(--well) }
+.sub { color: var(--muted); margin: 0; max-width: 60ch }
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 14px; align-items: start }
+@media (max-width: 860px) { .main { grid-template-columns: minmax(0, 1fr) } }
+
+.stage { position: relative; background: var(--stage); border-radius: 14px; overflow: hidden;
+  height: min(74vh, 700px); min-height: 380px; border: 1px solid var(--line) }
+@media (max-width: 860px) { .stage { height: 62vh; min-height: 360px } }
+canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: crosshair }
+canvas.over-body { cursor: grab }
+canvas.dragging { cursor: grabbing }
+.legend { position: absolute; left: 12px; bottom: 10px; display: flex; flex-wrap: wrap; gap: 4px 14px;
+  font: 12px/1.3 var(--f-mono); color: var(--muted); pointer-events: none }
+.legend i { display: inline-block; width: 18px; height: 3px; vertical-align: middle; margin-right: 6px; border-radius: 2px }
+.toast { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); background: var(--panel); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: 13px; white-space: nowrap;
+  max-width: calc(100% - 24px); overflow: hidden; text-overflow: ellipsis; transition: opacity .3s; opacity: 0; pointer-events: none }
+.toast.show { opacity: 1 }
+
+aside { display: flex; flex-direction: column; gap: 12px; min-width: 0 }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px }
+.label { font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); font-weight: 600 }
+.chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 6px }
+button { font: inherit; color: var(--ink); background: var(--chip); border: 1px solid var(--line); border-radius: 8px;
+  padding: 7px 10px; cursor: pointer; text-align: left }
+button:hover { border-color: var(--grid) }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--well); outline-offset: 2px }
+.chip { display: flex; flex-direction: column; gap: 1px; padding: 7px 9px }
+.chip b { font-weight: 500; display: flex; align-items: center; gap: 6px }
+.chip span { font: 11px var(--f-mono); color: var(--muted) }
+.chip .dot { width: 10px; height: 10px; border-radius: 50%; flex: none }
+.chip[aria-pressed="true"] { border-color: var(--well); box-shadow: inset 0 0 0 1px var(--well) }
+.hint { font-size: 12.5px; color: var(--muted); margin: 0 }
+.row { display: flex; flex-wrap: wrap; gap: 6px }
+.row button { flex: 1 1 auto; text-align: center }
+.primary { background: var(--well); border-color: var(--well); color: var(--panel); font-weight: 600 }
+.primary:hover { filter: brightness(1.08); border-color: var(--well) }
+.slider { display: grid; grid-template-columns: 98px minmax(0,1fr) 42px; align-items: center; gap: 8px; font-size: 13px }
+.slider output { font: 12px var(--f-mono); color: var(--muted); text-align: right; font-variant-numeric: tabular-nums }
+input[type=range] { width: 100%; accent-color: var(--well) }
+.check { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer }
+input[type=checkbox] { accent-color: var(--well); width: 16px; height: 16px; margin: 0 }
+
+.readout { font-variant-numeric: tabular-nums }
+.readout h3 { margin: 0; font-family: var(--f-display); font-weight: 400; font-size: 24px; line-height: 1.1 }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px }
+.stat { background: var(--chip); border-radius: 8px; padding: 6px 8px; min-width: 0 }
+.stat small { display: block; font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .07em }
+.stat b { font: 500 15px var(--f-mono) }
+.pairs { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none }
+.pairs li { font: 12px/1.5 var(--f-mono); border-left: 3px solid var(--pair); padding: 2px 0 2px 8px; overflow-wrap: anywhere }
+.pairs li .who { font-family: var(--f-body); font-size: 12.5px; color: var(--ink); display: block }
+.pairs li .eq { color: var(--muted) }
+.empty { color: var(--muted); font-size: 13px; margin: 0 }
+.note { font-size: 12.5px; color: var(--muted); margin: 0; max-width: 72ch }
+.note b { color: var(--ink); font-weight: 600 }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>Gravity <em>Fabric</em> Lab</h1>
+    <p class="sub">Drop masses on the sheet. Heavier objects dig deeper wells, and everything rolls toward everything else.</p>
+  </header>
+
+  <div class="main">
+    <div class="stage" id="stage">
+      <canvas id="cv" aria-label="Spacetime fabric. Click to drop a mass, drag a body to move it."></canvas>
+      <div class="legend">
+        <span><i style="background:var(--force)"></i>net force on each body</span>
+        <span><i style="background:var(--pair)"></i>force pairs on the selected body</span>
+      </div>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+
+    <aside>
+      <section class="panel">
+        <div class="label">Drop a mass</div>
+        <div class="chips" id="chips"></div>
+        <p class="hint">Click the fabric to drop it. Drag before letting go to throw it. Drag an existing body to move it.</p>
+        <label class="check"><input type="checkbox" id="autoOrbit" checked> Clicks start in orbit around the heaviest body</label>
+      </section>
+
+      <section class="panel">
+        <div class="row">
+          <button class="primary" id="playBtn">Pause</button>
+          <button id="delBtn">Remove selected</button>
+          <button id="clearBtn">Clear all</button>
+        </div>
+        <div class="slider"><label for="speed">Time speed</label><input type="range" id="speed" min="0.25" max="3" step="0.25" value="1"><output id="speedOut">1×</output></div>
+        <div class="slider"><label for="stretch">Dent depth</label><input type="range" id="stretch" min="0.3" max="2.5" step="0.1" value="1"><output id="stretchOut">1.0×</output></div>
+        <div class="slider"><label for="tilt">View angle</label><input type="range" id="tilt" min="25" max="90" step="1" value="55"><output id="tiltOut">55°</output></div>
+        <label class="check"><input type="checkbox" id="showForces" checked> Show force arrows</label>
+        <label class="check"><input type="checkbox" id="showTrails" checked> Show trails</label>
+      </section>
+
+      <section class="panel">
+        <div class="label">Scenarios</div>
+        <div class="row" id="presets">
+          <button data-p="solar">Star, planet &amp; moon</button>
+          <button data-p="binary">Binary stars</button>
+          <button data-p="hole">Black hole snack</button>
+          <button data-p="three">Three-body tango</button>
+        </div>
+      </section>
+
+      <section class="panel readout" id="readout" aria-live="off"></section>
+    </aside>
+  </div>
+
+  <p class="note"><b>What the fabric shows.</b> Motion is computed with Newton's law, F = G·m₁·m₂ / r², in simulation units (G = 1). The dent at each point is drawn from the gravitational potential there, so deep wells mean strong pull. The rubber-sheet picture is an analogy: a real sheet sags because Earth's gravity pulls it down, and general relativity curves time as well as space. Arrow length grows with the square root of force so small and large forces both stay visible.</p>
+</div>
+
+<script>
+(() => {
+const G = 1, SOFT2 = 0.15 * 0.15, HALF = 10, KILL = 13, MAXD = 6.5, DS2 = 0.9 * 0.9;
+const TYPES = {
+  pebble: { m: 1,   label: "Pebble", col: ["#d9cbb6", "#7d6b55"], names: ["Pebble Pete", "Gravel Gail", "Pip", "Rocky", "Dusty"] },
+  moon:   { m: 5,   label: "Moon",   col: ["#f2f2ee", "#8a8f9e"], names: ["Moonie", "Lunabelle", "Crater Carl", "Selene"] },
+  planet: { m: 20,  label: "Planet", col: ["#7fe0d0", "#1d6f8c"], names: ["Planet Pat", "Bluebell", "Gustav", "Marbles"] },
+  star:   { m: 100, label: "Star",   col: ["#fff3b0", "#f08a12"], names: ["Sunny", "Big Sol", "Stella", "Blaze"] },
+  hole:   { m: 400, label: "Black hole", col: ["#2a2440", "#000000"], names: ["Hungry Hank", "The Void", "Gulp"] },
+};
+const nameCount = {};
+const typeFor = m => m >= 300 ? "hole" : m >= 60 ? "star" : m >= 12 ? "planet" : m >= 3 ? "moon" : "pebble";
+const radiusFor = (m, t) => t === "hole" ? 0.45 : 0.2 * Math.cbrt(m) + 0.06;
+function newName(t) {
+  const list = TYPES[t].names, n = nameCount[t] = (nameCount[t] || 0) + 1;
+  const base = list[(n - 1) % list.length], lap = Math.floor((n - 1) / list.length);
+  return lap ? `${base} ${lap + 1}` : base;
+}
+
+const cv = document.getElementById("cv"), ctx = cv.getContext("2d"), stage = document.getElementById("stage");
+let W = 0, H = 0, S = 20, CX = 0, CY = 0, D = 28;
+let bodies = [], nextId = 1, selectedId = null, running = true, chosen = "planet";
+let speed = 1, stretch = 1, tilt = 55 * Math.PI / 180, showForces = true, showTrails = true;
+let colors = {};
+
+function readColors() {
+  const cs = getComputedStyle(document.documentElement);
+  for (const k of ["grid", "well", "force", "pair", "ink", "muted", "stage"]) colors[k] = cs.getPropertyValue("--" + k).trim();
+  colors.gridRGB = hex(colors.grid); colors.wellRGB = hex(colors.well);
+}
+function hex(h) { h = h.replace("#", ""); if (h.length === 3) h = h.split("").map(c => c + c).join(""); const n = parseInt(h, 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+readColors();
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", readColors);
+new MutationObserver(readColors).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+function resize() {
+  const r = stage.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
+  W = r.width; H = r.height; cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  S = Math.min(W / 26, H / 19); CX = W / 2; CY = H / 2 - S * 1.4 * Math.sin(tilt);
+}
+new ResizeObserver(resize).observe(stage); resize();
+
+// ---------- projection ----------
+function project(x, y, z) {
+  const s = Math.sin(tilt), c = Math.cos(tilt);
+  const yp = y * c + z * s, zp = z * c - y * s, f = D / (D + zp);
+  return [CX + x * f * S, CY - yp * f * S, f, zp];
+}
+function unproject(sx, sy) {
+  const s = Math.sin(tilt), c = Math.cos(tilt), k = (CY - sy) / (S * D);
+  const z = k * D / (s - k * c), f = D / (D + z * c);
+  return [(sx - CX) / (f * S), z];
+}
+
+// ---------- fabric depth (from potential) ----------
+function depthAt(x, z) {
+  let sum = 0;
+  for (const b of bodies) { const dx = x - b.x, dz = z - b.z; sum += b.m / Math.sqrt(dx * dx + dz * dz + DS2); }
+  sum *= 0.055 * stretch;
+  return -MAXD * Math.tanh(sum / MAXD);
+}
+const GN = 61, gridY = new Float32Array(GN * GN);
+function computeGrid() {
+  for (let i = 0; i < GN; i++) for (let j = 0; j < GN; j++)
+    gridY[i * GN + j] = depthAt(-HALF + 2 * HALF * i / (GN - 1), -HALF + 2 * HALF * j / (GN - 1));
+}
+
+// ---------- bodies ----------
+function addBody(m, x, z, vx = 0, vz = 0, name) {
+  const t = typeFor(m);
+  const b = { id: nextId++, m, t, r: radiusFor(m, t), x, z, vx, vz, ax: 0, az: 0, name: name || newName(t), trail: [], held: false };
+  bodies.push(b); return b;
+}
+function circularVel(x, z, exclude) {
+  let host = null;
+  for (const b of bodies) if (b !== exclude && (!host || b.m > host.m)) host = b;
+  if (!host) return [0, 0];
+  const dx = x - host.x, dz = z - host.z, r = Math.hypot(dx, dz);
+  if (r < 0.3) return [host.vx, host.vz];
+  const v = Math.sqrt(G * host.m / r);
+  return [host.vx - dz / r * v, host.vz + dx / r * v];
+}
+function forces() {
+  for (const b of bodies) { b.fx = 0; b.fz = 0; }
+  for (let i = 0; i < bodies.length; i++) for (let j = i + 1; j < bodies.length; j++) {
+    const a = bodies[i], b = bodies[j], dx = b.x - a.x, dz = b.z - a.z, r2 = dx * dx + dz * dz + SOFT2;
+    const inv = G * a.m * b.m / (r2 * Math.sqrt(r2));
+    a.fx += dx * inv; a.fz += dz * inv; b.fx -= dx * inv; b.fz -= dz * inv;
+  }
+}
+function step(dt) {
+  forces();
+  for (const b of bodies) { if (b.held) { b.vx = b.vz = 0; continue; } b.vx += b.fx / b.m * dt; b.vz += b.fz / b.m * dt; }
+  for (const b of bodies) if (!b.held) { b.x += b.vx * dt; b.z += b.vz * dt; }
+  // merges
+  for (let i = 0; i < bodies.length; i++) for (let j = i + 1; j < bodies.length; j++) {
+    const a = bodies[i], b = bodies[j];
+    if (Math.hypot(a.x - b.x, a.z - b.z) < (a.r + b.r) * 0.8) {
+      const big = a.m >= b.m ? a : b, small = big === a ? b : a, M = a.m + b.m;
+      big.vx = (a.m * a.vx + b.m * b.vx) / M; big.vz = (a.m * a.vz + b.m * b.vz) / M;
+      big.x = (a.m * a.x + b.m * b.x) / M; big.z = (a.m * a.z + b.m * b.z) / M;
+      big.m = M; big.t = typeFor(M); big.r = radiusFor(M, big.t); big.held = a.held || b.held;
+      if (selectedId === small.id) selectedId = big.id;
+      bodies.splice(bodies.indexOf(small), 1);
+      toast(`${small.name} crashed into ${big.name}. Combined mass: ${fmt(M)}`);
+      return step(0);
+    }
+  }
+  for (const b of [...bodies]) if (!b.held && (Math.abs(b.x) > KILL || Math.abs(b.z) > KILL)) {
+    bodies.splice(bodies.indexOf(b), 1); if (selectedId === b.id) selectedId = null;
+    toast(`${b.name} sailed off the edge of the fabric`);
+  }
+}
+
+// ---------- drawing ----------
+function drawGrid() {
+  const B = 7, paths = Array.from({ length: B }, () => new Path2D());
+  const P = (i, j) => project(-HALF + 2 * HALF * i / (GN - 1), gridY[i * GN + j], -HALF + 2 * HALF * j / (GN - 1));
+  const bucket = y => Math.min(B - 1, Math.floor(Math.sqrt(Math.max(0, -y) / MAXD) * B));
+  const seg = (i1, j1, i2, j2) => {
+    const y = (gridY[i1 * GN + j1] + gridY[i2 * GN + j2]) / 2, p = paths[bucket(y)], a = P(i1, j1), b = P(i2, j2);
+    p.moveTo(a[0], a[1]); p.lineTo(b[0], b[1]);
+  };
+  for (let i = 0; i < GN; i += 2) for (let j = 0; j < GN - 1; j++) seg(i, j, i, j + 1);
+  for (let j = 0; j < GN; j += 2) for (let i = 0; i < GN - 1; i++) seg(i, j, i + 1, j);
+  const g = colors.gridRGB, w = colors.wellRGB;
+  for (let k = 0; k < B; k++) {
+    const t = k / (B - 1), c = g.map((v, n) => Math.round(v + (w[n] - v) * t));
+    ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},${0.55 + 0.45 * t})`;
+    ctx.lineWidth = 1 + 0.8 * t; ctx.stroke(paths[k]);
+  }
+}
+function arrow(x1, y1, x2, y2, color, width) {
+  const dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy);
+  if (L < 3) return;
+  const ux = dx / L, uy = dy / L, h = Math.min(10, L * 0.45);
+  ctx.strokeStyle = ctx.fillStyle = color; ctx.lineWidth = width; ctx.lineCap = "round";
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - ux * h * 0.6, y2 - uy * h * 0.6); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 - ux * h - uy * h * 0.5, y2 - uy * h + ux * h * 0.5);
+  ctx.lineTo(x2 - ux * h + uy * h * 0.5, y2 - uy * h - ux * h * 0.5); ctx.closePath(); ctx.fill();
+}
+const fLen = F => Math.min(4.5, 0.55 * Math.sqrt(F));
+function forceArrow(b, fx, fz, color, width) {
+  const F = Math.hypot(fx, fz); if (F < 1e-6) return;
+  const L = fLen(F), y = b.y + b.r * 0.9;
+  const a = project(b.x, y, b.z), e = project(b.x + fx / F * L, y, b.z + fz / F * L);
+  arrow(a[0], a[1], e[0], e[1], color, width);
+}
+function drawBody(b, sel) {
+  const [sx, sy, f] = project(b.x, b.y + b.r * 0.9, b.z), R = Math.max(2.5, b.r * f * S), T = TYPES[b.t];
+  if (b.t === "star") {
+    const glow = ctx.createRadialGradient(sx, sy, R * 0.5, sx, sy, R * 2.6);
+    glow.addColorStop(0, "rgba(255,200,80,0.45)"); glow.addColorStop(1, "rgba(255,200,80,0)");
+    ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(sx, sy, R * 2.6, 0, 7); ctx.fill();
+  }
+  if (b.t === "hole") {
+    ctx.strokeStyle = colors.force; ctx.lineWidth = Math.max(2, R * 0.28);
+    ctx.beginPath(); ctx.ellipse(sx, sy, R * 1.9, R * 1.9 * (0.35 + 0.65 * Math.sin(tilt)), 0, 0, 7); ctx.stroke();
+  }
+  const g = ctx.createRadialGradient(sx - R * 0.35, sy - R * 0.4, R * 0.1, sx, sy, R);
+  g.addColorStop(0, T.col[0]); g.addColorStop(1, T.col[1]);
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(sx, sy, R, 0, 7); ctx.fill();
+  if (sel) { ctx.strokeStyle = colors.ink; ctx.lineWidth = 1.5; ctx.setLineDash([4, 3]); ctx.beginPath(); ctx.arc(sx, sy, R + 5, 0, 7); ctx.stroke(); ctx.setLineDash([]); }
+  b.sx = sx; b.sy = sy; b.sr = R;
+}
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  computeGrid(); drawGrid();
+  for (const b of bodies) b.y = depthAt(b.x, b.z);
+  if (showTrails) for (const b of bodies) {
+    if (b.trail.length < 2) continue;
+    ctx.strokeStyle = colors.muted; ctx.lineWidth = 1.2; ctx.globalAlpha = 0.6; ctx.beginPath();
+    b.trail.forEach((p, i) => { const q = project(p[0], p[1] + 0.05, p[2]); i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]); });
+    ctx.stroke(); ctx.globalAlpha = 1;
+  }
+  const order = [...bodies].sort((a, b) => project(b.x, b.y, b.z)[3] - project(a.x, a.y, a.z)[3]);
+  forces();
+  const sel = bodies.find(b => b.id === selectedId);
+  for (const b of order) drawBody(b, b === sel);
+  if (showForces) {
+    for (const b of bodies) forceArrow(b, b.fx, b.fz, colors.force, 2.6);
+    if (sel) for (const o of bodies) if (o !== sel) {
+      const dx = o.x - sel.x, dz = o.z - sel.z, r2 = dx * dx + dz * dz, F = G * sel.m * o.m / r2, r = Math.sqrt(r2);
+      forceArrow(sel, dx / r * F, dz / r * F, colors.pair, 1.8);
+      forceArrow(o, -dx / r * F, -dz / r * F, colors.pair, 1.8);
+    }
+  }
+  if (launch) {
+    const y = depthAt(launch.x0, launch.z0) + 0.3, a = project(launch.x0, y, launch.z0), e = project(launch.x1, y, launch.z1);
+    ctx.globalAlpha = 0.55; ctx.fillStyle = TYPES[chosen].col[1]; ctx.beginPath(); ctx.arc(a[0], a[1], radiusFor(TYPES[chosen].m, chosen) * a[2] * S, 0, 7); ctx.fill(); ctx.globalAlpha = 1;
+    arrow(a[0], a[1], e[0], e[1], colors.ink, 2);
+  }
+}
+
+// ---------- loop ----------
+let last = performance.now(), frame = 0;
+function loop(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  if (running) {
+    const N = 12, h = dt * speed / N;
+    for (let i = 0; i < N; i++) step(h);
+    if (frame % 3 === 0) for (const b of bodies) { b.trail.push([b.x, depthAt(b.x, b.z), b.z]); if (b.trail.length > 160) b.trail.shift(); }
+  }
+  draw();
+  if (frame++ % 6 === 0) renderReadout();
+  requestAnimationFrame(loop);
+}
+
+// ---------- readout ----------
+const fmt = v => v >= 100 ? v.toFixed(0) : v >= 10 ? v.toFixed(1) : v.toFixed(2);
+const readout = document.getElementById("readout");
+function renderReadout() {
+  const b = bodies.find(x => x.id === selectedId);
+  if (!b) {
+    readout.innerHTML = `<div class="label">Inspector</div><p class="empty">${bodies.length ? "Click a body on the fabric to see every force acting on it." : "The fabric is flat. Drop a mass to make a dent."}</p>`;
+    return;
+  }
+  const F = Math.hypot(b.fx || 0, b.fz || 0), v = Math.hypot(b.vx, b.vz);
+  const others = bodies.filter(o => o !== b).map(o => {
+    const r = Math.hypot(o.x - b.x, o.z - b.z); return { o, r, F: G * b.m * o.m / (r * r) };
+  }).sort((p, q) => q.F - p.F).slice(0, 4);
+  readout.innerHTML = `<div class="label">Inspector · ${TYPES[b.t].label}</div>
+    <h3>${b.name}</h3>
+    <div class="stats">
+      <div class="stat"><small>Mass</small><b>${fmt(b.m)}</b></div>
+      <div class="stat"><small>Speed</small><b>${fmt(v)}</b></div>
+      <div class="stat"><small>Net force</small><b>${fmt(F)}</b></div>
+    </div>
+    ${others.length ? `<div class="label">Pulls on ${b.name}</div><ul class="pairs">${others.map(p =>
+      `<li><span class="who">${p.o.name} (mass ${fmt(p.o.m)}), ${fmt(p.r)} apart</span><span class="eq">F = 1·${fmt(b.m)}·${fmt(p.o.m)} / ${fmt(p.r)}² = </span>${fmt(p.F)}</li>`).join("")}</ul>
+      <p class="hint">Teal arrows come in equal pairs: ${b.name} pulls back on each partner just as hard (Newton's third law). The lighter partner accelerates more.</p>`
+      : `<p class="empty">Nothing else on the fabric, so there is no force.</p>`}`;
+}
+
+// ---------- pointer ----------
+let launch = null, drag = null;
+const pos = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+function hit(px, py) {
+  let best = null, bd = 1e9;
+  for (const b of bodies) { if (b.sx == null) continue; const d = Math.hypot(px - b.sx, py - b.sy); if (d < Math.max(b.sr, 9) + 5 && d < bd) { bd = d; best = b; } }
+  return best;
+}
+cv.addEventListener("pointerdown", e => {
+  const [px, py] = pos(e), b = hit(px, py); cv.setPointerCapture(e.pointerId);
+  if (b) { selectedId = b.id; drag = b; b.held = true; b.trail = []; cv.classList.add("dragging"); return; }
+  const [x, z] = unproject(px, py);
+  if (Math.abs(x) > HALF || Math.abs(z) > HALF || !isFinite(x)) { selectedId = null; return; }
+  launch = { x0: x, z0: z, x1: x, z1: z };
+});
+cv.addEventListener("pointermove", e => {
+  const [px, py] = pos(e);
+  if (drag) { const [x, z] = unproject(px, py); drag.x = Math.max(-HALF, Math.min(HALF, x)); drag.z = Math.max(-HALF, Math.min(HALF, z)); return; }
+  if (launch) { const [x, z] = unproject(px, py); launch.x1 = x; launch.z1 = z; return; }
+  cv.classList.toggle("over-body", !!hit(px, py));
+});
+function endPointer() {
+  if (drag) { drag.held = false; drag = null; cv.classList.remove("dragging"); }
+  if (launch) {
+    const { x0, z0, x1, z1 } = launch, dx = x1 - x0, dz = z1 - z0; launch = null;
+    let vx = 0, vz = 0;
+    if (Math.hypot(dx, dz) > 0.35) { vx = dx * 1.4; vz = dz * 1.4; }
+    else if (document.getElementById("autoOrbit").checked) [vx, vz] = circularVel(x0, z0, null);
+    const b = addBody(TYPES[chosen].m, x0, z0, vx, vz); selectedId = b.id;
+  }
+}
+cv.addEventListener("pointerup", endPointer);
+cv.addEventListener("pointercancel", endPointer);
+
+// ---------- controls ----------
+const chips = document.getElementById("chips");
+for (const [k, T] of Object.entries(TYPES)) {
+  const btn = document.createElement("button"); btn.className = "chip"; btn.dataset.t = k; btn.setAttribute("aria-pressed", k === chosen);
+  btn.innerHTML = `<b><span class="dot" style="background:radial-gradient(circle at 35% 35%, ${T.col[0]}, ${T.col[1]})"></span>${T.label}</b><span>mass ${T.m}</span>`;
+  btn.onclick = () => { chosen = k; chips.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", c.dataset.t === k)); };
+  chips.appendChild(btn);
+}
+const playBtn = document.getElementById("playBtn");
+const setRun = r => { running = r; playBtn.textContent = r ? "Pause" : "Play"; };
+playBtn.onclick = () => setRun(!running);
+document.getElementById("clearBtn").onclick = () => { bodies = []; selectedId = null; };
+document.getElementById("delBtn").onclick = () => { bodies = bodies.filter(b => b.id !== selectedId); selectedId = null; };
+const bind = (id, out, fn, f) => { const el = document.getElementById(id), o = document.getElementById(out); const u = () => { fn(+el.value); o.textContent = f(+el.value); }; el.addEventListener("input", u); u(); };
+bind("speed", "speedOut", v => speed = v, v => v + "×");
+bind("stretch", "stretchOut", v => stretch = v, v => v.toFixed(1) + "×");
+bind("tilt", "tiltOut", v => { tilt = v * Math.PI / 180; resize(); }, v => v + "°");
+document.getElementById("showForces").onchange = e => showForces = e.target.checked;
+document.getElementById("showTrails").onchange = e => { showTrails = e.target.checked; };
+document.addEventListener("keydown", e => {
+  if (e.target.tagName === "INPUT" && e.target.type === "range") return;
+  if (e.code === "Space" && e.target === document.body) { e.preventDefault(); setRun(!running); }
+  if ((e.key === "Delete" || e.key === "Backspace") && e.target === document.body && selectedId) { bodies = bodies.filter(b => b.id !== selectedId); selectedId = null; }
+});
+
+let toastTimer; const toastEl = document.getElementById("toast");
+function toast(msg) { toastEl.textContent = msg; toastEl.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2600); }
+
+// ---------- presets ----------
+function preset(p) {
+  bodies = []; selectedId = null; for (const k in nameCount) delete nameCount[k];
+  if (p === "solar") {
+    const star = addBody(100, 0, 0);
+    const vp = Math.sqrt(100 / 6), planet = addBody(20, 6, 0, 0, vp);
+    const vm = Math.sqrt(20 / 1.3), moon = addBody(1, 7.3, 0, 0, vp + vm, "Pip the moonlet");
+    star.vz = -(planet.m * planet.vz + moon.m * moon.vz) / star.m;
+    selectedId = planet.id;
+  } else if (p === "binary") {
+    const v = Math.sqrt(60 * 3 / 36);
+    addBody(60, -3, 0, 0, -v, "Stella"); const b = addBody(60, 3, 0, 0, v, "Blaze");
+    addBody(5, 0, 8.6, -Math.sqrt(120 / 8.6), 0, "Moonie"); selectedId = b.id;
+  } else if (p === "hole") {
+    addBody(400, 0, 0, 0, 0, "Hungry Hank");
+    [[4, 1], [5.5, 0.92], [7, 0.85], [8.5, 0.6], [3, 1.05]].forEach(([r, k], i) => {
+      const a = i * 1.3, v = Math.sqrt(400 / r) * k;
+      addBody(i % 2 ? 5 : 1, r * Math.cos(a), r * Math.sin(a), -Math.sin(a) * v, Math.cos(a) * v);
+    });
+    selectedId = bodies[0].id;
+  } else if (p === "three") {
+    // figure-eight choreography (Chenciner–Montgomery), scaled
+    const s = 3.2, m = 40, vs = Math.sqrt(m / s);
+    const P = [[0.97000436, -0.24308753], [-0.97000436, 0.24308753], [0, 0]];
+    const V = [[0.466203685, 0.43236573], [0.466203685, 0.43236573], [-0.93240737, -0.86473146]];
+    ["Sunny", "Big Sol", "Blaze"].forEach((n, i) => addBody(m, P[i][0] * s, P[i][1] * s, V[i][0] * vs, V[i][1] * vs, n));
+    selectedId = bodies[2].id;
+  }
+}
+document.getElementById("presets").addEventListener("click", e => { const p = e.target.closest("button")?.dataset.p; if (p) { preset(p); setRun(true); } });
+
+preset("solar");
+requestAnimationFrame(loop);
+})();
+</script>
+
+</body>
+</html>
