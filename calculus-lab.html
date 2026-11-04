@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interactive Calculus Lab for AP Physics C</title>
+<meta name="description" content="Six interactive calculus activities for AP Physics C: Mechanics students who are new to calculus: secant to tangent, linked x–v–a graphs, Riemann sums, a derivative and integral rule drill, a drag differential equation lab, and slicing a rod into dm.">
+<meta name="theme-color" content="#1B2A41">
+<meta property="og:title" content="Interactive Calculus Lab for AP Physics C">
+<meta property="og:description" content="Slope and area, live: six hands-on calculus activities for AP Physics C: Mechanics.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://brandoncomella-afk.github.io/physics-sims/previews/calculus-lab.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231B2A41'/%3E%3Cpath d='M10 50 Q30 50 36 30 T56 12' stroke='%232F6690' stroke-width='5' fill='none' stroke-linecap='round'/%3E%3Cpath d='M14 50 L50 22' stroke='%23E4572E' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+:root{
+  --navy:#1B2A41; --ink:#1F2937; --gray:#6B7280; --blue:#2F6690; --orange:#E4572E;
+  --panel:#F1F4F8; --rule:#CBD5E1; --good:#15803D; --bg:#FFFFFF;
+  --serif: Cambria, "Caladea", Georgia, "Times New Roman", serif;
+  --sans: Calibri, "Carlito", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.45}
+header{background:var(--navy);color:#fff;padding:18px 24px 0}
+header .kicker{color:#C9D3E0;font-size:13px;letter-spacing:.06em;text-transform:uppercase}
+header h1{font-family:var(--serif);font-weight:700;font-size:28px;margin:2px 0 10px}
+header h1 span{color:var(--orange)}
+nav{display:flex;gap:4px;flex-wrap:wrap}
+nav a{color:#C9D3E0;text-decoration:none;padding:9px 14px;border-radius:8px 8px 0 0;font-size:15px;white-space:nowrap}
+nav a:hover{color:#fff;background:rgba(255,255,255,.07)}
+nav a.on{background:#fff;color:var(--navy);font-weight:700}
+nav a b{color:var(--orange);margin-right:6px}
+main{max-width:1180px;margin:0 auto;padding:20px 24px 40px}
+section{display:none}
+section.on{display:block}
+h2{font-family:var(--serif);font-size:24px;margin:4px 0 2px}
+.sub{color:var(--gray);margin:0 0 14px}
+.chip{display:inline-block;background:var(--panel);color:var(--blue);font-size:13px;padding:3px 10px;border-radius:999px;margin-left:8px;vertical-align:middle;font-family:var(--sans);font-weight:600}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:20px;align-items:start}
+@media (max-width:900px){.layout{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--rule);border-radius:12px;padding:14px 16px}
+.card h3{margin:0 0 8px;font-size:15px;color:var(--blue);text-transform:uppercase;letter-spacing:.04em}
+.card + .card{margin-top:12px}
+canvas{width:100%;display:block;background:#fff;border:1px solid var(--rule);border-radius:10px;touch-action:none}
+.ctl{margin:10px 0}
+.ctl label{display:flex;justify-content:space-between;font-size:14px;color:var(--ink);margin-bottom:3px}
+.ctl label output{font-family:"Cambria Math",Cambria,Georgia,serif;color:var(--blue);font-weight:700}
+input[type=range]{width:100%;accent-color:var(--blue)}
+select,input[type=text]{width:100%;padding:8px 10px;border:1px solid var(--rule);border-radius:8px;font:inherit;background:#fff;color:var(--ink)}
+button{font:inherit;border:0;border-radius:8px;padding:8px 14px;background:var(--blue);color:#fff;cursor:pointer;font-weight:600}
+button.alt{background:#fff;color:var(--blue);border:1px solid var(--blue)}
+button.warm{background:var(--orange)}
+button:hover{filter:brightness(1.07)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.readout{font-family:"Cambria Math",Cambria,Georgia,serif;font-size:15px}
+.readout div{display:flex;justify-content:space-between;border-bottom:1px dashed var(--rule);padding:4px 0}
+.readout div:last-child{border-bottom:0}
+.readout b{color:var(--blue)}
+.big{font-size:22px;font-weight:700;color:var(--orange)}
+.say{border-left:4px solid var(--orange);padding:6px 12px;color:var(--blue);font-style:italic;background:#fff;border-radius:0 8px 8px 0;margin:12px 0}
+.math{font-family:"Cambria Math",Cambria,Georgia,serif}
+table.hist{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px}
+table.hist th{background:var(--navy);color:#fff;font-weight:600;padding:4px 6px;text-align:left}
+table.hist td{border-bottom:1px solid var(--rule);padding:4px 6px;font-family:"Cambria Math",Cambria,Georgia,serif}
+.stack canvas + canvas{margin-top:8px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--gray);margin:6px 2px}
+.legend i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:5px;border-radius:2px}
+.drillq{font-family:"Cambria Math",Cambria,Georgia,serif;font-size:30px;text-align:center;padding:26px 10px;background:#fff;border:1px solid var(--rule);border-radius:12px;margin-bottom:12px}
+.fb{min-height:28px;font-weight:600;margin-top:8px}
+.fb.ok{color:var(--good)} .fb.no{color:var(--orange)}
+.steps{background:#fff;border:1px solid var(--rule);border-radius:10px;padding:10px 14px;font-family:"Cambria Math",Cambria,Georgia,serif;font-size:15px}
+.steps p{margin:5px 0}
+.muted{color:var(--gray);font-size:13px}
+.seg{display:flex;border:1px solid var(--blue);border-radius:8px;overflow:hidden}
+.seg button{flex:1;border-radius:0;background:#fff;color:var(--blue);padding:7px 6px;font-size:14px}
+.seg button.on{background:var(--blue);color:#fff}
+kbd{background:#fff;border:1px solid var(--rule);border-radius:4px;padding:0 5px;font-size:13px}
+footer{color:var(--gray);font-size:13px;text-align:center;padding:10px 0 30px}
+</style>
+</head>
+<body>
+<header>
+  <div class="kicker"><a href="index.html" style="color:#C9D3E0;text-decoration:none">← All simulations</a> · AP Physics C: Mechanics · Mr C's Science</div>
+  <h1>Interactive Calculus Lab <span>·</span> slope and area, live</h1>
+  <nav id="nav" role="tablist" aria-label="Activities">
+    <a href="#secant"><b>1</b>Secant → Tangent</a>
+    <a href="#slopes"><b>2</b>x → v → a</a>
+    <a href="#area"><b>3</b>The Area Machine</a>
+    <a href="#drill"><b>4</b>Rule Drill</a>
+    <a href="#drag"><b>5</b>Drag Lab</a>
+    <a href="#slice"><b>6</b>Slice-a-Rod</a>
+  </nav>
+</header>
+<noscript><p style="padding:20px">This lab needs JavaScript turned on.</p></noscript>
+<main>
+
+<!-- 1 SECANT -->
+<section id="secant">
+  <h2>Secant → Tangent <span class="chip">Packet A2</span></h2>
+  <p class="sub">Penguin Percy's position is graphed below. Shrink Δt and watch the secant line (orange) turn into the tangent line (dark). Its slope settles down to the instantaneous velocity.</p>
+  <div class="layout">
+    <div><canvas id="secCv" height="440"></canvas>
+      <div class="legend"><span><i style="background:#2F6690"></i>x(t)</span><span><i style="background:#E4572E"></i>secant line</span><span><i style="background:#1F2937"></i>tangent line</span></div>
+    </div>
+    <div>
+      <div class="card">
+        <h3>Controls</h3>
+        <div class="ctl"><label>Position function</label><select id="secFn"></select></div>
+        <div class="ctl"><label>Starting time t₀ <output id="secT0o"></output></label><input id="secT0" type="range" min="0" max="1" step="0.001" value="0.4"></div>
+        <div class="ctl"><label>Δt <output id="secDto"></output></label><input id="secDt" type="range" min="0" max="1" step="0.001" value="1"></div>
+        <div class="row"><button id="secShrink">Shrink Δt ▸</button><button class="alt" id="secRec">Record row</button><label class="muted"><input type="checkbox" id="secTan" checked> show tangent</label></div>
+      </div>
+      <div class="card readout">
+        <h3>Readout</h3>
+        <div><span>Average velocity Δx/Δt</span><b id="secAvg"></b></div>
+        <div><span>Instantaneous dx/dt at t₀</span><b id="secInst"></b></div>
+        <div><span>Difference</span><b id="secDiff"></b></div>
+      </div>
+      <div class="card"><h3>Your table</h3>
+        <table class="hist" id="secHist"><thead><tr><th>Δt (s)</th><th>Δx/Δt (m/s)</th></tr></thead><tbody></tbody></table>
+        <p class="muted">Record a row, shrink Δt, record again. What number are you closing in on?</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2 SLOPES -->
+<section id="slopes">
+  <h2>x → v → a <span class="chip">Packet A6–A7</span></h2>
+  <p class="sub">Drag the time slider (or drag on any graph). The tangent line on each graph has a slope equal to the value on the graph below it. In <b>Predict</b> mode the bottom graphs are hidden — your scrubbing leaves a trail of slope dots. Sketch the curve in your head, then reveal.</p>
+  <div class="layout">
+    <div class="stack"><canvas id="slX" height="230"></canvas><canvas id="slV" height="230"></canvas><canvas id="slA" height="230"></canvas></div>
+    <div>
+      <div class="card">
+        <h3>Controls</h3>
+        <div class="ctl"><label>Position function</label><select id="slFn"></select></div>
+        <div class="ctl"><label>Time t <output id="slTo"></output></label><input id="slT" type="range" min="0" max="1" step="0.001" value="0.2"></div>
+        <div class="ctl"><label>Mode</label><div class="seg" id="slMode"><button data-m="show" class="on">Show all</button><button data-m="predict">Predict</button></div></div>
+        <div class="row"><button id="slReveal" class="warm">Reveal v and a</button><button class="alt" id="slClear">Clear trail</button></div>
+      </div>
+      <div class="card readout">
+        <h3>At this instant</h3>
+        <div><span>x(t)</span><b id="slx"></b></div>
+        <div><span>v(t) = dx/dt</span><b id="slv"></b></div>
+        <div><span>a(t) = dv/dt</span><b id="sla"></b></div>
+        <p id="slSay" class="say" style="margin-bottom:0"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 AREA -->
+<section id="area">
+  <h2>The Area Machine <span class="chip">Packet B1, B4</span></h2>
+  <p class="sub">Add up thin rectangles under the curve. Area above the axis counts positive (blue); below counts negative (orange). Crank up the number of rectangles and compare with the exact answer from the Fundamental Theorem of Calculus.</p>
+  <div class="layout">
+    <div><canvas id="arCv" height="440"></canvas></div>
+    <div>
+      <div class="card">
+        <h3>Controls</h3>
+        <div class="ctl"><label>Function</label><select id="arFn"></select></div>
+        <div class="ctl"><label>From a = <output id="arAo"></output></label><input id="arA" type="range" min="0" max="1" step="0.001" value="0"></div>
+        <div class="ctl"><label>To b = <output id="arBo"></output></label><input id="arB" type="range" min="0" max="1" step="0.001" value="1"></div>
+        <div class="ctl"><label>Number of rectangles n <output id="arNo"></output></label><input id="arN" type="range" min="1" max="200" step="1" value="6"></div>
+        <div class="ctl"><label>Rectangle height from</label><div class="seg" id="arMeth"><button data-m="left">left</button><button data-m="right" class="on">right</button><button data-m="mid">middle</button><button data-m="trap">trapezoid</button></div></div>
+      </div>
+      <div class="card readout">
+        <h3>Result</h3>
+        <div><span>Sum of rectangles</span><b id="arSum"></b></div>
+        <div><span>Exact: F(b) − F(a)</span><b id="arEx"></b></div>
+        <div><span>Error</span><b id="arErr"></b></div>
+        <p class="muted" id="arF" style="margin:8px 0 0"></p>
+        <p class="muted" id="arMeaning" style="margin:4px 0 0"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 DRILL -->
+<section id="drill">
+  <h2>Rule Drill <span class="chip">Packet A3–A5, B2, B5</span></h2>
+  <p class="sub">Type your answer using <kbd>^</kbd> for powers, <kbd>*</kbd> or nothing for multiplication, and functions like <kbd>sin(2x)</kbd>, <kbd>e^(3x)</kbd>, <kbd>ln(x)</kbd>, <kbd>sqrt(x)</kbd>. For integrals, leave off the + C. Answers are checked numerically, so any correct form counts.</p>
+  <div class="layout">
+    <div>
+      <div class="drillq" id="drQ"></div>
+      <div class="row"><input type="text" id="drIn" placeholder="your answer, e.g. 12x^3 - 2" autocomplete="off" spellcheck="false" style="flex:1;min-width:220px;font-size:18px"><button id="drCheck">Check</button></div>
+      <div class="muted" style="margin-top:6px">I read that as: <span class="math" id="drEcho">—</span></div>
+      <div class="fb" id="drFb"></div>
+      <div class="row" style="margin-top:8px"><button class="alt" id="drHint">Hint</button><button class="alt" id="drShow">Show answer</button><button class="warm" id="drNext">Next problem ▸</button></div>
+    </div>
+    <div>
+      <div class="card">
+        <h3>Problem set</h3>
+        <div class="ctl"><select id="drSet">
+          <option value="d1">Derivatives — power rule</option>
+          <option value="d2">Derivatives — sin, cos, e, ln</option>
+          <option value="d3">Derivatives — chain rule</option>
+          <option value="dm">Derivatives — mixed</option>
+          <option value="i1">Integrals — reverse power rule</option>
+          <option value="i2">Integrals — sin, cos, e, 1/x</option>
+          <option value="im">Integrals — mixed</option>
+          <option value="all">Everything</option>
+        </select></div>
+      </div>
+      <div class="card readout">
+        <h3>Score</h3>
+        <div><span>Correct</span><b id="drC">0</b></div>
+        <div><span>Attempted</span><b id="drA">0</b></div>
+        <div><span>Current streak</span><b id="drS">0</b></div>
+        <p class="say" id="drSay" style="margin-bottom:0">Professor Waddles is ready when you are.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 DRAG -->
+<section id="drag">
+  <h2>Drag Lab: Hank's Parachute <span class="chip">Packet C2 · Topic 2.9</span></h2>
+  <p class="sub">Hank the Hamster falls from rest with air resistance. The smooth curve is the exact solution from separation of variables. The dots are a step-by-step simulation that only uses Newton's second law: a = F<sub>net</sub>/m, then v<sub>new</sub> = v + aΔt. Shrink the step and the dots land on the curve.</p>
+  <div class="layout">
+    <div class="stack"><canvas id="dgV" height="300"></canvas><canvas id="dgA" height="220"></canvas>
+      <div class="legend"><span><i style="background:#2F6690"></i>exact solution</span><span><i style="background:#E4572E"></i>step-by-step simulation</span><span><i style="background:#1F2937"></i>terminal velocity</span></div>
+    </div>
+    <div>
+      <div class="card">
+        <h3>Controls</h3>
+        <div class="ctl"><label>Drag model</label><div class="seg" id="dgMod"><button data-m="lin" class="on">linear: bv</button><button data-m="quad">quadratic: cv²</button></div></div>
+        <div class="ctl"><label>Mass m <output id="dgMo"></output></label><input id="dgM" type="range" min="0.05" max="2" step="0.01" value="0.10"></div>
+        <div class="ctl"><label id="dgBl">Drag constant b <output id="dgBo"></output></label><input id="dgB" type="range" min="0.01" max="0.5" step="0.005" value="0.05"></div>
+        <div class="ctl"><label>Simulation step Δt <output id="dgDo"></output></label><input id="dgD" type="range" min="0.02" max="1.5" step="0.01" value="0.5"></div>
+      </div>
+      <div class="card readout">
+        <h3>Results</h3>
+        <div><span>Terminal velocity v<sub>T</sub></span><b id="dgVt"></b></div>
+        <div><span id="dgTauL">Time constant τ = m/b</span><b id="dgTau"></b></div>
+        <div><span>Speed at t = 2 s (exact)</span><b id="dgV2"></b></div>
+      </div>
+      <div class="card"><h3>The math with your numbers</h3><div class="steps" id="dgSteps"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 6 SLICE -->
+<section id="slice">
+  <h2>Slice-a-Rod <span class="chip">Packet C1 · Topics 2.1, 5.4</span></h2>
+  <p class="sub">A 1.0 m rod is cut into N slices. Each slice has mass dm = λ(x) dx. Add up the slices to get the mass, the center of mass, and the rotational inertia about the axis you choose. More slices → the sum becomes the integral.</p>
+  <div class="layout">
+    <div><canvas id="scCv" height="300"></canvas>
+      <div class="card" style="margin-top:12px"><h3>Sum of slices vs. the integral</h3>
+        <table class="hist" id="scTab"><thead><tr><th>Quantity</th><th>Integral</th><th>Sum with N slices</th><th>Exact</th></tr></thead><tbody></tbody></table>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <h3>Controls</h3>
+        <div class="ctl"><label>Density λ(x) in kg/m</label><select id="scFn"></select></div>
+        <div class="ctl"><label>Number of slices N <output id="scNo"></output></label><input id="scN" type="range" min="1" max="100" step="1" value="5"></div>
+        <div class="ctl"><label>Rotation axis at x = <output id="scAxo"></output></label><input id="scAx" type="range" min="0" max="1" step="0.01" value="0"></div>
+        <div class="row"><button class="alt" id="scEnd">Axis at end</button><button class="alt" id="scMid">Axis at center</button><button class="alt" id="scCm">Axis at CM</button></div>
+      </div>
+      <p class="say">Hank says: heavier slices are darker. Watch where the center of mass (orange triangle) sits when one end is denser. Then put the axis at the CM — that's the smallest I can get.</p>
+    </div>
+  </div>
+</section>
+</main>
+<footer>Mr C's Science · Companion to the "Calculus for AP Physics C" packet · Angles are in radians throughout.</footer>
+
+<script>
+"use strict";
+/* ----------------------------------------------------------- plotting */
+const C = {navy:"#1B2A41", ink:"#1F2937", gray:"#6B7280", blue:"#2F6690", orange:"#E4572E", panel:"#F1F4F8", rule:"#CBD5E1", faint:"#E5EAF0"};
+function niceStep(range, target){ const raw = range/target, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw/p;
+  return (f<1.5?1:f<3?2:f<7?5:10)*p; }
+function fmt(v, d=3){ if(!isFinite(v)) return "—"; if(Math.abs(v) < 1e-12) return "0";
+  const a = Math.abs(v); let s = a>=1000||a<0.001 ? v.toExponential(2) : (+v.toPrecision(d+1)).toString();
+  return s.replace("-", "−"); }
+class Plot {
+  constructor(cv, o){ this.cv=cv; this.o=Object.assign({pad:{l:52,r:14,t:12,b:34}}, o); this.ctx=cv.getContext("2d"); this.h=+cv.getAttribute("height"); }
+  size(){ const dpr=window.devicePixelRatio||1, w=this.cv.clientWidth||600; this.W=w; this.H=this.h;
+    this.cv.style.height=this.h+"px"; this.cv.width=Math.round(w*dpr); this.cv.height=Math.round(this.h*dpr);
+    this.ctx.setTransform(dpr,0,0,dpr,0,0); this.ctx.clearRect(0,0,w,this.h); }
+  set(xmin,xmax,ymin,ymax){ Object.assign(this,{xmin,xmax,ymin,ymax}); }
+  X(x){ const p=this.o.pad; return p.l+(x-this.xmin)/(this.xmax-this.xmin)*(this.W-p.l-p.r); }
+  Y(y){ const p=this.o.pad; return this.H-p.b-(y-this.ymin)/(this.ymax-this.ymin)*(this.H-p.t-p.b); }
+  invX(px){ const p=this.o.pad; return this.xmin+(px-p.l)/(this.W-p.l-p.r)*(this.xmax-this.xmin); }
+  axes(xl, yl){ const c=this.ctx, p=this.o.pad; c.save(); c.font="12px Calibri, Carlito, system-ui, sans-serif"; c.fillStyle=C.gray;
+    const xs=niceStep(this.xmax-this.xmin, Math.max(4,Math.floor(this.W/90))), ys=niceStep(this.ymax-this.ymin, Math.max(3,Math.floor(this.H/50)));
+    c.lineWidth=1;
+    for(let x=Math.ceil(this.xmin/xs)*xs; x<=this.xmax+1e-9; x+=xs){ const X=this.X(x); c.strokeStyle=C.faint; c.beginPath(); c.moveTo(X,p.t); c.lineTo(X,this.H-p.b); c.stroke();
+      c.textAlign="center"; c.fillText(fmt(+x.toFixed(6)), X, this.H-p.b+15); }
+    for(let y=Math.ceil(this.ymin/ys)*ys; y<=this.ymax+1e-9; y+=ys){ const Y=this.Y(y); c.strokeStyle=C.faint; c.beginPath(); c.moveTo(p.l,Y); c.lineTo(this.W-p.r,Y); c.stroke();
+      c.textAlign="right"; c.fillText(fmt(+y.toFixed(6)), p.l-6, Y+4); }
+    c.strokeStyle=C.ink; c.lineWidth=1.4;
+    if(this.ymin<=0&&this.ymax>=0){ c.beginPath(); c.moveTo(p.l,this.Y(0)); c.lineTo(this.W-p.r,this.Y(0)); c.stroke(); }
+    if(this.xmin<=0&&this.xmax>=0){ c.beginPath(); c.moveTo(this.X(0),p.t); c.lineTo(this.X(0),this.H-p.b); c.stroke(); }
+    c.fillStyle=C.ink; c.font="italic 13px Cambria, Caladea, Georgia, serif"; c.textAlign="right"; c.fillText(xl, this.W-p.r, this.H-p.b-6);
+    c.textAlign="left"; c.fillText(yl, p.l+6, p.t+12); c.restore(); }
+  fn(f, color=C.blue, w=2.5, x0=this.xmin, x1=this.xmax, dash){ const c=this.ctx; c.save(); c.strokeStyle=color; c.lineWidth=w; if(dash) c.setLineDash(dash);
+    this.clip(); c.beginPath(); let pen=false; const N=500;
+    for(let i=0;i<=N;i++){ const x=x0+(x1-x0)*i/N, y=f(x); if(!isFinite(y)||Math.abs(y)>1e6){pen=false;continue;}
+      const X=this.X(x), Y=this.Y(y); if(pen) c.lineTo(X,Y); else {c.moveTo(X,Y); pen=true;} }
+    c.stroke(); c.restore(); }
+  clip(){ const c=this.ctx, p=this.o.pad; c.beginPath(); c.rect(p.l,p.t,this.W-p.l-p.r,this.H-p.t-p.b); c.clip(); }
+  line(x1,y1,x2,y2,color=C.ink,w=1.6,dash){ const c=this.ctx; c.save(); this.clip(); c.strokeStyle=color; c.lineWidth=w; if(dash) c.setLineDash(dash);
+    c.beginPath(); c.moveTo(this.X(x1),this.Y(y1)); c.lineTo(this.X(x2),this.Y(y2)); c.stroke(); c.restore(); }
+  dot(x,y,color=C.ink,r=4.5){ const c=this.ctx; c.save(); this.clip(); c.fillStyle=color; c.beginPath(); c.arc(this.X(x),this.Y(y),r,0,7); c.fill(); c.restore(); }
+  rect(x0,x1,y,fill,stroke){ const c=this.ctx; c.save(); this.clip(); const X0=this.X(x0),X1=this.X(x1),Y0=this.Y(0),Y1=this.Y(y);
+    c.fillStyle=fill; c.fillRect(Math.min(X0,X1),Math.min(Y0,Y1),Math.abs(X1-X0),Math.abs(Y1-Y0));
+    if(stroke){ c.strokeStyle=stroke; c.lineWidth=1; c.strokeRect(Math.min(X0,X1),Math.min(Y0,Y1),Math.abs(X1-X0),Math.abs(Y1-Y0)); } c.restore(); }
+  poly(pts, fill, stroke){ const c=this.ctx; c.save(); this.clip(); c.beginPath(); pts.forEach(([x,y],i)=> i? c.lineTo(this.X(x),this.Y(y)) : c.moveTo(this.X(x),this.Y(y)));
+    c.closePath(); c.fillStyle=fill; c.fill(); if(stroke){c.strokeStyle=stroke; c.lineWidth=1; c.stroke();} c.restore(); }
+  label(x,y,text,color=C.ink,align="left"){ const c=this.ctx; c.save(); c.fillStyle=color; c.font="13px Calibri, Carlito, system-ui, sans-serif"; c.textAlign=align; c.fillText(text,this.X(x),this.Y(y)); c.restore(); }
+}
+const $ = id => document.getElementById(id);
+const lerp = (a,b,u) => a+(b-a)*u;
+function segSetup(id, cb){ const el=$(id); el.addEventListener("click", e=>{ const b=e.target.closest("button"); if(!b) return;
+  el.querySelectorAll("button").forEach(x=>x.classList.toggle("on", x===b)); cb(b.dataset.m); }); return () => el.querySelector("button.on").dataset.m; }
+
+/* motion functions shared by 1 and 2 */
+const MOTION = [
+  {name:"x = 2t²  (Percy on the ramp)", f:t=>2*t*t, d:t=>4*t, dd:t=>4, t:[0,5], y:[-5,52], v:[-2,22], a:[-1,6]},
+  {name:"x = 20t − 4t²  (shoved up and sliding back)", f:t=>20*t-4*t*t, d:t=>20-8*t, dd:t=>-8, t:[0,5], y:[-2,27], v:[-22,22], a:[-10,2]},
+  {name:"x = t³ − 6t² + 9t  (the wavy dock)", f:t=>t**3-6*t*t+9*t, d:t=>3*t*t-12*t+9, dd:t=>6*t-12, t:[0,4.5], y:[-1,11], v:[-4,15], a:[-13,15]},
+  {name:"x = 3 sin(t) + 4  (bobbing on a wave)", f:t=>3*Math.sin(t)+4, d:t=>3*Math.cos(t), dd:t=>-3*Math.sin(t), t:[0,2*Math.PI], y:[0,8], v:[-3.6,3.6], a:[-3.6,3.6]},
+  {name:"x = 8(1 − e^(−t/2))  (coasting to a stop)", f:t=>8*(1-Math.exp(-t/2)), d:t=>4*Math.exp(-t/2), dd:t=>-2*Math.exp(-t/2), t:[0,8], y:[-0.5,9], v:[-0.5,4.5], a:[-2.4,0.5]},
+];
+
+/* ----------------------------------------------------------- 1 secant */
+(function(){
+  const cv=$("secCv"), P=new Plot(cv), sel=$("secFn"); MOTION.forEach((m,i)=>sel.add(new Option(m.name,i)));
+  let anim=null;
+  const dtOf = u => Math.pow(10, lerp(-3, Math.log10(2), u));
+  function draw(){
+    const m=MOTION[+sel.value], t0=lerp(m.t[0], m.t[1]-0.5, +$("secT0").value), dt=dtOf(+$("secDt").value), t1=t0+dt;
+    $("secT0o").textContent=fmt(t0)+" s"; $("secDto").textContent=fmt(dt)+" s";
+    P.size(); P.set(m.t[0], m.t[1], m.y[0], m.y[1]); P.axes("t (s)","x (m)");
+    P.fn(m.f, C.blue, 2.8);
+    const x0=m.f(t0), x1=m.f(t1), s=(x1-x0)/dt, v=m.d(t0), span=m.t[1]-m.t[0];
+    P.line(t0-span, x0-s*span, t0+span, x0+s*span, C.orange, 2, [7,5]);
+    if($("secTan").checked) P.line(t0-span, x0-v*span, t0+span, x0+v*span, C.ink, 1.8);
+    P.line(t0, x0, t1, x0, C.gray, 1.2, [3,3]); P.line(t1, x0, t1, x1, C.gray, 1.2, [3,3]);
+    P.dot(t0,x0,C.ink); P.dot(t1,x1,C.orange);
+    if(dt>span*0.06){ P.label((t0+t1)/2, x0, "Δt", C.gray, "center"); }
+    $("secAvg").textContent=fmt(s,4)+" m/s"; $("secInst").textContent=fmt(v,4)+" m/s"; $("secDiff").textContent=fmt(s-v,3)+" m/s";
+  }
+  $("secShrink").onclick=()=>{ if(anim) cancelAnimationFrame(anim); const el=$("secDt"); const step=()=>{ el.value=Math.max(0, +el.value-0.006); draw(); if(+el.value>0) anim=requestAnimationFrame(step); }; step(); };
+  $("secRec").onclick=()=>{ const m=MOTION[+sel.value], t0=lerp(m.t[0], m.t[1]-0.5, +$("secT0").value), dt=dtOf(+$("secDt").value);
+    const tb=$("secHist").tBodies[0]; const r=tb.insertRow(0); r.insertCell().textContent=fmt(dt,4); r.insertCell().textContent=fmt((m.f(t0+dt)-m.f(t0))/dt,6); while(tb.rows.length>8) tb.deleteRow(8); };
+  ["secT0","secDt","secTan"].forEach(id=>$(id).addEventListener("input",draw));
+  sel.onchange=()=>{ $("secHist").tBodies[0].innerHTML=""; draw(); };
+  window.addEventListener("resize",draw); window.drawSecant=draw;
+})();
+
+/* ----------------------------------------------------------- 2 slopes */
+(function(){
+  const PX=new Plot($("slX")), PV=new Plot($("slV")), PA=new Plot($("slA")), sel=$("slFn");
+  MOTION.forEach((m,i)=>sel.add(new Option(m.name,i))); sel.value=2;
+  let trailV=[], trailA=[], revealed=true;
+  const mode=segSetup("slMode", md=>{ revealed = md==="show"; trailV=[]; trailA=[]; draw(); });
+  function tNow(){ const m=MOTION[+sel.value]; return lerp(m.t[0], m.t[1], +$("slT").value); }
+  function draw(){
+    const m=MOTION[+sel.value], t=tNow(), x=m.f(t), v=m.d(t), a=m.dd(t), span=(m.t[1]-m.t[0])*0.18;
+    $("slTo").textContent=fmt(t)+" s";
+    if(mode()==="predict"){ trailV.push([t,v]); trailA.push([t,a]); }
+    for(const [P,lab,yr] of [[PX,"x (m)",m.y],[PV,"v (m/s)",m.v],[PA,"a (m/s²)",m.a]]){ P.size(); P.set(m.t[0],m.t[1],yr[0],yr[1]); P.axes("t (s)",lab); }
+    PX.fn(m.f); PX.line(t-span, x-v*span, t+span, x+v*span, C.orange, 2.2); PX.dot(t,x,C.orange);
+    if(revealed){ PV.fn(m.d, C.blue); PV.line(t-span, v-a*span, t+span, v+a*span, C.orange, 2.2); PA.fn(m.dd, C.blue); }
+    else { trailV.forEach(([tt,vv])=>PV.dot(tt,vv,"#8FA3BA",2.6)); trailA.forEach(([tt,aa])=>PA.dot(tt,aa,"#8FA3BA",2.6));
+      PV.label(m.t[0]+(m.t[1]-m.t[0])*0.03, m.v[1]-(m.v[1]-m.v[0])*0.1, "hidden — scrub to leave slope dots", C.gray); }
+    PV.dot(t,v,C.orange); PA.dot(t,a,C.orange);
+    [PX,PV,PA].forEach(P=>P.line(t,P.ymin,t,P.ymax,C.orange,1,[4,4]));
+    $("slx").textContent=fmt(x)+" m"; $("slv").textContent=fmt(v)+" m/s"; $("sla").textContent=fmt(a)+" m/s²";
+    const eps=1e-9; let say;
+    if(Math.abs(v)<0.02) say="Momentarily at rest — the x graph is flat here, so v = 0.";
+    else { const dir=v>0?"moving forward (+)":"moving backward (−)";
+      say = Math.abs(a)<eps ? dir+", constant velocity." : (v*a>0 ? dir+" and speeding up: v and a have the same sign." : dir+" and slowing down: v and a have opposite signs."); }
+    $("slSay").textContent=say;
+  }
+  $("slReveal").onclick=()=>{ revealed=true; draw(); };
+  $("slClear").onclick=()=>{ trailV=[]; trailA=[]; draw(); };
+  $("slT").addEventListener("input",draw); sel.onchange=()=>{ trailV=[]; trailA=[]; if(mode()==="predict") revealed=false; draw(); };
+  document.querySelector('#slMode').addEventListener("click", ()=>{ if(mode()==="predict"){ revealed=false; draw(); } });
+  [PX,PV,PA].forEach(P=>{ let down=false; const mv=e=>{ if(!down) return; const r=P.cv.getBoundingClientRect(); const m=MOTION[+sel.value];
+      const tt=Math.min(m.t[1],Math.max(m.t[0],P.invX(e.clientX-r.left))); $("slT").value=(tt-m.t[0])/(m.t[1]-m.t[0]); draw(); };
+    P.cv.addEventListener("pointerdown",e=>{down=true; P.cv.setPointerCapture(e.pointerId); mv(e);}); P.cv.addEventListener("pointermove",mv);
+    P.cv.addEventListener("pointerup",()=>down=false); });
+  window.addEventListener("resize",draw); window.drawSlopes=draw;
+})();
+
+/* ----------------------------------------------------------- 3 area */
+(function(){
+  const P=new Plot($("arCv")), sel=$("arFn");
+  const F=[
+    {name:"v = t²  (Dusty's buggy)", f:t=>t*t, F:t=>t**3/3, Ft:"F(t) = t³/3", dom:[0,4], a:0, b:3, y:[-1,16], xl:"t (s)", yl:"v (m/s)", mean:"Area under v–t = displacement (m)."},
+    {name:"v = t² − 4t + 3  (forward, then back)", f:t=>t*t-4*t+3, F:t=>t**3/3-2*t*t+3*t, Ft:"F(t) = t³/3 − 2t² + 3t", dom:[0,4], a:0, b:3, y:[-1.6,3.5], xl:"t (s)", yl:"v (m/s)", mean:"Negative area = moving backward. The net is the displacement."},
+    {name:"v = 6t − 3t²  (the drone)", f:t=>6*t-3*t*t, F:t=>3*t*t-t**3, Ft:"F(t) = 3t² − t³", dom:[0,3], a:0, b:3, y:[-10,4], xl:"t (s)", yl:"v (m/s)", mean:"Area under v–t = displacement (m)."},
+    {name:"F = 50x + 20x³  (Hank's bungee)", f:x=>50*x+20*x**3, F:x=>25*x*x+5*x**4, Ft:"F(x) = 25x² + 5x⁴", dom:[0,0.6], a:0, b:0.5, y:[-2,36], xl:"x (m)", yl:"F (N)", mean:"Area under F–x = work (J)."},
+    {name:"y = sin θ", f:Math.sin, F:x=>-Math.cos(x), Ft:"F(θ) = −cos θ", dom:[0,2*Math.PI], a:0, b:Math.PI, y:[-1.2,1.2], xl:"θ (rad)", yl:"y", mean:"From 0 to 2π the positive and negative humps cancel."},
+    {name:"v = 50(1 − e^(−t/5))  (parachute)", f:t=>50*(1-Math.exp(-t/5)), F:t=>50*(t+5*Math.exp(-t/5)), Ft:"F(t) = 50(t + 5e^(−t/5))", dom:[0,15], a:0, b:10, y:[-2,50], xl:"t (s)", yl:"v (m/s)", mean:"Area under v–t = distance fallen (m)."},
+  ];
+  F.forEach((m,i)=>sel.add(new Option(m.name,i)));
+  const meth=segSetup("arMeth", draw);
+  function setDefaults(){ const m=F[+sel.value]; $("arA").value=(m.a-m.dom[0])/(m.dom[1]-m.dom[0]); $("arB").value=(m.b-m.dom[0])/(m.dom[1]-m.dom[0]); }
+  function draw(){
+    const m=F[+sel.value]; let a=lerp(m.dom[0],m.dom[1],+$("arA").value), b=lerp(m.dom[0],m.dom[1],+$("arB").value); const n=+$("arN").value, md=meth();
+    $("arAo").textContent=fmt(a); $("arBo").textContent=fmt(b); $("arNo").textContent=n;
+    P.size(); P.set(m.dom[0], m.dom[1], m.y[0], m.y[1]); P.axes(m.xl, m.yl);
+    let sum=0; const h=(b-a)/n;
+    for(let i=0;i<n;i++){ const x0=a+i*h, x1=x0+h; let y;
+      if(md==="trap"){ const y0=m.f(x0), y1=m.f(x1); sum+=(y0+y1)/2*h; const avg=(y0+y1)/2;
+        P.poly([[x0,0],[x0,y0],[x1,y1],[x1,0]], avg>=0?"rgba(47,102,144,.18)":"rgba(228,87,46,.18)", avg>=0?C.blue:C.orange); continue; }
+      y = md==="left"? m.f(x0) : md==="right"? m.f(x1) : m.f((x0+x1)/2); sum+=y*h;
+      P.rect(x0,x1,y, y>=0?"rgba(47,102,144,.18)":"rgba(228,87,46,.18)", n<=80?(y>=0?C.blue:C.orange):null); }
+    P.fn(m.f, C.ink, 2.6);
+    const ex=m.F(b)-m.F(a);
+    $("arSum").textContent=fmt(sum,5); $("arEx").textContent=fmt(ex,5);
+    $("arErr").textContent = Math.abs(ex)>1e-9 ? fmt(Math.abs(sum-ex)/Math.abs(ex)*100,2)+"%" : fmt(sum-ex,3)+" (exact is 0)";
+    $("arF").textContent="Antiderivative: "+m.Ft+". Plug in b, plug in a, subtract."; $("arMeaning").textContent=m.mean;
+  }
+  ["arA","arB","arN"].forEach(id=>$(id).addEventListener("input",draw)); sel.onchange=()=>{ setDefaults(); draw(); };
+  setDefaults(); window.addEventListener("resize",draw); window.drawArea=draw;
+})();
+
+/* ----------------------------------------------------------- expression parser */
+const Expr = (function(){
+  const FN={sin:Math.sin,cos:Math.cos,tan:Math.tan,exp:Math.exp,ln:Math.log,log:Math.log,sqrt:Math.sqrt,abs:Math.abs,sec:x=>1/Math.cos(x),csc:x=>1/Math.sin(x),cot:x=>1/Math.tan(x)};
+  function tokenize(s){
+    s=s.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]/g,ch=>"^"+"⁰¹²³⁴⁵⁶⁷⁸⁹".indexOf(ch)).replace(/\s+/g,"").replace(/\*\*/g,"^").replace(/[−–]/g,"-").replace(/·|×/g,"*").replace(/π/g,"pi").replace(/√/g,"sqrt");
+    const out=[]; let i=0;
+    while(i<s.length){ const ch=s[i];
+      if(/[0-9.]/.test(ch)){ let j=i; while(j<s.length&&/[0-9.]/.test(s[j])) j++; out.push({t:"num",v:parseFloat(s.slice(i,j))}); i=j; continue; }
+      if(/[a-zA-Z]/.test(ch)){ let j=i; while(j<s.length&&/[a-zA-Z]/.test(s[j])) j++; let w=s.slice(i,j).toLowerCase();
+        // split runs like "xsin" or "2xe" into known pieces
+        while(w.length){ const f=["sqrt","sin","cos","tan","exp","sec","csc","cot","abs","ln","log","pi"].find(n=>w.startsWith(n));
+          if(f){ out.push({t:f==="pi"?"const":"fn",v:f}); w=w.slice(f.length); }
+          else { const c=w[0]; if(c==="e") out.push({t:"const",v:"e"}); else if(c==="x"||c==="t") out.push({t:"var"}); else throw new Error("I don't know the symbol “"+c+"”"); w=w.slice(1); } }
+        i=j; continue; }
+      if("+-*/^()".includes(ch)){ out.push({t:ch}); i++; continue; }
+      throw new Error("Unexpected character “"+ch+"”"); }
+    return out; }
+  function parse(s){
+    const tk=tokenize(s); let p=0; const peek=()=>tk[p], eat=t=>{ if(!tk[p]||tk[p].t!==t) throw new Error("Expected “"+t+"”"); return tk[p++]; };
+    const startsPrimary = q => q && (q.t==="num"||q.t==="var"||q.t==="const"||q.t==="fn"||q.t==="(");
+    function expr(){ let n=term(); while(peek()&&(peek().t==="+"||peek().t==="-")){ const op=tk[p++].t, r=term(); const l=n; n= op==="+"? (x=>l(x)+r(x)) : (x=>l(x)-r(x)); } return n; }
+    function term(){ let n=unary(); for(;;){ const q=peek(); if(q&&(q.t==="*"||q.t==="/")){ p++; const r=unary(), l=n; n= q.t==="*"? (x=>l(x)*r(x)) : (x=>l(x)/r(x)); }
+        else if(startsPrimary(q)){ const r=power(), l=n; n=x=>l(x)*r(x); } else break; } return n; }
+    function unary(){ const q=peek(); if(q&&q.t==="-"){ p++; const u=unary(); return x=>-u(x);} if(q&&q.t==="+"){ p++; return unary(); } return power(); }
+    function power(){ const b=primary(); if(peek()&&peek().t==="^"){ p++; const e=unary(); return x=>Math.pow(b(x),e(x)); } return b; }
+    function primary(){ const q=tk[p++]; if(!q) throw new Error("Answer ends too soon");
+      if(q.t==="num") return ()=>q.v; if(q.t==="var") return x=>x;
+      if(q.t==="const") return q.v==="e"? ()=>Math.E : ()=>Math.PI;
+      if(q.t==="("){ const n=expr(); eat(")"); return n; }
+      if(q.t==="fn"){ const f=FN[q.v];
+        if(peek()&&peek().t==="^"){ p++; const e=unary(); const arg=power(); return x=>Math.pow(f(arg(x)),e(x)); } // sin^2(x)
+        const arg = power(); return x=>f(arg(x)); }
+      throw new Error("Unexpected “"+q.t+"”"); }
+    const n=expr(); if(p<tk.length) throw new Error("Couldn't read past “"+(tk[p].t==="num"?tk[p].v:tk[p].t)+"”"); return n; }
+  return {parse}; })();
+
+/* ----------------------------------------------------------- 4 drill */
+(function(){
+  const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1)), pick=arr=>arr[R(0,arr.length-1)];
+  const sup=n=>`<sup>${String(n).replace("-","−")}</sup>`;
+  const co=(a,first)=>{ // coefficient display
+    if(a===1) return first?"":"+ "; if(a===-1) return first?"−":"− "; if(a<0) return (first?"−":"− ")+(-a); return (first?"":"+ ")+a; };
+  const term=(a,n,first,v="x")=> n===0? `${a<0?(first?"−":"− "):(first?"":"+ ")}${Math.abs(a)}` : `${co(a,first)}${v}${n===1?"":sup(n)}`;
+  const kx=(k,v="x")=> k===1? v : k===-1? "−"+v : k+v;
+  const D="<span style='font-size:.8em'>d/dx</span>", I="∫";
+  const gens={
+    d1:[ ()=>{ const a=R(2,9), n=R(2,7); return {q:`${D} [ ${term(a,n,true)} ]`, f:x=>a*n*x**(n-1), ans:`${a*n}x${n-1===1?"":sup(n-1)}`, hint:"Power rule: bring the power down, then lower it by one."}; },
+         ()=>{ const a=R(2,6), n=R(3,5), b=R(2,9)*pick([1,-1]), c=R(1,9)*pick([1,-1]); return {q:`${D} [ ${term(a,n,true)} ${term(b,1,false)} ${term(c,0,false)} ]`, f:x=>a*n*x**(n-1)+b, ans:`${a*n}x${n-1===1?"":sup(n-1)} ${b<0?"−":"+"} ${Math.abs(b)}`, hint:"Term by term. The constant term's derivative is 0."}; },
+         ()=>{ const a=R(1,6), n=R(1,4); return {q:`${D} [ ${a===1?"":a}/x${n===1?"":sup(n)} ]`.replace("[ /","[ 1/"), f:x=>-a*n*x**(-n-1), ans:`−${a*n}x${sup(-n-1)}`, hint:"Rewrite as a power first: 1/xⁿ = x⁻ⁿ."}; },
+         ()=>{ const a=R(1,8)*2; return {q:`${D} [ ${a}√x ]`, f:x=>a/(2*Math.sqrt(x)), ans:`${a/2}/√x`, hint:"√x = x^(1/2). Bring down the 1/2."}; } ],
+    d2:[ ()=>{ const a=R(1,9), k=R(2,6); return {q:`${D} [ ${a===1?"":a} sin(${kx(k)}) ]`, f:x=>a*k*Math.cos(k*x), ans:`${a*k} cos(${k}x)`, hint:"Derivative of sin is cos. Multiply by the inside's coefficient."}; },
+         ()=>{ const a=R(1,9), k=R(2,6); return {q:`${D} [ ${a===1?"":a} cos(${kx(k)}) ]`, f:x=>-a*k*Math.sin(k*x), ans:`−${a*k} sin(${k}x)`, hint:"Derivative of cos is −sin. Don't lose the minus sign."}; },
+         ()=>{ const a=R(1,9), k=R(1,5)*pick([1,-1]); return {q:`${D} [ ${a===1?"":a}e${sup(kx(k))} ]`, f:x=>a*k*Math.exp(k*x), ans:`${a*k<0?"−":""}${Math.abs(a*k)}e^(${k}x)`, hint:"e^(kx) differentiates to k·e^(kx)."}; },
+         ()=>{ const a=R(2,9); return {q:`${D} [ ${a} ln x ]`, f:x=>a/x, ans:`${a}/x`, hint:"d/dx ln x = 1/x."}; } ],
+    d3:[ ()=>{ const b=R(2,5), c=R(1,7), n=R(2,5); return {q:`${D} [ (${b}x + ${c})${sup(n)} ]`, f:x=>n*b*(b*x+c)**(n-1), ans:`${n*b}(${b}x + ${c})${n-1===1?"":sup(n-1)}`, hint:"Outside: ( )ⁿ. Inside: bx + c. Multiply by the inside's derivative."}; },
+         ()=>{ const k=R(2,4); return {q:`${D} [ sin(${k}x${sup(2)}) ]`, f:x=>2*k*x*Math.cos(k*x*x), ans:`${2*k}x cos(${k}x²)`, hint:"Derivative of the outside (cos of the same inside) times the derivative of the inside."}; },
+         ()=>{ const k=R(1,3); return {q:`${D} [ e${sup((k===1?"":k)+"x²")} ]`, f:x=>2*k*x*Math.exp(k*x*x), ans:`${2*k}x e^(${k}x²)`, hint:"e^(stuff) → e^(stuff) × (derivative of stuff)."}; },
+         ()=>{ const a=R(2,5); return {q:`${D} [ √(x${sup(2)} + ${a}) ]`, f:x=>x/Math.sqrt(x*x+a), ans:`x/√(x² + ${a})`, hint:"(x² + a)^(1/2): bring down 1/2, keep the inside, times 2x."}; } ],
+    i1:[ ()=>{ const n=R(1,6), a=(n+1)*R(1,4); return {q:`${I} ${term(a,n,true)} dx`, F:x=>a/(n+1)*x**(n+1), f:x=>a*x**n, ans:`${a/(n+1)}x${sup(n+1)}`, hint:"Raise the power by one, then divide by the new power."}; },
+         ()=>{ const a=R(1,4)*3, b=R(1,5)*2, c=R(1,9); return {q:`${I} (${term(a,2,true)} ${term(b,1,false)} + ${c}) dx`, f:x=>a*x*x+b*x+c, ans:`${a/3===1?"":a/3}x³ + ${b/2===1?"":b/2}x² + ${c===1?"":c}x`, hint:"Integrate term by term. A constant c becomes cx."}; },
+         ()=>{ const n=R(2,4), a=(n-1)*R(1,3); return {q:`${I} ${a}/x${sup(n)} dx`, f:x=>a*x**(-n), ans:`−${a/(n-1)}x${sup(1-n)}`, hint:"Rewrite as x⁻ⁿ, then raise the power by one (it gets less negative)."}; },
+         ()=>{ const a=R(1,3)*3; return {q:`${I} ${a}√x dx`, f:x=>a*Math.sqrt(x), ans:`${2*a/3}x^(3/2)`, hint:"√x = x^(1/2) → x^(3/2) ÷ (3/2)."}; } ],
+    i2:[ ()=>{ const k=R(2,5), a=k*R(1,3); return {q:`${I} ${a} cos(${k}x) dx`, f:x=>a*Math.cos(k*x), ans:`${a/k} sin(${k}x)`, hint:"∫cos = sin. Divide by the inside's coefficient."}; },
+         ()=>{ const k=R(2,5), a=k*R(1,3); return {q:`${I} ${a} sin(${k}x) dx`, f:x=>a*Math.sin(k*x), ans:`−${a/k} cos(${k}x)`, hint:"∫sin = −cos. Divide by k."}; },
+         ()=>{ const k=R(1,4)*pick([1,-1]), a=Math.abs(k)*R(1,3); return {q:`${I} ${a}e${sup(kx(k))} dx`, f:x=>a*Math.exp(k*x), ans:`${a/k<0?"−":""}${Math.abs(a/k)}e^(${k}x)`, hint:"∫e^(kx) dx = (1/k)e^(kx)."}; },
+         ()=>{ const a=R(2,9); return {q:`${I} ${a}/x dx`, f:x=>a/x, ans:`${a} ln(x)`, hint:"The one power the power rule can't do: ∫1/x dx = ln|x|."}; } ],
+  };
+  gens.dm=[...gens.d1,...gens.d2,...gens.d3]; gens.im=[...gens.i1,...gens.i2]; gens.all=[...gens.dm,...gens.im];
+  let cur=null, tried=false, sc={c:0,a:0,s:0};
+  const praise=["Professor Waddles does a happy flipper-slap.","Penguin Percy slides a victory lap.","Hank the Hamster runs a celebratory lap on his wheel.","Correct — Marvin's rocket skateboard approves.","Dusty honks the buggy horn. Nice."];
+  function next(){ const set=$("drSet").value; cur=pick(gens[set])(); cur.isInt = cur.q.startsWith("∫");
+    $("drQ").innerHTML=cur.q; $("drIn").value=""; $("drFb").textContent=""; $("drFb").className="fb"; $("drEcho").textContent="—"; tried=false; $("drIn").focus({preventScroll:true}); }
+  function check(){
+    const s=$("drIn").value.trim(); if(!s) return; let g;
+    try{ g=Expr.parse(s); } catch(e){ $("drFb").className="fb no"; $("drFb").textContent="Couldn't read that: "+e.message; return; }
+    const pts=[0.6,0.9,1.3,1.7,2.2,2.7]; let ok=true;
+    for(const x of pts){ let want, got;
+      if(cur.isInt){ const h=1e-4; got=(g(x+h)-g(x-h))/(2*h); want=cur.f(x); if(!(Math.abs(got-want)<=1e-4*Math.max(1,Math.abs(want)))) {ok=false;break;} }
+      else { got=g(x); want=cur.f(x); if(!(Math.abs(got-want)<=1e-6*Math.max(1,Math.abs(want)))) {ok=false;break;} } }
+    if(!tried){ sc.a++; tried=true; if(ok){ sc.c++; sc.s++; } else sc.s=0; }
+    $("drFb").className="fb "+(ok?"ok":"no");
+    $("drFb").textContent= ok ? "✓ Correct!" : (cur.isInt? "Not quite. Take the derivative of your answer — do you get back the integrand?" : "Not quite. Check each term, and watch the signs.");
+    if(ok) $("drSay").textContent=pick(praise)+(sc.s>=5?` ${sc.s} in a row!`:"");
+    $("drC").textContent=sc.c; $("drA").textContent=sc.a; $("drS").textContent=sc.s; }
+  $("drIn").addEventListener("input",()=>{ const s=$("drIn").value.trim(); if(!s){$("drEcho").textContent="—";return;}
+    try{ Expr.parse(s); $("drEcho").textContent=s.replace(/\*/g,"·").replace(/-/g,"−")+"  ✓ readable"; } catch(e){ $("drEcho").textContent="(can't read yet: "+e.message+")"; } });
+  $("drIn").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); check(); } });
+  $("drCheck").onclick=check; $("drNext").onclick=next;
+  $("drHint").onclick=()=>{ $("drFb").className="fb"; $("drFb").textContent="Hint: "+cur.hint; };
+  $("drShow").onclick=()=>{ if(!tried){ sc.a++; sc.s=0; tried=true; $("drA").textContent=sc.a; $("drS").textContent=0; }
+    $("drFb").className="fb"; $("drFb").innerHTML="One correct answer: <span class='math'>"+cur.ans+(cur.isInt?" + C":"")+"</span>"; };
+  $("drSet").onchange=next; window.drillNext=next; window._drill=()=>cur; next();
+})();
+
+/* ----------------------------------------------------------- 5 drag */
+(function(){
+  const PV=new Plot($("dgV")), PA=new Plot($("dgA")), g=9.8;
+  const mod=segSetup("dgMod", m=>{ $("dgB").max = m==="lin"? "0.5" : "0.05"; $("dgB").step = m==="lin"?"0.005":"0.0005"; $("dgB").value = m==="lin"? "0.05" : "0.0025"; draw(); });
+  function draw(){
+    const m=+$("dgM").value, k=+$("dgB").value, dt=+$("dgD").value, lin=mod()==="lin";
+    $("dgMo").textContent=fmt(m)+" kg"; $("dgDo").textContent=fmt(dt)+" s";
+    $("dgBl").firstChild.textContent = lin? "Drag constant b " : "Drag constant c ";
+    $("dgBo").textContent = fmt(k,3)+(lin?" kg/s":" kg/m");
+    const vT = lin? m*g/k : Math.sqrt(m*g/k), tau = lin? m/k : vT/g;
+    const vEx = lin? (t=>vT*(1-Math.exp(-t/tau))) : (t=>vT*Math.tanh(g*t/vT));
+    const aEx = t => g - (lin? k*vEx(t)/m : k*vEx(t)**2/m);
+    const tmax = Math.max(6, Math.min(60, 5*tau));
+    PV.size(); PV.set(0,tmax,-0.05*vT*1.15,vT*1.15); PV.axes("t (s)","v (m/s)");
+    PA.size(); PA.set(0,tmax,-0.6,10.5); PA.axes("t (s)","a (m/s²)");
+    PV.line(0,vT,tmax,vT,C.ink,1.3,[6,4]); PV.label(tmax*0.98, vT+vT*0.04, "v_T = "+fmt(vT)+" m/s", C.ink, "right");
+    PV.fn(vEx, C.blue, 2.8); PA.fn(aEx, C.blue, 2.8);
+    let v=0, t=0; PV.dot(0,0,C.orange,3.5); PA.dot(0,g,C.orange,3.5);
+    while(t<tmax-1e-9){ const a=g-(lin? k*v/m : k*v*v/m); v+=a*dt; t+=dt; PV.dot(t,v,C.orange,3.5); PA.dot(t, g-(lin? k*v/m : k*v*v/m), C.orange,3.5); }
+    $("dgVt").textContent=fmt(vT)+" m/s"; $("dgTau").textContent=fmt(tau)+" s"; $("dgV2").textContent=fmt(vEx(2))+" m/s";
+    $("dgTauL").textContent = lin? "Time constant τ = m/b" : "Time scale v_T/g";
+    $("dgSteps").innerHTML = lin ? `
+      <p>Newton's 2nd law (down = +): <b>m dv/dt = mg − bv</b></p>
+      <p>${fmt(m)} dv/dt = ${fmt(m*g)} − ${fmt(k)}v</p>
+      <p>Separate: dv / (g − (b/m)v) = dt, with b/m = ${fmt(k/m)} s⁻¹</p>
+      <p>Integrate from (0, 0) to (t, v) and solve:</p>
+      <p><b>v(t) = v<sub>T</sub>(1 − e<sup>−t/τ</sup>)</b> = ${fmt(vT)}(1 − e<sup>−t/${fmt(tau)}</sup>)</p>
+      <p class="muted">Terminal velocity from a = 0: mg = bv<sub>T</sub> → v<sub>T</sub> = mg/b.</p>` : `
+      <p>Newton's 2nd law (down = +): <b>m dv/dt = mg − cv²</b></p>
+      <p>Terminal velocity from a = 0: v<sub>T</sub> = √(mg/c) = ${fmt(vT)} m/s</p>
+      <p>Separating gives an integral that needs partial fractions (beyond AP), with the result</p>
+      <p><b>v(t) = v<sub>T</sub> tanh(gt / v<sub>T</sub>)</b></p>
+      <p class="muted">On the AP exam, quadratic drag usually means: write the differential equation and find v<sub>T</sub>. The simulation dots still work — Newton's law is all they use.</p>`;
+  }
+  ["dgM","dgB","dgD"].forEach(id=>$(id).addEventListener("input",draw));
+  window.addEventListener("resize",draw); window.drawDrag=draw;
+})();
+
+/* ----------------------------------------------------------- 6 slice */
+(function(){
+  const cv=$("scCv"), ctx=cv.getContext("2d"), sel=$("scFn"), L=1;
+  const LAM=[
+    {name:"uniform: λ = 2", f:x=>2, tex:"λ = 2"},
+    {name:"linear: λ = 4x  (heavy at the right)", f:x=>4*x, tex:"λ = 4x"},
+    {name:"λ = 1 + 2x  (Hank's baguette)", f:x=>1+2*x, tex:"λ = 1 + 2x"},
+    {name:"λ = 6x²  (very lopsided)", f:x=>6*x*x, tex:"λ = 6x²"},
+    {name:"λ = 3 − 2x  (heavy at the left)", f:x=>3-2*x, tex:"λ = 3 − 2x"},
+  ];
+  LAM.forEach((m,i)=>sel.add(new Option(m.name,i)));
+  const simpson=(f,a,b,n=2000)=>{ const h=(b-a)/n; let s=f(a)+f(b); for(let i=1;i<n;i++) s+=f(a+i*h)*(i%2?4:2); return s*h/3; };
+  function exact(lam, ax){ const M=simpson(lam,0,L), mx=simpson(x=>x*lam(x),0,L), I=simpson(x=>(x-ax)**2*lam(x),0,L); return {M, xcm:mx/M, I}; }
+  function draw(){
+    const lam=LAM[+sel.value].f, N=+$("scN").value, ax=+$("scAx").value;
+    $("scNo").textContent=N; $("scAxo").textContent=fmt(ax)+" m";
+    const dpr=window.devicePixelRatio||1, W=cv.clientWidth||600, H=+cv.getAttribute("height");
+    cv.style.height=H+"px"; cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H);
+    const x0=50, x1=W-30, X=x=>x0+(x1-x0)*x/L, rodY=140, rodH=54;
+    const lamMax=Math.max(...Array.from({length:101},(_,i)=>lam(i/100)));
+    const dx=L/N; let M=0, mx=0, I=0;
+    for(let i=0;i<N;i++){ const xm=(i+0.5)*dx, dm=lam(xm)*dx; M+=dm; mx+=xm*dm; I+=(xm-ax)**2*dm;
+      const u = lamMax>0? lam(xm)/lamMax : 0; const shade=Math.round(232-140*u);
+      ctx.fillStyle=`rgb(${shade-18},${shade},${Math.min(255,shade+22)})`; ctx.fillRect(X(i*dx),rodY,X((i+1)*dx)-X(i*dx),rodH);
+      if(N<=40){ ctx.strokeStyle="#fff"; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(X(i*dx),rodY); ctx.lineTo(X(i*dx),rodY+rodH); ctx.stroke(); }
+      if(N<=12){ ctx.fillStyle=C.navy; ctx.font="12px Calibri, Carlito, system-ui"; ctx.textAlign="center"; ctx.fillText(fmt(dm,3),X(xm),rodY-8); } }
+    ctx.strokeStyle=C.ink; ctx.lineWidth=1.5; ctx.strokeRect(X(0),rodY,X(L)-X(0),rodH);
+    if(N<=12){ ctx.fillStyle=C.gray; ctx.font="12px Calibri, Carlito, system-ui"; ctx.textAlign="left"; ctx.fillText("dm of each slice (kg):",X(0),rodY-28); }
+    // ruler
+    ctx.fillStyle=C.gray; ctx.font="12px Calibri, Carlito, system-ui"; ctx.textAlign="center";
+    for(let k=0;k<=10;k++){ const xx=X(k/10); ctx.fillRect(xx,rodY+rodH+6,1,k%5?5:9); if(k%5===0) ctx.fillText(fmt(k/10)+" m",xx,rodY+rodH+30); }
+    // axis
+    ctx.strokeStyle=C.orange; ctx.lineWidth=2.5; ctx.setLineDash([6,4]); ctx.beginPath(); ctx.moveTo(X(ax),rodY-4); ctx.lineTo(X(ax),rodY+rodH+16); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle=C.orange; ctx.textAlign="center"; ctx.fillText("rotation axis",X(ax),H-10);
+    // CM marker (exact)
+    const ex=exact(lam,ax); ctx.fillStyle=C.orange; ctx.beginPath(); const cx=X(ex.xcm), cy=rodY+rodH+44;
+    ctx.moveTo(cx,cy-12); ctx.lineTo(cx-9,cy+4); ctx.lineTo(cx+9,cy+4); ctx.closePath(); ctx.fill();
+    ctx.fillStyle=C.ink; ctx.fillText("CM",cx,cy+20);
+    // density curve above rod
+    ctx.strokeStyle=C.blue; ctx.lineWidth=2; ctx.beginPath();
+    for(let i=0;i<=200;i++){ const xx=i/200*L, yy=rodY-60+ 0; const py = rodY-62 - 44*(lamMax>0?lam(xx)/lamMax:0); i? ctx.lineTo(X(xx),py) : ctx.moveTo(X(xx),py); }
+    ctx.stroke(); ctx.fillStyle=C.blue; ctx.textAlign="left"; ctx.fillText("density "+LAM[+sel.value].tex+" (higher curve = denser)", X(0)+4, 16); ctx.strokeStyle=C.faint; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(X(0),rodY-62); ctx.lineTo(X(L),rodY-62); ctx.stroke();
+    const xcm=mx/M;
+    const rows=[["Mass M (kg)","∫ λ dx",M,ex.M],["Center of mass x_cm (m)","(1/M) ∫ x dm",xcm,ex.xcm],["Rotational inertia I (kg·m²)","∫ r² dm,  r = x − "+fmt(ax),I,ex.I]];
+    $("scTab").tBodies[0].innerHTML=rows.map(r=>`<tr><td style="font-family:var(--sans)">${r[0]}</td><td>${r[1]}</td><td>${r[2].toFixed(5)}</td><td><b>${r[3].toFixed(5)}</b></td></tr>`).join("");
+    cv._xcm=ex.xcm;
+  }
+  $("scEnd").onclick=()=>{ $("scAx").value=0; draw(); }; $("scMid").onclick=()=>{ $("scAx").value=0.5; draw(); };
+  $("scCm").onclick=()=>{ $("scAx").value=(+cv._xcm).toFixed(2); draw(); };
+  ["scN","scAx"].forEach(id=>$(id).addEventListener("input",draw)); sel.onchange=draw;
+  window.addEventListener("resize",draw); window.drawSlice=draw;
+})();
+
+/* ----------------------------------------------------------- routing */
+const VIEWS={secant:"drawSecant",slopes:"drawSlopes",area:"drawArea",drill:null,drag:"drawDrag",slice:"drawSlice"};
+function route(){ let h=(location.hash||"#secant").slice(1); if(!(h in VIEWS)) h="secant";
+  document.querySelectorAll("main section").forEach(s=>s.classList.toggle("on", s.id===h));
+  document.querySelectorAll("#nav a").forEach(a=>{ const on=a.getAttribute("href")==="#"+h; a.classList.toggle("on", on); a.setAttribute("role","tab"); a.setAttribute("aria-selected", on); });
+  const fn=VIEWS[h]; if(fn&&window[fn]) requestAnimationFrame(()=>window[fn]()); }
+window.addEventListener("hashchange",route); route();
+</script>
+</body>
+</html>
