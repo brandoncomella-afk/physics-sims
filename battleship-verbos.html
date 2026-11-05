@@ -105,6 +105,9 @@
   .rtense-opts { display:flex; flex-wrap:wrap; gap:8px 16px; }
   .rtense-opts label { display:flex; align-items:center; gap:6px; font-size:13.5px; cursor:pointer; }
   .rtense-opts input { width:16px; height:16px; }
+  .rtense-group { width:100%; font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); margin:6px 0 1px; }
+  .rtense-quick { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
+  .rtense-quick button { padding:4px 10px; font-size:12px; border-radius:20px; }
   #playRtense { display:flex; align-items:center; gap:12px; margin-top:10px; flex-wrap:wrap; }
   #playRtense .rtense-label { margin-bottom:0; }
 
@@ -151,24 +154,12 @@
         </div>
 
         <label class="field">2 · Tense to practice</label>
-        <select id="tense">
-          <option value="imperfect" selected>Imperfecto — imperfect (¡the worksheet default!)</option>
-          <option value="present">Presente — present</option>
-          <option value="preterite">Pretérito — preterite</option>
-          <option value="future">Futuro — future</option>
-          <option value="conditional">Condicional — conditional</option>
-          <option value="random">🎲 Random — mix selected tenses</option>
-        </select>
+        <select id="tense"></select>
 
         <div class="rtense" id="rtenseBox" style="display:none;">
           <div class="rtense-label">Draw random shots from:</div>
-          <div class="rtense-opts" id="rtenseOpts">
-            <label><input type="checkbox" class="rt" value="present" checked> Presente</label>
-            <label><input type="checkbox" class="rt" value="preterite" checked> Pretérito</label>
-            <label><input type="checkbox" class="rt" value="imperfect" checked> Imperfecto</label>
-            <label><input type="checkbox" class="rt" value="future" checked> Futuro</label>
-            <label><input type="checkbox" class="rt" value="conditional" checked> Condicional</label>
-          </div>
+          <div class="rtense-quick" id="rtenseQuick"></div>
+          <div class="rtense-opts" id="rtenseOpts"></div>
         </div>
 
         <label class="toggle"><input type="checkbox" id="irr"> Include <b>irregular verbs</b></label>
@@ -230,20 +221,14 @@
     </div>
     <div class="toolbar">
       <label class="playtense">Tense
-        <select id="playTense" onchange="changeTense(this.value)">
-          <option value="imperfect">Imperfecto</option>
-          <option value="present">Presente</option>
-          <option value="preterite">Pretérito</option>
-          <option value="future">Futuro</option>
-          <option value="conditional">Condicional</option>
-          <option value="random">🎲 Random (mixed)</option>
-        </select>
+        <select id="playTense" onchange="changeTense(this.value)"></select>
       </label>
       <div class="spacer"></div>
       <button class="ghost" onclick="quitToHome()">↩ New game</button>
     </div>
     <div id="playRtense" style="display:none;">
       <span class="rtense-label">Random draws from:</span>
+      <span class="rtense-quick" id="playRtenseQuick"></span>
       <span class="rtense-opts" id="playRtenseOpts"></span>
     </div>
   </section>
@@ -316,6 +301,16 @@ const REG_ENDINGS = {
   future:      ['é','ás','á','emos','éis','án'],
   conditional: ['ía','ías','ía','íamos','íais','ían'],
 };
+const SUBJ_ENDINGS = { ar:['e','es','e','emos','éis','en'], er:['a','as','a','amos','áis','an'], ir:['a','as','a','amos','áis','an'] };
+const HABER = {
+  perfect:      ['he','has','ha','hemos','habéis','han'],
+  pluperfect:   ['había','habías','había','habíamos','habíais','habían'],
+  futperfect:   ['habré','habrás','habrá','habremos','habréis','habrán'],
+  condperfect:  ['habría','habrías','habría','habríamos','habríais','habrían'],
+  perfsubj:     ['haya','hayas','haya','hayamos','hayáis','hayan'],
+  pastperfsubj: ['hubiera','hubieras','hubiera','hubiéramos','hubierais','hubieran'],
+};
+const HABER_SE = ['hubiese','hubieses','hubiese','hubiésemos','hubieseis','hubiesen'];
 const VERBS = [
   {inf:'hablar',en:'to speak',reg:true},{inf:'viajar',en:'to travel',reg:true},{inf:'trabajar',en:'to work',reg:true},
   {inf:'estudiar',en:'to study',reg:true},{inf:'cantar',en:'to sing',reg:true},{inf:'bailar',en:'to dance',reg:true},
@@ -327,35 +322,55 @@ const VERBS = [
   {inf:'comer',en:'to eat',reg:true},{inf:'beber',en:'to drink',reg:true},{inf:'aprender',en:'to learn',reg:true},
   {inf:'comprender',en:'to understand',reg:true},{inf:'correr',en:'to run',reg:true},{inf:'deber',en:'to owe/must',reg:true},
   {inf:'vender',en:'to sell',reg:true},{inf:'prometer',en:'to promise',reg:true},
-  {inf:'vivir',en:'to live',reg:true},{inf:'escribir',en:'to write',reg:true},{inf:'compartir',en:'to share',reg:true},
-  {inf:'recibir',en:'to receive',reg:true},{inf:'abrir',en:'to open',reg:true},{inf:'subir',en:'to go up',reg:true},
+  {inf:'vivir',en:'to live',reg:true},{inf:'escribir',en:'to write',reg:true,part:'escrito'},{inf:'compartir',en:'to share',reg:true},
+  {inf:'recibir',en:'to receive',reg:true},{inf:'abrir',en:'to open',reg:true,part:'abierto'},{inf:'subir',en:'to go up',reg:true},
   {inf:'asistir',en:'to attend',reg:true},{inf:'decidir',en:'to decide',reg:true},{inf:'permitir',en:'to permit',reg:true},
-  {inf:'ser',en:'to be',reg:false,present:['soy','eres','es','somos','sois','son'],preterite:['fui','fuiste','fue','fuimos','fuisteis','fueron'],imperfect:['era','eras','era','éramos','erais','eran']},
-  {inf:'ir',en:'to go',reg:false,present:['voy','vas','va','vamos','vais','van'],preterite:['fui','fuiste','fue','fuimos','fuisteis','fueron'],imperfect:['iba','ibas','iba','íbamos','ibais','iban']},
-  {inf:'ver',en:'to see',reg:false,present:['veo','ves','ve','vemos','veis','ven'],preterite:['vi','viste','vio','vimos','visteis','vieron'],imperfect:['veía','veías','veía','veíamos','veíais','veían']},
-  {inf:'tener',en:'to have',reg:false,present:['tengo','tienes','tiene','tenemos','tenéis','tienen'],preterite:['tuve','tuviste','tuvo','tuvimos','tuvisteis','tuvieron'],futStem:'tendr'},
-  {inf:'hacer',en:'to do/make',reg:false,present:['hago','haces','hace','hacemos','hacéis','hacen'],preterite:['hice','hiciste','hizo','hicimos','hicisteis','hicieron'],futStem:'har'},
-  {inf:'estar',en:'to be',reg:false,present:['estoy','estás','está','estamos','estáis','están'],preterite:['estuve','estuviste','estuvo','estuvimos','estuvisteis','estuvieron']},
-  {inf:'dar',en:'to give',reg:false,present:['doy','das','da','damos','dais','dan'],preterite:['di','diste','dio','dimos','disteis','dieron']},
-  {inf:'poder',en:'to be able',reg:false,present:['puedo','puedes','puede','podemos','podéis','pueden'],preterite:['pude','pudiste','pudo','pudimos','pudisteis','pudieron'],futStem:'podr'},
-  {inf:'poner',en:'to put',reg:false,present:['pongo','pones','pone','ponemos','ponéis','ponen'],preterite:['puse','pusiste','puso','pusimos','pusisteis','pusieron'],futStem:'pondr'},
-  {inf:'querer',en:'to want',reg:false,present:['quiero','quieres','quiere','queremos','queréis','quieren'],preterite:['quise','quisiste','quiso','quisimos','quisisteis','quisieron'],futStem:'querr'},
-  {inf:'venir',en:'to come',reg:false,present:['vengo','vienes','viene','venimos','venís','vienen'],preterite:['vine','viniste','vino','vinimos','vinisteis','vinieron'],futStem:'vendr'},
-  {inf:'decir',en:'to say',reg:false,present:['digo','dices','dice','decimos','decís','dicen'],preterite:['dije','dijiste','dijo','dijimos','dijisteis','dijeron'],futStem:'dir'},
-  {inf:'saber',en:'to know',reg:false,present:['sé','sabes','sabe','sabemos','sabéis','saben'],preterite:['supe','supiste','supo','supimos','supisteis','supieron'],futStem:'sabr'},
-  {inf:'jugar',en:'to play',reg:false,present:['juego','juegas','juega','jugamos','jugáis','juegan'],preterite:['jugué','jugaste','jugó','jugamos','jugasteis','jugaron']},
-  {inf:'buscar',en:'to look for',reg:false,preterite:['busqué','buscaste','buscó','buscamos','buscasteis','buscaron']},
-  {inf:'pensar',en:'to think',reg:false,present:['pienso','piensas','piensa','pensamos','pensáis','piensan']},
-  {inf:'dormir',en:'to sleep',reg:false,present:['duermo','duermes','duerme','dormimos','dormís','duermen'],preterite:['dormí','dormiste','durmió','dormimos','dormisteis','durmieron']},
-  {inf:'pedir',en:'to ask for',reg:false,present:['pido','pides','pide','pedimos','pedís','piden'],preterite:['pedí','pediste','pidió','pedimos','pedisteis','pidieron']},
+  {inf:'ser',en:'to be',reg:false,present:['soy','eres','es','somos','sois','son'],preterite:['fui','fuiste','fue','fuimos','fuisteis','fueron'],imperfect:['era','eras','era','éramos','erais','eran'],psub:['sea','seas','sea','seamos','seáis','sean'],part:'sido'},
+  {inf:'ir',en:'to go',reg:false,present:['voy','vas','va','vamos','vais','van'],preterite:['fui','fuiste','fue','fuimos','fuisteis','fueron'],imperfect:['iba','ibas','iba','íbamos','ibais','iban'],psub:['vaya','vayas','vaya','vayamos','vayáis','vayan'],part:'ido'},
+  {inf:'ver',en:'to see',reg:false,present:['veo','ves','ve','vemos','veis','ven'],preterite:['vi','viste','vio','vimos','visteis','vieron'],imperfect:['veía','veías','veía','veíamos','veíais','veían'],psub:['vea','veas','vea','veamos','veáis','vean'],part:'visto'},
+  {inf:'tener',en:'to have',reg:false,present:['tengo','tienes','tiene','tenemos','tenéis','tienen'],preterite:['tuve','tuviste','tuvo','tuvimos','tuvisteis','tuvieron'],futStem:'tendr',psub:['tenga','tengas','tenga','tengamos','tengáis','tengan']},
+  {inf:'hacer',en:'to do/make',reg:false,present:['hago','haces','hace','hacemos','hacéis','hacen'],preterite:['hice','hiciste','hizo','hicimos','hicisteis','hicieron'],futStem:'har',psub:['haga','hagas','haga','hagamos','hagáis','hagan'],part:'hecho'},
+  {inf:'estar',en:'to be',reg:false,present:['estoy','estás','está','estamos','estáis','están'],preterite:['estuve','estuviste','estuvo','estuvimos','estuvisteis','estuvieron'],psub:['esté','estés','esté','estemos','estéis','estén']},
+  {inf:'dar',en:'to give',reg:false,present:['doy','das','da','damos','dais','dan'],preterite:['di','diste','dio','dimos','disteis','dieron'],psub:['dé','des','dé','demos','deis','den']},
+  {inf:'poder',en:'to be able',reg:false,present:['puedo','puedes','puede','podemos','podéis','pueden'],preterite:['pude','pudiste','pudo','pudimos','pudisteis','pudieron'],futStem:'podr',psub:['pueda','puedas','pueda','podamos','podáis','puedan']},
+  {inf:'poner',en:'to put',reg:false,present:['pongo','pones','pone','ponemos','ponéis','ponen'],preterite:['puse','pusiste','puso','pusimos','pusisteis','pusieron'],futStem:'pondr',psub:['ponga','pongas','ponga','pongamos','pongáis','pongan'],part:'puesto'},
+  {inf:'querer',en:'to want',reg:false,present:['quiero','quieres','quiere','queremos','queréis','quieren'],preterite:['quise','quisiste','quiso','quisimos','quisisteis','quisieron'],futStem:'querr',psub:['quiera','quieras','quiera','queramos','queráis','quieran']},
+  {inf:'venir',en:'to come',reg:false,present:['vengo','vienes','viene','venimos','venís','vienen'],preterite:['vine','viniste','vino','vinimos','vinisteis','vinieron'],futStem:'vendr',psub:['venga','vengas','venga','vengamos','vengáis','vengan']},
+  {inf:'decir',en:'to say',reg:false,present:['digo','dices','dice','decimos','decís','dicen'],preterite:['dije','dijiste','dijo','dijimos','dijisteis','dijeron'],futStem:'dir',psub:['diga','digas','diga','digamos','digáis','digan'],part:'dicho'},
+  {inf:'saber',en:'to know',reg:false,present:['sé','sabes','sabe','sabemos','sabéis','saben'],preterite:['supe','supiste','supo','supimos','supisteis','supieron'],futStem:'sabr',psub:['sepa','sepas','sepa','sepamos','sepáis','sepan']},
+  {inf:'jugar',en:'to play',reg:false,present:['juego','juegas','juega','jugamos','jugáis','juegan'],preterite:['jugué','jugaste','jugó','jugamos','jugasteis','jugaron'],psub:['juegue','juegues','juegue','juguemos','juguéis','jueguen']},
+  {inf:'buscar',en:'to look for',reg:false,preterite:['busqué','buscaste','buscó','buscamos','buscasteis','buscaron'],psub:['busque','busques','busque','busquemos','busquéis','busquen']},
+  {inf:'pensar',en:'to think',reg:false,present:['pienso','piensas','piensa','pensamos','pensáis','piensan'],psub:['piense','pienses','piense','pensemos','penséis','piensen']},
+  {inf:'dormir',en:'to sleep',reg:false,present:['duermo','duermes','duerme','dormimos','dormís','duermen'],preterite:['dormí','dormiste','durmió','dormimos','dormisteis','durmieron'],psub:['duerma','duermas','duerma','durmamos','durmáis','duerman']},
+  {inf:'pedir',en:'to ask for',reg:false,present:['pido','pides','pide','pedimos','pedís','piden'],preterite:['pedí','pediste','pidió','pedimos','pedisteis','pidieron'],psub:['pida','pidas','pida','pidamos','pidáis','pidan']},
 ];
 const BYINF = Object.fromEntries(VERBS.map(v=>[v.inf,v]));
+const SIMPLE = {present:1,preterite:1,imperfect:1,future:1,conditional:1};
+function accentLast(s){ const m={a:'á',e:'é',i:'í',o:'ó',u:'ú'}; const c=s[s.length-1]; return s.slice(0,-1)+(m[c]||c); }
+function participle(v){ if(v.part) return v.part; const g=v.inf.slice(-2),s=v.inf.slice(0,-2); return g==='ar'?s+'ado':s+'ido'; }
 function conjugate(verb,tense,person){
   if(!verb) return '';
-  if(verb[tense]) return verb[tense][person];
   const g = verb.inf.slice(-2), stem = verb.inf.slice(0,-2);
-  if(tense==='future'||tense==='conditional'){ return (verb.futStem||verb.inf)+REG_ENDINGS[tense][person]; }
-  return stem+REG_ENDINGS[tense][g][person];
+  if(SIMPLE[tense]){
+    if(verb[tense]) return verb[tense][person];
+    if(tense==='future'||tense==='conditional') return (verb.futStem||verb.inf)+REG_ENDINGS[tense][person];
+    return stem+REG_ENDINGS[tense][g][person];
+  }
+  if(tense==='pressubj') return verb.psub ? verb.psub[person] : stem+SUBJ_ENDINGS[g][person];
+  if(tense==='impsubj') return impSubj(verb,person,'ra');
+  if(HABER[tense]) return HABER[tense][person]+' '+participle(verb);
+  return '';
+}
+function impSubj(verb,person,kind){
+  const stem=conjugate(verb,'preterite',5).slice(0,-3);   // 3rd-plural preterite minus "ron"
+  const suf = kind==='se' ? ['se','ses','se','semos','seis','sen'] : ['ra','ras','ra','ramos','rais','ran'];
+  return person===3 ? accentLast(stem)+suf[3] : stem+suf[person];
+}
+// every accepted answer for a cell (first entry = canonical / displayed)
+function conjVariants(verb,tense,person){
+  if(tense==='impsubj') return [impSubj(verb,person,'ra'), impSubj(verb,person,'se')];
+  if(tense==='pastperfsubj') return [HABER.pastperfsubj[person]+' '+participle(verb), HABER_SE[person]+' '+participle(verb)];
+  return [conjugate(verb,tense,person)];
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -365,8 +380,14 @@ const ROWS=8, COLS=7;
 const PRONOUNS=['Ellos','Tú','Usted','Nosotros','Ella','Yo','Ustedes'];
 const COL_PERSON=[5,1,2,3,2,0,5];
 const SHIP_SIZES=[4,3,3,2,2,2];
-const TENSE_LABEL={present:'Presente',preterite:'Pretérito',imperfect:'Imperfecto',future:'Futuro',conditional:'Condicional'};
-const TENSES=['present','preterite','imperfect','future','conditional'];
+const TENSE_GROUPS=[
+  {label:'Indicative — simple', key:'simple', items:[['present','Presente'],['preterite','Pretérito'],['imperfect','Imperfecto'],['future','Futuro'],['conditional','Condicional']]},
+  {label:'Subjunctive', key:'subj', items:[['pressubj','Pres. de subjuntivo'],['impsubj','Imperf. de subjuntivo']]},
+  {label:'Perfect (compound)', key:'perf', items:[['perfect','Pretérito perfecto'],['pluperfect','Pluscuamperfecto'],['futperfect','Futuro perfecto'],['condperfect','Condicional perfecto']]},
+  {label:'Perfect subjunctive', key:'perfsubj', items:[['perfsubj','Perf. de subjuntivo'],['pastperfsubj','Pluscuam. de subjuntivo']]},
+];
+const TENSE_LABEL={}; const TENSES=[];
+TENSE_GROUPS.forEach(gp=>gp.items.forEach(([k,l])=>{ TENSE_LABEL[k]=l; TENSES.push(k); }));
 function tenseLabel(t){ return t==='random'?'Mixed tenses':(TENSE_LABEL[t]||t); }
 function randomPool(){ return (G.rtenses && G.rtenses.length) ? G.rtenses : TENSES; }
 function shotTense(){ if(G.tense!=='random') return G.tense; const p=randomPool(); return p[Math.floor(Math.random()*p.length)]; }
@@ -379,7 +400,39 @@ const other=p=>p==='p1'?'p2':'p1';
 const strip=s=>s.normalize('NFD').replace(/[̀-ͯ]/g,'');
 function sample(arr,n){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a.slice(0,n); }
 function conjRC(r,c,tense){ return conjugate(BYINF[G.verbs[r]],tense||G.tense,COL_PERSON[c]); }
+function conjVariantsRC(r,c,tense){ return conjVariants(BYINF[G.verbs[r]],tense||G.tense,COL_PERSON[c]); }
 function name(p){ return G.names[p]; }
+
+// quick-pick presets for the random tense checklist
+const QUICK=[
+  ['All', ()=>TENSES.slice()],
+  ['Simple', ()=>['present','preterite','imperfect','future','conditional']],
+  ['Subjunctive', ()=>['pressubj','impsubj','perfsubj','pastperfsubj']],
+  ['Compound', ()=>['perfect','pluperfect','futperfect','condperfect','perfsubj','pastperfsubj']],
+];
+function fillTenseSelect(sel){
+  sel.innerHTML='';
+  TENSE_GROUPS.forEach(gp=>{
+    const og=document.createElement('optgroup'); og.label=gp.label;
+    gp.items.forEach(([k,l])=>{ const o=document.createElement('option'); o.value=k; o.textContent=l; og.appendChild(o); });
+    sel.appendChild(og);
+  });
+  const o=document.createElement('option'); o.value='random'; o.textContent='🎲 Random — mix selected tenses'; sel.appendChild(o);
+}
+function buildChecklist(optsEl, quickEl, selected, onToggle, applyQuick){
+  optsEl.innerHTML='';
+  TENSE_GROUPS.forEach(gp=>{
+    const h=document.createElement('span'); h.className='rtense-group'; h.textContent=gp.label; optsEl.appendChild(h);
+    gp.items.forEach(([k,l])=>{
+      const lab=document.createElement('label');
+      const cb=document.createElement('input'); cb.type='checkbox'; cb.className='rt'; cb.value=k; cb.checked=selected.has(k);
+      if(onToggle) cb.onchange=()=>onToggle(k,cb.checked);
+      lab.appendChild(cb); lab.appendChild(document.createTextNode(' '+l)); optsEl.appendChild(lab);
+    });
+  });
+  if(quickEl){ quickEl.innerHTML=''; QUICK.forEach(([label,fn])=>{ const b=document.createElement('button'); b.type='button'; b.textContent=label; b.onclick=()=>applyQuick(fn()); quickEl.appendChild(b); }); }
+}
+function applyHomeQuick(keys){ const s=new Set(keys); document.querySelectorAll('#rtenseOpts .rt').forEach(cb=>cb.checked=s.has(cb.value)); }
 
 function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); window.scrollTo(0,0); }
 document.getElementById('irr').addEventListener('change',updateIrrHint);
@@ -644,11 +697,12 @@ document.getElementById('fireInput').addEventListener('keydown',e=>{ if(e.key===
 function submitFire(){
   if(!fireTarget) return;
   const {r,c,tense}=fireTarget;
-  const answer=conjRC(r,c,tense);
-  const val=document.getElementById('fireInput').value.trim().toLowerCase();
+  const variants=conjVariantsRC(r,c,tense);
+  const answer=variants[0];                       // canonical form, for display
+  const val=document.getElementById('fireInput').value.trim().toLowerCase().replace(/\s+/g,' ');
   if(!val){ document.getElementById('fireFb').innerHTML='<span class="bad">Type an answer to fire.</span>'; return; }
-  const exact = val===answer.toLowerCase();
-  const loose = strip(val)===strip(answer.toLowerCase());
+  const exact = variants.some(a=>val===a.toLowerCase());
+  const loose = variants.some(a=>strip(val)===strip(a.toLowerCase()));
   if(exact||loose){
     const res=resolveShot(G.turn,r,c,tense);
     if(!exact) res.accentNote=true;
@@ -692,19 +746,13 @@ function lastSummary(){
 }
 function changeTense(v){ if(!G) return; G.tense=v; if(v==='random' && !(G.rtenses&&G.rtenses.length)) G.rtenses=TENSES.slice(); renderPlayRtense(); updateEnemySub(); drawLog(); }
 function renderPlayRtense(){
-  const box=document.getElementById('playRtense'), opts=document.getElementById('playRtenseOpts');
+  const box=document.getElementById('playRtense');
   if(G.tense!=='random'){ box.style.display='none'; return; }
   box.style.display='flex';
-  const on=new Set(randomPool());
-  opts.innerHTML='';
-  TENSES.forEach(t=>{
-    const lab=document.createElement('label');
-    const cb=document.createElement('input'); cb.type='checkbox'; cb.checked=on.has(t);
-    cb.onchange=()=>togglePlayRtense(t,cb.checked);
-    lab.appendChild(cb); lab.appendChild(document.createTextNode(' '+TENSE_LABEL[t]));
-    opts.appendChild(lab);
-  });
+  buildChecklist(document.getElementById('playRtenseOpts'), document.getElementById('playRtenseQuick'),
+    new Set(randomPool()), togglePlayRtense, applyPlayQuick);
 }
+function applyPlayQuick(keys){ G.rtenses=TENSES.filter(k=>keys.includes(k)); renderPlayRtense(); updateEnemySub(); }
 function togglePlayRtense(t,checked){
   const set=new Set(randomPool());
   if(checked) set.add(t); else set.delete(t);
@@ -833,6 +881,11 @@ function quitToHome(){ if(location.hash){ history.replaceState(null,'',location.
 // deep-link entry
 window.addEventListener('load',()=>{
   buildAccents();
+  fillTenseSelect(document.getElementById('tense'));
+  fillTenseSelect(document.getElementById('playTense'));
+  document.getElementById('tense').value='imperfect';   // worksheet default
+  buildChecklist(document.getElementById('rtenseOpts'), document.getElementById('rtenseQuick'), new Set(TENSES), null, applyHomeQuick);
+  updateIrrHint();
   const m=location.hash.match(/g=([^&]+)/);
   if(m){ try{ decodeState(m[1]); routeLoaded(); }catch(e){ /* ignore bad hash */ } }
 });
