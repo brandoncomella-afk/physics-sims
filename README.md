@@ -36,10 +36,15 @@ turn and shows you the right answer.
   on = adds common irregulars (ser, ir, ver, tener, hacer, jugar, buscar, dormir, …) whose
   forms are hand-verified. In the *imperfecto* only ser/ir/ver are actually irregular, matching
   the worksheet.
-- **Five tenses + Random** — presente, pretérito, imperfecto (default), futuro, condicional, or
-  a **Random (mixed)** mode that draws a fresh tense for every single shot. In random mode you can
-  **tick exactly which tenses to draw from** (all of them, or just the two you're reviewing). The
-  tense (and the random subset) can also be changed mid-game from controls on the play screen.
+- **Thirteen tenses & moods** — five simple indicative (presente, pretérito, imperfecto,
+  futuro, condicional), both subjunctives (**presente** and **imperfecto de subjuntivo**), the
+  four perfect/compound indicative tenses (pretérito perfecto, pluscuamperfecto, futuro perfecto,
+  condicional perfecto) and both perfect subjunctives (pretérito perfecto and pluscuamperfecto de
+  subjuntivo) — enough for an upper-division (year 3–4) university course. The imperfect
+  subjunctive and past-perfect subjunctive accept both the **-ra** and **-se** forms.
+- **Random (mixed)** — draws a fresh tense for every shot; tick exactly which tenses to draw from
+  (grouped, with All / Simple / Subjunctive / Compound quick-picks). The tense and the random
+  subset can also be changed mid-game from controls on the play screen.
 - **Three ways to play** — **vs Computer** (a hunt/target AI), **Two Players** on one device
   (pass-and-play with a hide-screen between turns), and **Play by Code** for two devices:
   each turn produces a short code — and a shareable `#g=…` link — that the opponent pastes to
