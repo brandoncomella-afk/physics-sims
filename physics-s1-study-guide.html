@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Physics Study Guide – Units 1-5</title>
+<style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e8e8e8;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            padding: 30px 0;
+            background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        header h1 {
+            font-size: 2.5em;
+            color: #00d4ff;
+            text-shadow: 0 0 20px rgba(0,212,255,0.5);
+            margin-bottom: 10px;
+        }
+        header p {
+            color: #a0a0a0;
+            font-size: 1.1em;
+        }
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 20px;
+            background: #0f3460;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .tab-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 20px;
+            border: none;
+            background: #1a1a2e;
+            color: #a0a0a0;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 0.95em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .tab-btn:hover {
+            background: #2a2a4e;
+            color: #00d4ff;
+        }
+        .tab-btn.active {
+            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+            color: #1a1a2e;
+            box-shadow: 0 5px 15px rgba(0,212,255,0.3);
+        }
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Cards */
+        .card {
+            background: linear-gradient(135deg, #1e3a5f 0%, #16213e 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border: 1px solid rgba(0,212,255,0.1);
+        }
+        .card h2 {
+            color: #00d4ff;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card h3 {
+            color: #4ecdc4;
+            margin: 20px 0 10px 0;
+            font-size: 1.2em;
+        }
+        /* Expandable Sections */
+        .expandable {
+            margin: 10px 0;
+            border: 1px solid rgba(0,212,255,0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .expandable-header {
+            background: rgba(0,212,255,0.1);
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.3s ease;
+        }
+        .expandable-header:hover {
+            background: rgba(0,212,255,0.2);
+        }
+        .expandable-header h4 {
+            color: #00d4ff;
+            font-size: 1.1em;
+        }
+        .expandable-icon {
+            font-size: 1.5em;
+            color: #00d4ff;
+            transition: transform 0.3s ease;
+        }
+        .expandable.open .expandable-icon {
+            transform: rotate(45deg);
+        }
+        .expandable-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+            background: rgba(0,0,0,0.2);
+        }
+        .expandable.open .expandable-content {
+            max-height: 2000px;
+        }
+        .expandable-inner {
+            padding: 20px;
+        }
+        /* Lists */
+        ul, ol {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        /* Equations */
+        .equation {
+            background: rgba(0,212,255,0.1);
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em;
+            color: #4ecdc4;
+            margin: 10px 0;
+            border-left: 4px solid #00d4ff;
+        }
+        /* Warning/Important boxes */
+        .warning {
+            background: linear-gradient(135deg, rgba(255,107,107,0.2) 0%, rgba(255,107,107,0.1) 100%);
+            border: 1px solid #ff6b6b;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin: 15px 0;
+        }
+        .warning h4 {
+            color: #ff6b6b;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tip {
+            background: linear-gradient(135deg, rgba(78,205,196,0.2) 0%, rgba(78,205,196,0.1) 100%);
+            border: 1px solid #4ecdc4;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin: 15px 0;
+        }
+        .tip h4 {
+            color: #4ecdc4;
+            margin-bottom: 10px;
+        }
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border: 1px solid rgba(0,212,255,0.2);
+        }
+        th {
+            background: rgba(0,212,255,0.2);
+            color: #00d4ff;
+            font-weight: 600;
+        }
+        tr:nth-child(even) {
+            background: rgba(0,0,0,0.2);
+        }
+        /* Quiz Section */
+        .quiz-question {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        .quiz-question p {
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 15px;
+        }
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .quiz-option {
+            padding: 12px 15px;
+            background: rgba(0,212,255,0.1);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .quiz-option:hover {
+            background: rgba(0,212,255,0.2);
+            border-color: rgba(0,212,255,0.3);
+        }
+        .quiz-option.selected {
+            border-color: #00d4ff;
+            background: rgba(0,212,255,0.2);
+        }
+        .quiz-option.correct {
+            border-color: #4ecdc4;
+            background: rgba(78,205,196,0.3);
+        }
+        .quiz-option.incorrect {
+            border-color: #ff6b6b;
+            background: rgba(255,107,107,0.3);
+        }
+        .check-btn {
+            margin-top: 15px;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+            border: none;
+            border-radius: 8px;
+            color: #1a1a2e;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .check-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,212,255,0.4);
+        }
+        .feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        .feedback.show {
+            display: block;
+        }
+        .feedback.correct {
+            background: rgba(78,205,196,0.2);
+            border: 1px solid #4ecdc4;
+            color: #4ecdc4;
+        }
+        .feedback.incorrect {
+            background: rgba(255,107,107,0.2);
+            border: 1px solid #ff6b6b;
+            color: #ff6b6b;
+        }
+        /* Graph Descriptions */
+        .graph-box {
+            display: inline-block;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(0,212,255,0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px;
+            text-align: center;
+            min-width: 150px;
+        }
+        .graph-box .label {
+            font-size: 0.9em;
+            color: #a0a0a0;
+            margin-top: 8px;
+        }
+        /* Responsive */
+        @media (max-width: 768px) {
+            .tab-btn {
+                min-width: 80px;
+                padding: 10px 15px;
+                font-size: 0.85em;
+            }
+            header h1 {
+                font-size: 1.8em;
+            }
+            .card {
+                padding: 15px;
+            }
+        }
+        /* Print styles */
+        @media print {
+            body {
+                background: white;
+                color: black;
+            }
+            .tab-nav {
+                display: none;
+            }
+            .tab-content {
+                display: block !important;
+            }
+            .expandable-content {
+                max-height: none !important;
+            }
+        }
+        /* Highlight */
+        .highlight {
+            color: #00d4ff;
+            font-weight: 600;
+        }
+        .highlight-warn {
+            color: #ff6b6b;
+            font-weight: 600;
+        }
+        .highlight-success {
+            color: #4ecdc4;
+            font-weight: 600;
+        }
+        /* Progress tracker */
+        .progress-bar {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            height: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d4ff, #4ecdc4);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .tab-nav { position: sticky; top: 0; z-index: 5; }
+        .expandable-header { user-select: none; }
+        .home-link { display: inline-block; margin-top: 12px; color: #4ecdc4; font-size: 0.95em; text-decoration: none; }
+        .home-link:hover { text-decoration: underline; }
+        @media print { .check-btn, .feedback, .home-link { display: none !important; } .card, header { box-shadow: none; } }
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>🔬 Physics Study Guide</h1>
+<p>Units 1-5: Energy, Motion, and Forces</p>
+<a class="home-link" href="https://comellascience.com/classes/physics/">← Back to Physics on comellascience.com</a>
+</header>
+<div class="tab-nav"><button class="tab-btn active">Unit 1: Energy</button>
+            <button class="tab-btn">Unit 2: Constant Velocity</button>
+            <button class="tab-btn">Unit 3: Acceleration</button>
+            <button class="tab-btn">Unit 4: Balanced Forces</button>
+            <button class="tab-btn">Unit 5: Unbalanced Forces</button>
+            <button class="tab-btn">🎯 Self-Quiz</button>
+            <button class="tab-btn">📋 Formula Sheet</button></div>
+<!-- UNIT 1: ENERGY -->
+<div id="unit1" class="tab-content active">
+<div class="card">
+<h2>⚡ Unit 1: Energy</h2>
+<p>Energy is <span class="highlight">the ability to cause a change</span>. It&#8217;s not a &#8220;thing&#8221; itself, but a property of objects in a system.</p>
+<div class="expandable">
+<div class="expandable-header">
+<h4>Energy Storage Modes (E-subscript Notation)</h4>
+<span class="expandable-icon">+</span></div>
+<div class="expandable-content">
+<div class="expandable-inner">
+<p>We use &#8220;E-subscript&#8221; notation to show HOW energy is stored. Remember: it&#8217;s all the same energy, just stored differently—like money in different bank accounts!</p>
+<h4 style="color: #4ecdc4;margin-top: 15px">Energy Stored in MOTION:</h4>
+<ul>
+<li><span class="highlight">Kinetic Energy (E<sub>k</sub>)</span> — Energy of a moving object</li>
+<li><span class="highlight">Thermal Energy (E<sub>th</sub>)</span> — Energy of particle motion (temperature)</li>
+</ul>
+<h4 style="color: #4ecdc4;margin-top: 15px">Energy Stored in POSITION/ARRANGEMENT:</h4>
+<ul>
+<li><span class="highlight">Gravitational Energy (E<sub>g</sub>)</span> — Position in Earth&#8217;s gravitational field</li>
+<li><span class="highlight">Elastic Energy (E<sub>el</sub>)</span> — Stretched/compressed springs</li>
+<li><span class="highlight">Chemical Energy (E<sub>ch</sub>)</span> — Chemical bonds (batteries, food, fuel)</li>
+<li><span class="highlight">Physical State Energy (E<sub>ph</sub>)</span> — Arrangement of particles</li>
+</ul>
+<h4 style="color: #4ecdc4;margin-top: 15px">Internal Energy (E<sub>int</sub>):</h4>
+<p>Energy stored in changes to structure/temperature that can&#8217;t be easily recovered (like energy &#8220;lost&#8221; to friction)</p>
+</div>
+</div>
+</div>
+<div class="expandable">
+<div class="expandable-header">
+<h4>Energy Transfer Mechanisms</h4>
+<span class="expandable-icon">+</span></div>
+<div class="expandable-content">
+<div class="expandable-inner">
+<p>Energy transfers are <span class="highlight">PROCESSES</span> (actions), not things. We use the &#8220;-ing&#8221; form to emphasize they are actions:</p>
+<ul>
+<li><span class="highlight">Working <img width='16' height='16' class='wp-smiley emoji' draggable='false' alt='(W)' src='https://s0.wp.com/wp-content/mu-plugins/wpcom-smileys/wordpress.svg' style='height: 1em; max-height: 1em;' /></span> — Transfer by pushing/pulling (force × distance)</li>
+<li><span class="highlight">Heating (Q)</span> — Transfer due to temperature difference (hot → cold)</li>
+<li><span class="highlight">Radiating (R)</span> — Transfer by electromagnetic waves (light)</li>
+</ul>
+<div class="warning">
+<h4>⚠️ Important Distinction</h4>
+<p>A system does NOT &#8220;have&#8221; heat. A high-temperature system <em>stores</em> energy and can <em>transfer</em> it through the <em>process</em> of heating.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="expandable">
+<div class="expandable-header">
+<h4>System Schemas &amp; Energy Diagrams</h4>
+<span class="expandable-icon">+</span></div>
+<div class="expandable-content">
+<div class="expandable-inner">
+<h4 style="color: #4ecdc4">System Schema:</h4>
+<ol>
+<li>Draw circles for each object</li>
+<li>Connect with lines to show interactions</li>
+<li>Draw boundary around objects IN the system</li>
+<li>Objects outside = &#8220;surroundings&#8221;</li>
+</ol>
+<p style="margin-top: 15px"><span class="highlight">Closed System:</span> Energy transfers between modes but stays in system</p>
+<p><span class="highlight">Open System:</span> Energy can enter or leave</p>
+<h4 style="color: #4ecdc4;margin-top: 20px">Energy Pie Charts:</h4>
+<ul>
+<li>Each slice = type of energy storage</li>
+<li>Total pie size = total system energy</li>
+<li>Closed system → all pies same size</li>
+<li>Energy leaving → pies get smaller</li>
+</ul>
+<h4 style="color: #4ecdc4;margin-top: 20px">Energy Bar Charts (LOL Diagrams):</h4>
+<ul>
+<li>Left bars = Initial energy storage</li>
+<li>Center = Energy flow in/out of system</li>
+<li>Right bars = Final energy storage</li>
+</ul></div>
+</div>
+</div>
+<div class="expandable">
+<div class="expandable-header">
+<h4>Conservation of Energy (1st Law of Thermodynamics)</h4>
+<span class="expandable-icon">+</span></div>
+<div class="expandable-content">
+<div class="expandable-inner">
+<p>Energy cannot be created or destroyed—only transferred or converted.</p>
+<div class="equation">
+                                ΔE<sub>system</sub> = ΔE<sub>g</sub> + ΔE<sub>el</sub> + ΔE<sub>ph</sub> + ΔE<sub>ch</sub> + ΔE<sub>k</sub> + ΔE<sub>th</sub>
+                            </div>
+<div class="equation">
+                                ΔE<sub>system</sub> = W + Q + R
+                            </div>
+<p style="margin-top: 15px;text-align: center;font-size: 1.1em">
+                                <span class="highlight">Initial Energy + Energy In = Final Energy + Energy Out</span>
+                            </p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- UNIT 2: CONSTANT VELOCITY -->
+<div id="unit2" class="tab-content">
+<div class="card">
+<h2>🚗 Unit 2: Constant Velocity</h2>
+<div class="expandable open">
+<div class="expandable-header">
+<h4>Key Equations</h4>
+<span class="expandable-icon">+</span></div>
+<div class="expandable-content">
+<div class="expandable-inner">
+<div class="equation">Velocity: v = Δx / Δt (slope of position-time graph)</div>
+<div class="equation">Displacement: Δx = v × Δt (area under velocity-time graph)</div>
+<div class="equation">Position equation: x = x₀ + vt</div>
+<div class="equation">General form: x<sub>f</sub> = x<sub>i</sub> + v·Δt</div>
+</div>
+</div>
+</div>
+<div class="expandable">
+<div class="expandable-header">
+<h4>Position vs. Distance (Critical Distinction!)</h4>
+<span class="expandable-icon">+</span></div>
+<div class="expandable-content">
+<div class="expandable-inner">
+<table>
+<tr>
+<th>Position (x)</th>
+<th>Distance</th>
+</tr>
+<tr>
+<td>Location relative to origin</td>
+<td>Total path length traveled</td>
+</tr>
+<tr>
+<td>Can be + or −</td>
+<td>Always positive</td>
+</tr>
+<tr>
+<td>Vector quantity</td>
+<td>Scalar quantity</td>
+</tr>
+</table>
+<p style="margin-top: 15px"><span class="highlight">Displacement (Δx)</span> = Change in position = x<sub>f</sub> − x<sub>i</sub></p>
+<p>Displacement can be + or − and tells you the NET change in position</p>
+<div class="tip">
+<h4>💡 Think of it like highway exits</h4>
+<p>Position is like &#8220;exit 214&#8221; — your location. Distance is how far you drove to get there.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="expandable">
+<div class="expandable-header">
+<h4>Position-Time Graphs</h4>
+<span class="expandable-icon">+</span></div>
+<div class="expandable-content">
+<div class="expandable-inner">
+<p><span class="highlight">SLOPE = VELOCITY</span></p>
+<table>
+<tr>
+<th>Graph Feature</th>
+<th>What It Means</th>
+</tr>
+<tr>
+<td>Positive slope (going up)</td>
+<td>Moving in + direction</td>
+</tr>
+<tr>
+<td>Negative slope (going down)</td>
+<td>Moving in − direction</td>
+</tr>
+<tr>
+<td>Steep slope</td>
+<td>Fast motion</td>
+</tr>
+<tr>
+<td>Gentle slope</td>
+<td>Slow motion</td>
+</tr>
+<tr>
+<td>Horizontal line (zero slope)</td>
+<td>At rest</td>
+</tr>
+<tr>
+<td>Straight line</td>
+<td>Constant velocity</td>
+</tr>
+</table>
+<div class="tip">
+<h4>💡 Reading x-t Graphs</h4>
+<p>Describe motion in detail! Example: &#8220;The object starts to the right of zero, moves left at constant speed, passes the origin, and continues left.&#8221;</p>
+</div>
+</div>
+</div>
+</div>
+<div class="expandable">
+<div class="expandable-header">
+<h4>Velocity-Time Graphs</h4>
+<span class="expandable-icon">+</span></div>
+<div class="expandable-content">
+<div class="expandable-inner">
+<p><span class="highlight">AREA UNDER CURVE = DISPLACEMENT</span></p>
+<table>
+<tr>
+<th>Graph Feature</th>
+<th>What It Means</th>
+</tr>
+<tr>
+<td>Above x-axis</td>
+<td>Moving in + direction</td>
+</tr>
+<tr>
+<td>Below x-axis</td>
+<td>Moving in − direction</td>
+</tr>
+<tr>
+<td>Horizontal line</td>
+<td>Constant velocity</td>
+</tr>
+<tr>
+<td>On the x-axis (v=0)</td>
+<td>At rest</td>
+</tr>
+</table>
+<div class="warning">
+<h4>⚠️ Important</h4>
+<p>The v-t graph does NOT tell you the starting position! Two different x-t graphs can have the same v-t graph.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="expandable">
+<div class="expandable-header">
+<h4>Motion Maps</h4>
+<span class="expandable-icon">+</span></div>
+<div class="expandable-content">
+<div class="expandable-inner">
+<ul>
+<li>Dots show position at <span class="highlight">equal time intervals</span></li>
+<li>Equally spaced dots = constant velocity</li>
+<li>Velocity vectors all same length (for constant v)</li>
+<li>No acceleration vectors for constant velocity</li>
+</ul>
+<div class="warning">
+<h4>⚠️ Common Mistake</h4>
+<p>If object B moves faster than A, the dots should be farther apart AND the velocity vectors should be longer. Both must be true!</p>
+</div>
+</div>
+</div>
+</div>
+<div class="expandable">
+<div class="expandable-header">
+<h4>Momentum</h4>
+<span class="expandable-icon">+</span></div>
+<div class="expandable-content">
+<div class="expandable-inner">
+<div class="equation">Momentum: p = mv</div>
+<div class="equation">Conservation: p₁ᵢ + p₂ᵢ = p₁f + p₂f</div>
+<div class="equation">Sticking collision: m₁v₁ + m₂v₂ = (m₁ + m₂)v<sub>f</sub></div>
+<div class="tip">
+<h4>💡 Remember</h4>
+<p>Direction matters! Define + and − directions first. Objects moving in opposite directions have opposite-signed momenta.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- UNIT 3: ACCELERATION -->
+<div id="unit3" class="tab-content">
+<div class="card">
+<h2>🚀 Unit 3: Uniformly Accelerated Motion</h2>
+<div class="expandable open">
+<div class="expandable-header">
+<h4>Key Equations</h4>
+<span class="expandable-icon">+</span></div>
+<div class="expandable-content">
+<div class="expandable-inner">
+<div class="equation">Acceleration: a = Δv / Δt (slope of v-t graph)</div>
+<div class="equation">Final velocity: v<sub>f</sub> = v<sub>i</sub> + aΔt</div>
+<div class="equation">Displacement: Δx = v<sub>i</sub>Δt + ½a(Δt)²</div>
+<div class="equation">Average velocity: v̄ = (v<sub>i</sub> + v<sub>f</sub>) / 2 (only for constant a!)</div>
+<p style="margin-top: 15px"><span class="highlight">Units:</span> m/s² means &#8220;meters per second, per second&#8221; — velocity changes by this amount each second.</p>
+</div>
+</div>
+</div>
+<div class="expandable">
+<div class="expandable-header">
+<h4>Instantaneous vs. Average Velocity</h4>
+<span class="expandable-icon">+</span></div>
+<div class="expandable-content">
+<div class="expandable-inner">
+<p><span class="highlight">Average velocity</span> = total displacement / total time (slope of secant line)</p>
+<p><span class="highlight">Instantaneous velocity</span> = velocity at a specific moment (slope of tangent line)</p>
+<h4 style="color: #4ecdc4;margin-top: 20px">Finding Instantaneous Velocity from a Curved x-t Graph:</h4>
+<p><strong>Method 1: Tangent Line</strong></p>
+<p>Draw a line that just touches the curve at that point. Find its slope.</p>
+<p style="margin-top: 15px"><strong>Method 2: Surrounding Points</strong></p>
+<p>Use points just before and after. Calculate Δx/Δt for this small interval.</p>
+<div class="tip">
+<h4>💡 Key Insight</h4>
+<p>As you shrink the time interval smaller and smaller, the secant line approaches the tangent line. The average velocity over a tiny interval ≈ instantaneous velocity.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="expandable">
+<div class="expandable-header">
+<h4>Position-Time Graphs (Accelerated Motion)</h4>
+<span class="expandable-icon">+</span></div>
+<div class="expandable-content">
+<div class="expandable-inner">
+<table>
+<tr>
+<th>Graph Feature</th>
+<th>What It Means</th>
+</tr>
+<tr>
+<td>Curved (parabolic)</td>
+<td>Object is accelerating</td>
+</tr>
+<tr>
+<td>Curve opens upward (concave up)</td>
+<td>Positive acceleration</td>
+</tr>
+<tr>
+<td>Curve opens downward (concave down)</td>
+<td>Negative acceleration</td>
+</tr>
+<tr>
+<td>Slope at any point</td>
+<td>Instantaneous velocity</td>
+</tr>
+<tr>
+<td>Slope getting steeper</td>
+<td>Speed increasing</td>
+</tr>
+</table></div>
+</div>
+</div>
+<div class="expandable">
+<div class="expandable-header">
+<h4>Velocity-Time Graphs (Accelerated Motion)</h4>
+<span class="expandable-icon">+</span></div>
+<div class="expandable-content">
+<div class="expandable-inner">
+<p><span class="highlight">SLOPE = ACCELERATION</span></p>
+<p><span class="highlight">AREA = DISPLACEMENT</span></p>
+<table>
+<tr>
+<th>Graph Feature</th>
+<th>What It Means</th>
+</tr>
+<tr>
+<td>Straight diagonal line</td>
+<td>Constant acceleration</td>
+</tr>
+<tr>
+<td>Line with + slope</td>
+<td>Positive acceleration</td>
+</tr>
+<tr>
+<td>Line with − slope</td>
+<td>Negative acceleration</td>
+</tr>
+<tr>
+<td>Line crosses x-axis</td>
+<td>Object changes direction</td>
+</tr>
+</table></div>
+</div>
+</div>
+<div class="warning" style="margin-top: 20px">
+<h4>🚨 CRITICAL MISCONCEPTION 🚨</h4>
+<p style="font-size: 1.1em;margin-bottom: 15px">&#8220;Positive acceleration means speeding up&#8221; — <span class="highlight-warn">THIS IS FALSE!</span></p>
+<p><strong>What ACTUALLY determines speeding up vs. slowing down:</strong></p>
+<ul style="margin-top: 10px">
+<li><span class="highlight-success">SPEEDING UP:</span> Velocity and acceleration have the <strong>SAME sign</strong></li>
+<li><span class="highlight-warn">SLOWING DOWN:</span> Velocity and acceleration have <strong>OPPOSITE signs</strong></li>
+</ul>
+<table style="margin-top: 15px">
+<tr>
+<th>Velocity</th>
+<th>Acceleration</th>
+<th>Result</th>
+</tr>
+<tr>
+<td>+5 m/s</td>
+<td>+2 m/s²</td>
+<td style="color: #4ecdc4">SPEEDING UP</td>
+</tr>
+<tr>
+<td>−5 m/s</td>
+<td>−2 m/s²</td>
+<td style="color: #4ecdc4">SPEEDING UP</td>
+</tr>
+<tr>
+<td>+5 m/s</td>
+<td>−2 m/s²</td>
+<td style="color: #ff6b6b">SLOWING DOWN</td>
+</tr>
+<tr>
+<td>−5 m/s</td>
+<td>+2 m/s²</td>
+<td style="color: #ff6b6b">SLOWING DOWN</td>
+</tr>
+</table>
+<p style="margin-top: 15px"><em>Avoid the term &#8220;deceleration&#8221; — it causes confusion!</em></p>
+</div>
+<div class="expandable">
+<div class="expandable-header">
+<h4>Cart on Ramp Scenario</h4>
+<span class="expandable-icon">+</span></div>
+<div class="expandable-content">
+<div class="expandable-inner">
+<p><strong>Scenario:</strong> Cart pushed up ramp toward motion detector at top</p>
+<table>
+<tr>
+<th>Quantity</th>
+<th>Going Up</th>
+<th>At Top</th>
+<th>Coming Down</th>
+</tr>
+<tr>
+<td>Position</td>
+<td>Decreasing</td>
+<td>Minimum</td>
+<td>Increasing</td>
+</tr>
+<tr>
+<td>Velocity</td>
+<td>Negative (→ detector)</td>
+<td>Zero</td>
+<td>Positive (← away)</td>
+</tr>
+<tr>
+<td>Acceleration</td>
+<td colspan="3" style="text-align: center;color: #00d4ff">CONSTANT AND POSITIVE the entire time!</td>
+</tr>
+</table>
+<div class="tip">
+<h4>💡 Energy Connection</h4>
+<p>Going up: E<sub>k</sub> → E<sub>g</sub> | Coming down: E<sub>g</sub> → E<sub>k</sub></p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- UNIT 4: BALANCED FORCES -->
+<div id="unit4" class="tab-content">
+<div class="card">
+<h2>⚖️ Unit 4: Balanced Forces</h2>
+<div class="expandable open">
+<div class="expandable-header">
+<h4>Types of Forces</h4>
+<span class="expandable-icon">+</span></div>
+<div class="expandable-content">
+<div class="expandable-inner">
+<table>
+<tr>
+<th>Force</th>
+<th>Symbol</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>Gravitational</td>
+<td>F<sub>g</sub></td>
+<td>Earth pulling object down (F<sub>g</sub> = mg)</td>
+</tr>
+<tr>
+<td>Normal</td>
+<td>F<sub>N</sub></td>
+<td>Perpendicular push from surface</td>
+</tr>
+<tr>
+<td>Tension</td>
+<td>F<sub>T</sub></td>
+<td>Pull through rope/string/cable</td>
+</tr>
+<tr>
+<td>Friction</td>
+<td>F<sub>f</sub></td>
+<td>Resists sliding between surfaces</td>
+</tr>
+<tr>
+<td>Applied</td>
+<td>F<sub>A</sub></td>
+<td>External push/pull by person/object</td>
+</tr>
+</table></div>
+</div>
+</div>
+<div class="expandable">
+<div class="expandable-header">
+<h4>Drawing Force Diagrams (Free Body Diagrams)</h4>
+<span class="expandable-icon">+</span></div>
+<div class="expandable-content">
+<div class="expandable-inner">
+<ol>
+<li>Represent object as a dot or simple shape</li>
+<li>Draw ONLY forces acting ON the object</li>
+<li>Draw arrows from center pointing outward</li>
+<li>Label each force (F<sub>g</sub>, F<sub>N</sub>, F<sub>T</sub>, etc.)</li>
+<li>Arrow length shows relative magnitude</li>
+<li>Use tick marks to show equal forces</li>
+</ol>
+<div class="warning">
+<h4>⚠️ Common Mistakes</h4>
+<ul>
+<li>Including forces the object exerts ON others (wrong!)</li>
+<li>Including &#8220;inertia&#8221; as a force (it&#8217;s NOT a force!)</li>
+<li>Forgetting the normal force</li>
+</ul></div>
+</div>
+</div>
+</div>
+<div class="expandable">
+<div class="expandable-header">
+<h4>Balanced Forces = Equilibrium</h4>
+<span class="expandable-icon">+</span></div>
+<div class="expandable-content">
+<div class="expandable-inner">
+<p>When all forces cancel out:</p>
+<div class="equation">ΣF = 0 (net force is zero)</div>
+<div class="equation">ΣF<sub>x</sub> = 0 and ΣF<sub>y</sub> = 0</div>
+<p style="margin-top: 15px">Object is either:</p>
+<ul>
+<li>At rest, OR</li>
+<li>Moving with <span class="highlight">constant velocity</span></li>
+</ul>
+<p style="margin-top: 15px"><span class="highlight">Acceleration = 0</span></p>
+</div>
+</div>
+</div>
+<div class="expandable">
+<div class="expandable-header">
+<h4>Common Balanced Force Scenarios</h4>
+<span class="expandable-icon">+</span></div>
+<div class="expandable-content">
+<div class="expandable-inner">
+<table>
+<tr>
+<th>Scenario</th>
+<th>Key Relationship</th>
+</tr>
+<tr>
+<td>Object hanging from string</td>
+<td>F<sub>T</sub> = F<sub>g</sub></td>
+</tr>
+<tr>
+<td>Object at rest on surface</td>
+<td>F<sub>N</sub> = F<sub>g</sub></td>
+</tr>
+<tr>
+<td>Pushed but not moving</td>
+<td>F<sub>f</sub> = F<sub>A</sub> (horizontal)<br />F<sub>N</sub> = F<sub>g</sub> (vertical)</td>
+</tr>
+<tr>
+<td>Block between two strings</td>
+<td>F<sub>T(top)</sub> = F<sub>g</sub> + F<sub>T(bottom)</sub></td>
+</tr>
+<tr>
+<td>Chain of hanging objects</td>
+<td>Tension supports all weight below</td>
+</tr>
+</table></div>
+</div>
+</div>
+<div class="warning">
+<h4>🚨 INERTIA IS NOT A FORCE! 🚨</h4>
+<p><strong>Inertia</strong> is the tendency of an object to resist changes in motion. It is a <em>property</em>, not a force.</p>
+<p style="margin-top: 10px"><span class="highlight-warn">NEVER include &#8220;inertia&#8221; in a force diagram!</span></p>
+</div>
+</div>
+</div>
+<!-- UNIT 5: UNBALANCED FORCES -->
+<div id="unit5" class="tab-content">
+<div class="card">
+<h2>💥 Unit 5: Unbalanced Forces (Newton&#8217;s 2nd Law)</h2>
+<div class="tip">
+<h4>🔗 The Big Connection: Forces ↔ Motion ↔ Energy</h4>
+<ul>
+<li>Balanced forces → Constant velocity (or rest)</li>
+<li>Unbalanced forces → Acceleration</li>
+<li>Forces through distance → Energy transfer (Working)</li>
+</ul></div>
+<div class="expandable open">
+<div class="expandable-header">
+<h4>Newton&#8217;s Second Law</h4>
+<span class="expandable-icon">+</span></div>
+<div class="expandable-content">
+<div class="expandable-inner">
+<div class="equation" style="font-size: 1.3em;text-align: center">ΣF = ma</div>
+<div class="equation">a = ΣF / m</div>
+<h4 style="color: #4ecdc4;margin-top: 20px">What happens when you change things:</h4>
+<table>
+<tr>
+<th>Change</th>
+<th>Effect on Acceleration</th>
+</tr>
+<tr>
+<td>↑ Mass (same force)</td>
+<td>↓ Acceleration</td>
+</tr>
+<tr>
+<td>↑ Force (same mass)</td>
+<td>↑ Acceleration</td>
+</tr>
+<tr>
+<td>Double both</td>
+<td>Same acceleration</td>
+</tr>
+</table></div>
+</div>
+</div>
+<div class="expandable">
+<div class="expandable-header">
+<h4>Problem-Solving Strategy</h4>
+<span class="expandable-icon">+</span></div>
+<div class="expandable-content">
+<div class="expandable-inner">
+<ol>
+<li><span class="highlight">Draw a force diagram</span> showing all forces</li>
+<li><span class="highlight">Choose a positive direction</span></li>
+<li><span class="highlight">Write ΣF = ma</span> for each direction</li>
+<li><span class="highlight">Substitute</span> known values</li>
+<li><span class="highlight">Solve</span> for the unknown</li>
+</ol></div>
+</div>
+</div>
+<div class="expandable">
+<div class="expandable-header">
+<h4>The Elevator Problem</h4>
+<span class="expandable-icon">+</span></div>
+<div class="expandable-content">
+<div class="expandable-inner">
+<p><strong>Why do grocery bag handles sometimes rip?</strong> It depends on how the bag accelerates!</p>
+<h4 style="color: #4ecdc4;margin-top: 15px">Standing on a scale in an elevator:</h4>
+<table>
+<tr>
+<th>Elevator Motion</th>
+<th>Forces</th>
+<th>You Feel&#8230;</th>
+</tr>
+<tr>
+<td>Accelerating UP</td>
+<td>F<sub>N</sub> &gt; F<sub>g</sub></td>
+<td>HEAVIER</td>
+</tr>
+<tr>
+<td>Accelerating DOWN</td>
+<td>F<sub>N</sub> &lt; F<sub>g</sub></td>
+<td>LIGHTER</td>
+</tr>
+<tr>
+<td>Constant velocity (any direction)</td>
+<td>F<sub>N</sub> = F<sub>g</sub></td>
+<td>NORMAL</td>
+</tr>
+</table>
+<div class="tip">
+<h4>💡 Key Insight</h4>
+<p>You can&#8217;t feel which direction you&#8217;re MOVING—only which direction you&#8217;re ACCELERATING!</p>
+</div>
+<h4 style="color: #4ecdc4;margin-top: 20px">Cable tension equations:</h4>
+<div class="equation">Accelerating up: F<sub>T</sub> = m(g + a)</div>
+<div class="equation">Accelerating down: F<sub>T</sub> = m(g − a)</div>
+</div>
+</div>
+</div>
+<div class="expandable">
+<div class="expandable-header">
+<h4>Falling Objects</h4>
+<span class="expandable-icon">+</span></div>
+<div class="expandable-content">
+<div class="expandable-inner">
+<p><span class="highlight">All objects fall with the same acceleration (g ≈ 10 m/s²)</span> when air resistance is ignored.</p>
+<p style="margin-top: 15px">Why? Heavier objects have MORE gravitational force but also MORE mass:</p>
+<div class="equation">a = F<sub>g</sub>/m = mg/m = g</div>
+<p>The mass cancels out!</p>
+</div>
+</div>
+</div>
+<div class="expandable">
+<div class="expandable-header">
+<h4>Energy Connections</h4>
+<span class="expandable-icon">+</span></div>
+<div class="expandable-content">
+<div class="expandable-inner">
+<div class="equation">Gravitational Energy: E<sub>g</sub> = mgh</div>
+<div class="equation">Elastic Energy: E<sub>e</sub> = ½kx²</div>
+<div class="equation">Spring Force: F = kx</div>
+<p style="margin-top: 15px">When forces act on objects through distances, energy is transferred (Working).</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- SELF-QUIZ -->
+<div id="quiz" class="tab-content">
+<div class="card">
+<h2>🎯 Self-Quiz</h2>
+<p>Test your understanding! Click on your answer, then check.</p>
+<div class="quiz-question">
+<p>1. A ball is dropped from rest. As it falls (ignoring air resistance), which describes the energy changes?</p>
+<div class="quiz-options">
+<div class="quiz-option">E<sub>g</sub> increases, E<sub>k</sub> decreases</div>
+<div class="quiz-option">E<sub>g</sub> decreases, E<sub>k</sub> increases, total stays same</div>
+<div class="quiz-option">E<sub>g</sub> decreases, E<sub>k</sub> increases, total decreases</div>
+<div class="quiz-option">Both E<sub>g</sub> and E<sub>k</sub> increase</div>
+</div>
+<button class="check-btn">Check Answer</button>
+<div class="feedback"></div>
+</div>
+<div class="quiz-question">
+<p>2. On a position vs. time graph, a straight line with negative slope means:</p>
+<div class="quiz-options">
+<div class="quiz-option">Object is at rest</div>
+<div class="quiz-option">Object is speeding up in negative direction</div>
+<div class="quiz-option">Object is moving at constant velocity in negative direction</div>
+<div class="quiz-option">Object is slowing down</div>
+</div>
+<button class="check-btn">Check Answer</button>
+<div class="feedback"></div>
+</div>
+<div class="quiz-question">
+<p>3. An object has velocity = −8 m/s and acceleration = +2 m/s². The object is:</p>
+<div class="quiz-options">
+<div class="quiz-option">Speeding up in the negative direction</div>
+<div class="quiz-option">Slowing down (moving negative, accelerating positive = opposite signs)</div>
+<div class="quiz-option">Speeding up in the positive direction</div>
+<div class="quiz-option">At rest</div>
+</div>
+<button class="check-btn">Check Answer</button>
+<div class="feedback"></div>
+</div>
+<div class="quiz-question">
+<p>4. A book sits motionless on a table. The forces on the book are:</p>
+<div class="quiz-options">
+<div class="quiz-option">Only gravitational force</div>
+<div class="quiz-option">Only normal force</div>
+<div class="quiz-option">Gravitational force and normal force (balanced)</div>
+<div class="quiz-option">Gravitational, normal, and inertia forces</div>
+</div>
+<button class="check-btn">Check Answer</button>
+<div class="feedback"></div>
+</div>
+<div class="quiz-question">
+<p>5. A person stands on a scale in an elevator. The scale reads MORE than their normal weight. The elevator is:</p>
+<div class="quiz-options">
+<div class="quiz-option">Moving up at constant speed</div>
+<div class="quiz-option">Moving down at constant speed</div>
+<div class="quiz-option">Accelerating upward</div>
+<div class="quiz-option">Accelerating downward</div>
+</div>
+<button class="check-btn">Check Answer</button>
+<div class="feedback"></div>
+</div>
+<div class="quiz-question">
+<p>6. Which of the following is NOT a force?</p>
+<div class="quiz-options">
+<div class="quiz-option">Tension</div>
+<div class="quiz-option">Inertia</div>
+<div class="quiz-option">Friction</div>
+<div class="quiz-option">Normal force</div>
+</div>
+<button class="check-btn">Check Answer</button>
+<div class="feedback"></div>
+</div>
+<div class="quiz-question">
+<p>7. The area under a velocity-time graph represents:</p>
+<div class="quiz-options">
+<div class="quiz-option">Displacement</div>
+<div class="quiz-option">Acceleration</div>
+<div class="quiz-option">Average velocity</div>
+<div class="quiz-option">Final position</div>
+</div>
+<button class="check-btn">Check Answer</button>
+<div class="feedback"></div>
+</div>
+<div class="quiz-question">
+<p>8. A cart is pushed up a ramp toward a motion detector at the top. After the push, while the cart is on the ramp, the acceleration is:</p>
+<div class="quiz-options">
+<div class="quiz-option">Positive going up, negative going down</div>
+<div class="quiz-option">Negative going up, positive going down</div>
+<div class="quiz-option">Zero at the highest point</div>
+<div class="quiz-option">Constant and positive the entire time</div>
+</div>
+<button class="check-btn">Check Answer</button>
+<div class="feedback"></div>
+</div>
+</div>
+</div>
+<!-- FORMULA SHEET -->
+<div id="formulas" class="tab-content">
+<div class="card">
+<h2>📋 Formula Sheet</h2>
+<h3>Kinematics (Motion)</h3>
+<table>
+<tr>
+<th>Quantity</th>
+<th>Formula</th>
+<th>Graph Connection</th>
+</tr>
+<tr>
+<td>Velocity</td>
+<td>v = Δx / Δt</td>
+<td>Slope of x-t graph</td>
+</tr>
+<tr>
+<td>Acceleration</td>
+<td>a = Δv / Δt</td>
+<td>Slope of v-t graph</td>
+</tr>
+<tr>
+<td>Displacement</td>
+<td>Δx = vΔt (constant v)<br />Δx = v<sub>i</sub>Δt + ½a(Δt)²</td>
+<td>Area under v-t graph</td>
+</tr>
+<tr>
+<td>Final velocity</td>
+<td>v<sub>f</sub> = v<sub>i</sub> + aΔt</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Average velocity</td>
+<td>v̄ = (v<sub>i</sub> + v<sub>f</sub>) / 2</td>
+<td>Only for constant a</td>
+</tr>
+</table>
+<h3 style="margin-top: 30px">Forces (Dynamics)</h3>
+<table>
+<tr>
+<th>Quantity</th>
+<th>Formula</th>
+</tr>
+<tr>
+<td>Weight (gravitational force)</td>
+<td>F<sub>g</sub> = mg</td>
+</tr>
+<tr>
+<td>Newton&#8217;s 2nd Law</td>
+<td>ΣF = ma</td>
+</tr>
+<tr>
+<td>Equilibrium</td>
+<td>ΣF = 0</td>
+</tr>
+<tr>
+<td>Spring force</td>
+<td>F = kx</td>
+</tr>
+</table>
+<h3 style="margin-top: 30px">Energy</h3>
+<table>
+<tr>
+<th>Type</th>
+<th>Formula</th>
+</tr>
+<tr>
+<td>Gravitational potential energy</td>
+<td>E<sub>g</sub> = mgh</td>
+</tr>
+<tr>
+<td>Elastic potential energy</td>
+<td>E<sub>e</sub> = ½kx²</td>
+</tr>
+<tr>
+<td>Conservation of energy</td>
+<td>E<sub>initial</sub> + E<sub>in</sub> = E<sub>final</sub> + E<sub>out</sub></td>
+</tr>
+<tr>
+<td>1st Law of Thermodynamics</td>
+<td>ΔE<sub>system</sub> = W + Q + R</td>
+</tr>
+</table>
+<h3 style="margin-top: 30px">Momentum</h3>
+<table>
+<tr>
+<th>Quantity</th>
+<th>Formula</th>
+</tr>
+<tr>
+<td>Momentum</td>
+<td>p = mv</td>
+</tr>
+<tr>
+<td>Conservation</td>
+<td>p<sub>1i</sub> + p<sub>2i</sub> = p<sub>1f</sub> + p<sub>2f</sub></td>
+</tr>
+</table>
+<h3 style="margin-top: 30px">Constants</h3>
+<div class="equation">g = 10 m/s² (use this unless told otherwise)</div>
+</div>
+</div>
+</div>
+
+<script>
+// Tabs: the Nth button shows the Nth unit.
+const tabs = document.querySelectorAll('.tab-btn');
+const panels = document.querySelectorAll('.tab-content');
+tabs.forEach((btn, i) => btn.addEventListener('click', () => {
+  tabs.forEach(b => b.classList.remove('active'));
+  panels.forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  if (panels[i]) panels[i].classList.add('active');
+  window.scrollTo({ top: document.querySelector('.tab-nav').offsetTop - 10, behavior: 'smooth' });
+}));
+
+// Expandable sections
+document.querySelectorAll('.expandable-header').forEach(h => {
+  h.setAttribute('role', 'button'); h.setAttribute('tabindex', '0');
+  const toggle = () => h.parentElement.classList.toggle('open');
+  h.addEventListener('click', toggle);
+  h.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+});
+
+// Self-quiz. Answer key (0 = first option), in question order.
+const ANSWERS = [1, 2, 1, 2, 2, 1, 0, 3];
+document.querySelectorAll('.quiz-question').forEach((q, qi) => {
+  const options = q.querySelectorAll('.quiz-option');
+  const feedback = q.querySelector('.feedback');
+  options.forEach(o => o.addEventListener('click', () => {
+    options.forEach(x => x.classList.remove('selected', 'correct', 'incorrect'));
+    o.classList.add('selected');
+    feedback.classList.remove('show');
+  }));
+  q.querySelector('.check-btn').addEventListener('click', () => {
+    const sel = q.querySelector('.quiz-option.selected');
+    if (!sel) {
+      feedback.textContent = 'Please select an answer first!';
+      feedback.className = 'feedback show incorrect';
+      return;
+    }
+    const correct = ANSWERS[qi];
+    if ([...options].indexOf(sel) === correct) {
+      sel.classList.add('correct');
+      feedback.textContent = '✓ Correct! Great job!';
+      feedback.className = 'feedback show correct';
+    } else {
+      sel.classList.add('incorrect');
+      options[correct].classList.add('correct');
+      feedback.textContent = '✗ Not quite. The correct answer is highlighted in green.';
+      feedback.className = 'feedback show incorrect';
+    }
+  });
+});
+</script>
+</body>
+</html>
