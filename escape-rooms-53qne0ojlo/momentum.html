@@ -609,5 +609,336 @@ $('#resetNo').addEventListener('click', () => $('#confirmBox').classList.remove(
 $('#resetYes').addEventListener('click', () => { store.clear(); S = { started: false, team: '', size: 4, start: 0, end: 0, door: 0, hints: {}, wrong: 0, role: 'A', timer: null }; $('#confirmBox').classList.remove('on'); render(); });
 render();
 </script>
+<!-- CINEMA:start -->
+<style id="cinema-css">
+/* ---------- VECTOR cinematic layer (site version only) ---------- */
+.cine{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 40%,#16314d 0%,#0a1422 70%);color:#e8f1f2;opacity:0;transition:opacity .35s;overflow:hidden;cursor:pointer}
+.cine.on{opacity:1}
+.cine .bar{position:absolute;left:0;right:0;height:9vh;background:#000;transition:transform .5s ease}
+.cine .bar.t{top:0;transform:translateY(-100%)}.cine .bar.b{bottom:0;transform:translateY(100%)}
+.cine.on .bar{transform:none}
+.cine .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(126,232,224,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(126,232,224,.07) 1px,transparent 1px);background-size:40px 40px;animation:cgrid 12s linear infinite}
+@keyframes cgrid{to{background-position:40px 40px}}
+.cine .scene{position:relative;width:min(860px,92vw);display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center}
+.cine .bot{width:min(210px,40vw);filter:drop-shadow(0 18px 30px rgba(0,0,0,.5))}
+.cine .bot.rollin{animation:rollin 1.3s cubic-bezier(.2,.8,.25,1) both}
+@keyframes rollin{0%{transform:translateX(70vw) rotate(540deg)}100%{transform:none}}
+.cine .bot.bob{animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px)}}
+.cine .bot.dead{animation:dead 1.6s ease-in forwards}
+@keyframes dead{20%{transform:rotate(-15deg)}40%{transform:rotate(12deg)}100%{transform:translateY(30px) rotate(200deg) scale(.85);filter:grayscale(1) brightness(.6)}}
+.cine .brush{transform-origin:22px 98px;animation:spin .35s linear infinite}
+.cine .brush2{transform-origin:178px 98px;animation:spin .35s linear infinite reverse}
+@keyframes spin{to{transform:rotate(360deg)}}
+.cine .ant{animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:.25}}
+.cine .eye{animation:eyes 4s infinite}
+@keyframes eyes{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+.cine .eye{transform-box:fill-box;transform-origin:center}
+.cine .kick{font-family:var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--glow,#7ee8e0);font-size:13px;opacity:0;animation:fadeup .6s .2s forwards}
+.cine .ttl{font-size:clamp(30px,6vw,58px);font-weight:800;margin:0;letter-spacing:-.01em;text-shadow:0 0 30px rgba(126,232,224,.35)}
+.cine .ttl span{display:inline-block;opacity:0;transform:translateY(30px) scale(.6);animation:pop .45s forwards}
+@keyframes pop{to{opacity:1;transform:none}}
+@keyframes fadeup{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.cine .bubble{position:relative;background:#fbf8f1;color:#14213d;border-radius:18px;padding:16px 22px;font-size:clamp(16px,2.3vw,21px);line-height:1.45;min-height:3.2em;max-width:720px;text-align:left;box-shadow:0 10px 40px rgba(0,0,0,.35)}
+.cine .bubble:before{content:'';position:absolute;top:-14px;left:50%;margin-left:-14px;border:14px solid transparent;border-top:0;border-bottom-color:#fbf8f1}
+.cine .bubble .who{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:#0f8b8d;text-transform:uppercase;margin-bottom:4px}
+.cine .bubble .caret{display:inline-block;width:.55em;height:1em;background:#14213d;vertical-align:-2px;margin-left:2px;animation:blink .8s steps(2) infinite}
+.cine .alert{font-family:var(--mono);color:#ff6b6b;letter-spacing:.12em;font-size:14px;animation:blink .5s steps(2) 6}
+.cine .skip{position:absolute;right:18px;bottom:calc(9vh + 14px);z-index:3;background:rgba(255,255,255,.1);color:#e8f1f2;border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:7px 14px;font:600 13px var(--sans);cursor:pointer}
+.cine .skip:hover{background:rgba(255,255,255,.2)}
+.cine .tapnext{font-family:var(--mono);font-size:12px;color:#8fa0b8;letter-spacing:.1em;opacity:0;transition:opacity .3s}
+.cine .tapnext.on{opacity:1;animation:blink 1.4s steps(2) infinite}
+/* door cutscene */
+.cine .doorwrap{position:relative;width:min(300px,60vw,40vh);aspect-ratio:3/4;perspective:900px}
+.cine .doorlight{position:absolute;inset:-10%;background:radial-gradient(circle closest-side,#fff6d6 0%,#f4a259 40%,rgba(244,162,89,0) 100%);opacity:0;transition:opacity .5s .5s}
+.cine .leaf{position:absolute;top:0;bottom:0;width:50%;background:linear-gradient(180deg,#2f3e5a,#1b263b);border:3px solid #7ee8e0;box-shadow:inset 0 0 0 8px #14213d;transition:transform 1s cubic-bezier(.6,0,.2,1) .35s}
+.cine .leaf.l{left:0;border-right-width:1.5px;transform-origin:left}.cine .leaf.r{right:0;border-left-width:1.5px;transform-origin:right}
+.cine .doorwrap.open .leaf.l{transform:rotateY(-100deg)}.cine .doorwrap.open .leaf.r{transform:rotateY(100deg)}
+.cine .doorwrap.open .doorlight{opacity:1}
+.cine .num{position:absolute;top:8%;left:0;right:0;text-align:center;font:800 15px var(--mono);color:#7ee8e0;letter-spacing:.2em;z-index:2;transition:opacity .3s}
+.cine .doorwrap.open .num{opacity:0}
+.cine .lockicon{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;z-index:2;transition:transform .4s,opacity .4s .25s}
+.cine .doorwrap.open .lockicon{transform:translateY(-30px) scale(1.25);opacity:0}
+.cine .shackle{transition:transform .3s;transform-origin:44px 22px}
+.cine .doorwrap.unlocked .shackle{transform:translateY(-8px) rotate(25deg)}
+.cine .codereel{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.cine .codereel b{text-transform:uppercase;display:inline-block;min-width:1.4em;padding:6px 10px;border-radius:8px;background:#0d1b2a;border:1px solid #2f3e5a;font:700 22px var(--mono);color:#7ee8e0;animation:reel .5s both}
+@keyframes reel{0%{transform:translateY(-14px);opacity:0;filter:blur(4px)}100%{transform:none;opacity:1;filter:none}}
+.cine .next{font-family:var(--mono);font-size:13px;color:#f4a259;letter-spacing:.14em;text-transform:uppercase;opacity:0}
+.cine .next.on{animation:fadeup .5s forwards}
+.cine .nextname{font-size:clamp(24px,4vw,36px);font-weight:800;margin:0;opacity:0}
+.cine .nextname.on{animation:fadeup .5s .15s forwards}
+/* finale */
+.cine canvas.confetti{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.cine .stamp{font:900 clamp(40px,9vw,92px) var(--sans);color:#f4a259;border:8px solid #f4a259;border-radius:16px;padding:0 24px;transform:rotate(-8deg) scale(3);opacity:0;animation:stamp .45s cubic-bezier(.3,1.6,.5,1) forwards;text-shadow:0 0 30px rgba(244,162,89,.5)}
+@keyframes stamp{to{transform:rotate(-8deg) scale(1);opacity:1}}
+.cine .tally{font:700 clamp(28px,5vw,44px) var(--mono);color:#fff}
+.cine .spark{position:absolute;width:6px;height:6px;border-radius:50%;background:#f4a259;box-shadow:0 0 10px #f4a259;animation:sparkle .7s ease-out forwards}
+@keyframes sparkle{to{transform:translate(var(--dx),var(--dy));opacity:0}}
+/* in-room VECTOR cameo */
+.cameo{position:fixed;right:16px;bottom:-140px;z-index:60;display:flex;align-items:flex-end;gap:8px;transition:bottom .45s cubic-bezier(.3,1.4,.5,1);pointer-events:none;max-width:min(460px,92vw)}
+.cameo.on{bottom:16px}
+.cameo .cb{background:#fbf8f1;color:#14213d;border-radius:14px 14px 4px 14px;padding:10px 14px;font-size:15px;line-height:1.4;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.cameo .cb b{display:block;font:700 10px var(--mono);letter-spacing:.14em;color:#d1495b;text-transform:uppercase;margin-bottom:2px}
+.cameo.nice .cb b{color:#0f8b8d}
+.cameo svg{flex:none;width:84px;height:84px;filter:drop-shadow(0 6px 12px rgba(0,0,0,.35))}
+.cameo.on svg{animation:wobble .5s 2}
+@keyframes wobble{25%{transform:rotate(-12deg)}75%{transform:rotate(12deg)}}
+/* patrol bot */
+.patrol{position:fixed;bottom:6px;left:0;z-index:0;width:46px;height:46px;pointer-events:none;opacity:.85;animation:patrol 38s linear infinite}
+.patrol svg{width:46px;height:46px;animation:patrolflip 38s steps(1) infinite}
+@keyframes patrol{0%{transform:translateX(-60px)}50%{transform:translateX(calc(100vw + 10px))}100%{transform:translateX(-60px)}}
+@keyframes patrolflip{0%{transform:scaleX(1)}50%{transform:scaleX(-1)}}
+#stage,#hall,.hud{position:relative;z-index:1}
+/* alarm when time is low */
+.alarmglow{position:fixed;inset:0;pointer-events:none;z-index:4;box-shadow:inset 0 0 120px 20px rgba(209,73,91,.55);animation:alarm 1.6s ease-in-out infinite;display:none}
+.alarmglow.on{display:block}
+@keyframes alarm{50%{box-shadow:inset 0 0 60px 0 rgba(209,73,91,.2)}}
+.shakeall{animation:shakeall .4s}
+@keyframes shakeall{20%{transform:translate(-6px,2px)}40%{transform:translate(5px,-3px)}60%{transform:translate(-4px,1px)}80%{transform:translate(3px,0)}}
+.door-pill.justopen{animation:pillpop .7s}
+@keyframes pillpop{40%{transform:scale(1.18);box-shadow:0 0 22px #7ee8e0}}
+.soundbtn{position:fixed;left:14px;bottom:14px;z-index:61;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(13,27,42,.75);color:#fff;font-size:18px;cursor:pointer}
+.soundbtn:hover{background:rgba(13,27,42,.95)}
+@media (prefers-reduced-motion: reduce){
+  .cine *,.cameo,.patrol,.patrol svg,.alarmglow{animation-duration:.001s!important;animation-iteration-count:1!important;transition-duration:.001s!important}
+  .patrol{display:none}
+}
+@media print{.cine,.cameo,.patrol,.alarmglow,.soundbtn{display:none!important}}
+</style>
+<script id="cinema-js">
+/* VECTOR cinematic layer. Wraps the room engine's render/check without changing answer checking or timer codes.
+   Optional per-room script: ROOM.cinema = { open: [lines], doors: [[lines per door]], finale: [lines], taunts: [lines] } */
+(function () {
+  const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const C = ROOM.cinema || {};
+  const strip = h => { const d = document.createElement('div'); d.innerHTML = h; return d.textContent.replace(/\s+/g, ' ').trim(); };
+  const sentences = t => (t.match(/[^.!?]+[.!?]+["”']?|\S[^.!?]*$/g) || [t]).map(s => s.trim()).filter(Boolean);
+
+  /* ---------- sound (synthesized; no files) ---------- */
+  const SKEY = 'escape:sound';
+  let muted = localStorage.getItem(SKEY) === 'off', ac = null;
+  const ctx = () => { if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (ac && ac.state === 'suspended') ac.resume(); return ac; };
+  function tone(f, dur = .12, type = 'square', vol = .05, when = 0, slide = 0) {
+    if (muted) return; const a = ctx(); if (!a) return;
+    const t = a.currentTime + when, o = a.createOscillator(), g = a.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t); if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(30, f + slide), t + dur);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    o.connect(g).connect(a.destination); o.start(t); o.stop(t + dur + .02);
+  }
+  function noise(dur = .25, vol = .08, when = 0) {
+    if (muted) return; const a = ctx(); if (!a) return;
+    const b = a.createBuffer(1, a.sampleRate * dur, a.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+    const s = a.createBufferSource(), g = a.createGain(), fl = a.createBiquadFilter(); fl.type = 'lowpass'; fl.frequency.value = 900;
+    s.buffer = b; g.gain.value = vol; s.connect(fl).connect(g).connect(a.destination); s.start(a.currentTime + when);
+  }
+  const SFX = {
+    blip: () => tone(880 + Math.random() * 300, .03, 'square', .018),
+    slam: () => { noise(.35, .18); tone(70, .3, 'sine', .2, 0, -30); },
+    alert: () => { tone(660, .12, 'square', .04); tone(660, .12, 'square', .04, .2); tone(990, .25, 'square', .04, .4); },
+    click: () => { tone(1500, .04, 'square', .05); tone(500, .06, 'triangle', .06, .05); },
+    creak: () => tone(140, .9, 'sawtooth', .025, 0, 90),
+    unlock: () => { [523, 659, 784, 1047].forEach((f, i) => tone(f, .18, 'triangle', .07, i * .08)); },
+    buzz: () => { tone(110, .35, 'sawtooth', .07); tone(116, .35, 'sawtooth', .05); },
+    hint: () => { tone(740, .1, 'sine', .05); tone(988, .18, 'sine', .05, .1); },
+    power: () => tone(600, 1.2, 'sawtooth', .05, 0, -560),
+    fanfare: () => { [[523, 0], [659, .12], [784, .24], [1047, .36], [784, .6], [1047, .72]].forEach(([f, w]) => { tone(f, .3, 'triangle', .08, w); tone(f / 2, .3, 'sine', .05, w); }); },
+    beep: () => { tone(1200, .09, 'square', .04); tone(1200, .09, 'square', .04, .15); }
+  };
+
+  /* ---------- big VECTOR ---------- */
+  function bigBot(mood = 'smug') {
+    const eyes = mood === 'dead'
+      ? '<path d="M66 70 l16 16 M82 70 l-16 16 M118 70 l16 16 M134 70 l-16 16" stroke="#0d1b2a" stroke-width="6" stroke-linecap="round"/>'
+      : `<ellipse class="eye" cx="74" cy="78" rx="10" ry="11" fill="#0d1b2a"/><ellipse class="eye" cx="126" cy="78" rx="10" ry="11" fill="#0d1b2a"/><circle cx="78" cy="74" r="3" fill="#fff"/><circle cx="130" cy="74" r="3" fill="#fff"/>` +
+        (mood === 'mad' ? '<path d="M58 58 l26 10 M142 58 l-26 10" stroke="#0d1b2a" stroke-width="7" stroke-linecap="round"/>' : '') +
+        (mood === 'smug' ? '<path d="M60 64 q14 -6 28 0 M112 64 q14 -6 28 0" stroke="#0d1b2a" stroke-width="5" fill="none" stroke-linecap="round"/>' : '');
+    const mouth = mood === 'happy' ? '<path d="M78 112 q22 20 44 0" stroke="#0d1b2a" stroke-width="7" fill="none" stroke-linecap="round"/>'
+      : mood === 'mad' ? '<path d="M80 120 q20 -14 40 0" stroke="#0d1b2a" stroke-width="7" fill="none" stroke-linecap="round"/>'
+      : mood === 'dead' ? '<path d="M80 116 q10 -8 20 0 q10 8 20 0" stroke="#0d1b2a" stroke-width="6" fill="none" stroke-linecap="round"/>'
+      : '<path d="M80 114 q24 10 44 -6" stroke="#0d1b2a" stroke-width="7" fill="none" stroke-linecap="round"/>';
+    const brush = (cls, x) => `<g class="${cls}"><g stroke="#f4a259" stroke-width="4" stroke-linecap="round">${[0, 60, 120, 180, 240, 300].map(a => `<line x1="${x}" y1="98" x2="${x + 22 * Math.cos(a * Math.PI / 180)}" y2="${98 + 22 * Math.sin(a * Math.PI / 180)}"/>`).join('')}</g><circle cx="${x}" cy="98" r="6" fill="#0f8b8d"/></g>`;
+    return `<svg viewBox="-10 -20 220 220" aria-hidden="true">${mood === 'dead' ? '' : brush('brush', 22) + brush('brush2', 178)}
+      <ellipse cx="100" cy="186" rx="72" ry="10" fill="#000" opacity=".25"/>
+      <circle cx="100" cy="100" r="82" fill="#7ee8e0"/><circle cx="100" cy="100" r="82" fill="none" stroke="#0f8b8d" stroke-width="8"/>
+      <circle cx="100" cy="100" r="64" fill="none" stroke="#0f8b8d" stroke-width="2" opacity=".35"/>
+      <rect x="50" y="62" width="100" height="34" rx="17" fill="#0d1b2a" opacity=".12"/>${eyes}${mouth}
+      <line x1="100" y1="18" x2="100" y2="-4" stroke="#0f8b8d" stroke-width="6"/><circle class="${mood === 'dead' ? '' : 'ant'}" cx="100" cy="-8" r="9" fill="${mood === 'dead' ? '#555' : '#f4a259'}"/></svg>`;
+  }
+
+  /* ---------- cutscene player ---------- */
+  let playing = null;
+  function scene(build) {
+    return new Promise(resolve => {
+      const el = document.createElement('div'); el.className = 'cine'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Cutscene');
+      el.innerHTML = '<div class="grid"></div><div class="bar t"></div><div class="bar b"></div><div class="scene"></div><button class="skip" type="button">Skip ⏭</button>';
+      document.body.appendChild(el); requestAnimationFrame(() => el.classList.add('on'));
+      let advance = null, done = false;
+      const finish = () => { if (done) return; done = true; document.removeEventListener('keydown', key); el.classList.remove('on'); setTimeout(() => el.remove(), 350); playing = null; resolve(); };
+      const key = e => { if (e.key === 'Escape') finish(); else if ((e.key === ' ' || e.key === 'Enter') && advance) { e.preventDefault(); advance(); } };
+      document.addEventListener('keydown', key);
+      el.querySelector('.skip').addEventListener('click', e => { e.stopPropagation(); finish(); });
+      el.addEventListener('click', () => advance && advance());
+      const api = {
+        root: el, stage: el.querySelector('.scene'), done: () => done, finish,
+        wait: ms => new Promise(r => setTimeout(r, RM ? Math.min(ms, 150) : ms)),
+        tap: (ms = 0) => new Promise(r => { const tn = el.querySelector('.tapnext'); if (tn) tn.classList.add('on'); let t = null; advance = () => { advance = null; clearTimeout(t); if (tn) tn.classList.remove('on'); r(); }; if (ms) t = setTimeout(() => advance && advance(), ms); }),
+        type: async (node, text, speed = 24) => {
+          node.innerHTML = '<span></span><i class="caret"></i>'; const sp = node.firstChild; let skipped = false;
+          advance = () => { skipped = true; };
+          for (let i = 0; i < text.length && !done; i++) { if (skipped || RM) { sp.textContent = text; break; } sp.textContent = text.slice(0, i + 1); if (i % 2 === 0 && /\S/.test(text[i])) SFX.blip(); await new Promise(r => setTimeout(r, /[.,!?:]/.test(text[i]) ? speed * 6 : speed)); }
+          advance = null; node.querySelector('.caret').remove();
+        }
+      };
+      playing = api;
+      build(api).then(finish, finish);
+    });
+  }
+
+  async function lines(s, list, mood) {
+    s.stage.insertAdjacentHTML('beforeend', `<div class="bubble"><div class="who">VECTOR</div><div class="txt"></div></div><div class="tapnext">click or press space ▸</div>`);
+    const txt = s.stage.querySelector('.bubble .txt');
+    for (const L of list) { if (s.done()) return; await s.type(txt, L); await s.tap(L.length * 55 + 2600); }
+  }
+
+  /* ---------- 1. cold open ---------- */
+  async function playOpen() {
+    const intro = C.open || sentences(strip(ROOM.intro)).slice(0, 4);
+    await scene(async s => {
+      SFX.alert();
+      s.stage.innerHTML = `<div class="alert">⚠ SYSTEM ALERT · ALL DOORS LOCKED ⚠</div><div class="bot rollin">${bigBot('smug')}</div>
+        <div class="kick">${escapeHtml(document.title.split('·').slice(1, -1).join('·').trim() || 'Escape Room')}</div>
+        <h1 class="ttl">${[...ROOM.title].map((c, i) => `<span style="animation-delay:${.9 + i * .04}s">${c === ' ' ? '&nbsp;' : escapeHtml(c)}</span>`).join('')}</h1>`;
+      setTimeout(SFX.slam, RM ? 0 : 1200);
+      await s.wait(1300 + ROOM.title.length * 40);
+      s.stage.querySelector('.bot').classList.replace('rollin', 'bob');
+      await lines(s, intro);
+      if (s.done()) return;
+      s.stage.querySelector('.txt').textContent = `${ROOM.doors.length} doors. One team. Let's see how long you last. Mwahaha.`;
+      SFX.slam(); await s.wait(1500);
+    });
+  }
+
+  /* ---------- 2. door unlock ---------- */
+  async function playDoor(i, vals) {
+    const d = ROOM.doors[i], nx = ROOM.doors[i + 1];
+    const extra = (C.doors && C.doors[i]) || [];
+    await scene(async s => {
+      s.stage.innerHTML = `<div class="codereel">${vals.map((v, k) => `<b style="animation-delay:${k * .12}s">${escapeHtml(v || '·')}</b>`).join('')}</div>
+        <div class="doorwrap"><div class="doorlight"></div><div class="leaf l"></div><div class="leaf r"></div><div class="num">DOOR ${i + 1}</div>
+        <svg class="lockicon" viewBox="0 0 88 88"><path class="shackle" d="M26 40 V26 a18 18 0 0 1 36 0 V40" fill="none" stroke="#f4a259" stroke-width="8"/><rect x="16" y="38" width="56" height="42" rx="8" fill="#f4a259"/><circle cx="44" cy="58" r="6" fill="#14213d"/></svg></div>
+        <div class="next">${nx ? 'Next · Door ' + (i + 2) + ' of ' + ROOM.doors.length : 'Final door cracked'}</div><h2 class="nextname">${nx ? escapeHtml(nx.name) : ''}</h2>`;
+      const w = s.stage.querySelector('.doorwrap');
+      await s.wait(500 + vals.length * 120); SFX.click(); w.classList.add('unlocked');
+      await s.wait(350); SFX.creak(); w.classList.add('open');
+      await s.wait(500); SFX.unlock(); sparks(w);
+      await s.wait(700);
+      s.stage.querySelector('.next').classList.add('on'); s.stage.querySelector('.nextname').classList.add('on');
+      const said = extra.length ? extra : [strip(d.success || '').replace(/\s*(Door|Final door)\s*\d*\s*(is\s*)?(unlocked|open(ed)?)[.!]*\s*$/i, '').trim()].filter(Boolean);
+      if (said.length) { await s.wait(300); await lines(s, said); }
+      else await s.wait(1500);
+    });
+  }
+
+  function sparks(el) {
+    if (RM) return; const r = el.getBoundingClientRect();
+    for (let k = 0; k < 26; k++) {
+      const p = document.createElement('i'); p.className = 'spark';
+      const a = Math.random() * Math.PI * 2, d = 80 + Math.random() * 160;
+      p.style.left = (r.left + r.width / 2) + 'px'; p.style.top = (r.top + r.height / 2) + 'px'; p.style.position = 'fixed';
+      p.style.setProperty('--dx', Math.cos(a) * d + 'px'); p.style.setProperty('--dy', Math.sin(a) * d + 'px');
+      (playing ? playing.root : document.body).appendChild(p); setTimeout(() => p.remove(), 800);
+    }
+  }
+
+  /* ---------- 3. finale ---------- */
+  async function playFinale() {
+    const fin = C.finale || ['No. No no no. My firmware was PERFECT.', 'Fine. FINE. You escaped. I\'m going back to vacuuming…'];
+    await scene(async s => {
+      s.stage.innerHTML = `<div class="bot bob">${bigBot('mad')}</div>`;
+      await lines(s, fin.slice(0, 1));
+      if (s.done()) return;
+      SFX.power(); const b = s.stage.querySelector('.bot'); b.innerHTML = bigBot('dead'); b.classList.replace('bob', 'dead');
+      await s.wait(1500);
+      s.stage.innerHTML = `<div class="stamp">ESCAPED!</div><div class="tally">0:00</div><div class="kick" style="animation-delay:.6s">${escapeHtml(S.team || '')}</div><div class="tapnext">click to see your certificate ▸</div>`;
+      SFX.slam(); SFX.fanfare(); confetti(s.root);
+      const T = Math.max(0, Math.floor((S.end - S.start) / 1000)), el = s.stage.querySelector('.tally'), t0 = performance.now();
+      await new Promise(r => { const step = now => { const k = Math.min(1, (now - t0) / (RM ? 1 : 1400)), v = Math.round(T * (1 - Math.pow(1 - k, 3))); el.textContent = Math.floor(v / 60) + ':' + String(v % 60).padStart(2, '0'); if (k < 1 && !s.done()) requestAnimationFrame(step); else r(); }; requestAnimationFrame(step); });
+      await s.tap(9000);
+    });
+  }
+
+  function confetti(root) {
+    if (RM) return; const cv = document.createElement('canvas'); cv.className = 'confetti'; root.appendChild(cv);
+    const g = cv.getContext('2d'), W = cv.width = innerWidth, H = cv.height = innerHeight, cols = ['#7ee8e0', '#f4a259', '#fbf8f1', '#d1495b', '#0f8b8d'];
+    const P = Array.from({ length: 180 }, () => ({ x: W / 2 + (Math.random() - .5) * 200, y: H * .45, vx: (Math.random() - .5) * 16, vy: -Math.random() * 16 - 4, r: Math.random() * 6 + 3, a: Math.random() * 6, c: cols[Math.random() * 5 | 0] }));
+    let t = 0; (function f() { g.clearRect(0, 0, W, H); P.forEach(p => { p.vy += .35; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.a += .2; g.save(); g.translate(p.x, p.y); g.rotate(p.a); g.fillStyle = p.c; g.fillRect(-p.r, -p.r / 2, p.r * 2, p.r); g.restore(); }); if (++t < 260 && root.isConnected) requestAnimationFrame(f); })();
+  }
+
+  /* ---------- 4. in-room cameos ---------- */
+  const cam = document.createElement('div'); cam.className = 'cameo'; cam.setAttribute('aria-hidden', 'true'); document.body.appendChild(cam);
+  let camT = null;
+  function cameo(text, mood = 'mad', label = 'VECTOR', ms = 3200) {
+    cam.className = 'cameo' + (mood === 'happy' ? ' nice' : '');
+    cam.innerHTML = `<div class="cb"><b>${label}</b>${escapeHtml(text)}</div>${bigBot(mood)}`;
+    requestAnimationFrame(() => cam.classList.add('on')); clearTimeout(camT); camT = setTimeout(() => cam.classList.remove('on'), ms);
+  }
+  const taunts = C.taunts || ['Still stuck? My battery could do this in its sleep mode.', 'Tick tock. I am vacuuming your confidence.', 'Have you tried… being correct?', 'Fun fact: hints are free. My respect is not.', 'I can hear you thinking. It sounds like a dust bin.'];
+  let lastActivity = Date.now(), tauntDoor = -1;
+  ['keydown', 'click'].forEach(ev => document.addEventListener(ev, () => { lastActivity = Date.now(); }, true));
+  setInterval(() => {
+    if (!S.started || S.end || playing || timeUp()) return;
+    if (Date.now() - lastActivity > 150000 && tauntDoor !== S.door) { tauntDoor = S.door; cameo(taunts[Math.random() * taunts.length | 0], 'smug', 'VECTOR', 4500); }
+    const glow = document.querySelector('.alarmglow'), left = timerLive() ? S.timer.end - Date.now() : Infinity;
+    const low = left > 0 && left < 120000; glow.classList.toggle('on', low && !RM);
+    if (low && !glow.dataset.beeped) { glow.dataset.beeped = 1; SFX.beep(); cameo('Two minutes left! My victory is SO close.', 'smug', 'VECTOR', 4000); }
+  }, 5000);
+
+  /* ---------- 5. wrap the engine ---------- */
+  const _render = render, _check = check, _renderIntro = renderIntro;
+  let shownOpen = sessionStorage.getItem('cine-open:' + ROOM.id) === '1';
+  check = function (d, i) {
+    const form = $('#lockForm'); const vals = d.fields.map((f, k) => String(form.elements['f' + k].value).trim());
+    const before = S.door, wrongBefore = S.wrong;
+    const realTimeout = window.setTimeout;
+    let queued = null;
+    window.setTimeout = (fn, ms) => { if (fn === render && ms === 1400) { queued = true; return 0; } return realTimeout(fn, ms); };
+    try { _check(d, i); } finally { window.setTimeout = realTimeout; }
+    if (S.door > before) {
+      SFX.click();
+      realTimeout(async () => {
+        await playDoor(i, vals);
+        if (S.door >= ROOM.doors.length) await playFinale();
+        render();
+        const pill = document.querySelectorAll('.door-pill')[i]; if (pill) pill.classList.add('justopen');
+      }, 500);
+    } else if (S.wrong > wrongBefore) {
+      SFX.buzz(); const fb = $('#fb'); cameo(fb ? fb.textContent.replace(/^✖\s*/, '') : 'Wrong!', 'mad', 'Access denied');
+      if (!RM) { const p = document.querySelector('.panel'); p.classList.remove('shakeall'); void p.offsetWidth; p.classList.add('shakeall'); }
+    }
+  };
+  renderIntro = function (st) {
+    _renderIntro(st);
+    const go = $('#go');
+    if (go) go.addEventListener('click', () => { ctx(); SFX.slam(); }, true);
+    if (!shownOpen) { shownOpen = true; sessionStorage.setItem('cine-open:' + ROOM.id, '1'); setTimeout(playOpen, 250); }
+  };
+  render = function () {
+    _render();
+    document.querySelectorAll('[data-hint]').forEach(b => b.addEventListener('click', () => { SFX.hint(); cameo('A hint? How adorable. Fine, here.', 'smug', 'VECTOR', 2600); }, true));
+  };
+
+  /* ---------- chrome: sound toggle, patrol bot, alarm glow, replay ---------- */
+  document.body.insertAdjacentHTML('beforeend', `<div class="alarmglow"></div><div class="patrol" aria-hidden="true">${bigBot('smug')}</div>
+    <button class="soundbtn no-print" type="button" title="Sound on/off" aria-label="Toggle sound">${muted ? '🔇' : '🔊'}</button>`);
+  const sb = document.querySelector('.soundbtn');
+  sb.addEventListener('click', () => { muted = !muted; localStorage.setItem(SKEY, muted ? 'off' : 'on'); sb.textContent = muted ? '🔇' : '🔊'; if (!muted) { ctx(); SFX.blip(); } });
+  window.replayIntro = playOpen;
+  render();
+})();
+</script>
+<!-- CINEMA:end -->
 </body>
 </html>
