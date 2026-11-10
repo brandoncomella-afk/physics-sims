@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Escape Room · AP Biology · Unit 2: Cell Structure and Function · VECTOR's Shrink Ray</title>
+<style>
+:root{
+  --ink:#14213d; --ink-2:#3d4a66; --paper:#fbf8f1; --card:#ffffff; --line:#d9d2c3;
+  --teal:#0f8b8d; --teal-d:#0b6b6d; --amber:#f4a259; --red:#d1495b; --green:#3a9d5d;
+  --night:#0d1b2a; --night-2:#1b263b; --glow:#7ee8e0;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  --sans:"Avenir Next","Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:var(--sans);color:var(--ink);background:var(--night);
+  background-image:linear-gradient(rgba(126,232,224,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(126,232,224,.06) 1px,transparent 1px);
+  background-size:28px 28px;min-height:100vh;line-height:1.5}
+.wrap{max-width:980px;margin:0 auto;padding:20px 18px 60px}
+header.top{display:flex;align-items:center;gap:14px;color:#e8f1f2;flex-wrap:wrap}
+header.top .unit{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--glow)}
+header.top h1{margin:0;font-size:26px;letter-spacing:.01em}
+header.top .spacer{flex:1}
+.hud{display:flex;gap:10px;font-family:var(--mono);font-size:13px}
+.hud span{background:var(--night-2);border:1px solid #2f3e5a;color:#e8f1f2;padding:5px 10px;border-radius:8px}
+.hud b{color:var(--glow);font-weight:600}
+
+/* progress hallway */
+.hall{display:flex;gap:8px;margin:18px 0 18px;flex-wrap:wrap}
+.door-pill{flex:1;min-width:120px;background:var(--night-2);border:1px solid #2f3e5a;color:#8fa0b8;border-radius:10px;padding:8px 10px;font-size:13px;display:flex;gap:8px;align-items:center}
+.door-pill .n{font-family:var(--mono);font-size:11px;border:1px solid currentColor;border-radius:5px;padding:0 5px}
+.door-pill.open{color:#bff3ee;border-color:var(--teal)}
+.door-pill.current{color:#fff;border-color:var(--amber);box-shadow:0 0 0 2px rgba(244,162,89,.25)}
+.door-pill.open .lock::before{content:"🔓"} .door-pill .lock::before{content:"🔒"}
+
+.panel{background:var(--paper);border-radius:16px;padding:22px 24px;box-shadow:0 18px 50px rgba(0,0,0,.35);position:relative}
+.panel h2{margin:0 0 4px;font-size:22px}
+.tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;background:#e7f4f4;color:var(--teal-d);border-radius:6px;padding:2px 8px;margin-bottom:10px}
+.vector{text-align:left;display:flex;gap:14px;align-items:flex-start;background:var(--night);color:#e8f1f2;border-radius:12px;padding:12px 14px;margin:10px 0 16px}
+.vector svg{flex:0 0 auto}
+.vector p{margin:0}
+.vector .who{font-family:var(--mono);font-size:11px;color:var(--glow);letter-spacing:.12em;text-transform:uppercase}
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.card h4{margin:0 0 6px;font-size:15px}
+.badge{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;background:var(--ink);color:#fff;font-weight:700;font-family:var(--mono);margin-right:8px}
+.fd{text-align:center}
+.fd .badge{background:var(--teal)}
+table.data{border-collapse:collapse;margin:8px 0;font-family:var(--mono);font-size:14px}
+table.data th,table.data td{border:1px solid var(--line);padding:6px 12px;text-align:center;background:#fff}
+table.data th{background:#eef2f6}
+ol.problems{padding-left:0;list-style:none;margin:0}
+ol.problems li{display:flex;gap:10px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+ol.problems .slot{flex:0 0 auto;font-family:var(--mono);font-weight:700;background:var(--amber);color:var(--ink);border-radius:6px;padding:0 8px;height:26px;line-height:26px}
+.stmt{display:flex;gap:10px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin-bottom:7px}
+.stmt .num{flex:0 0 auto;min-width:34px;text-align:center;font-family:var(--mono);font-weight:700;background:#efe7d6;border-radius:6px;padding:1px 6px}
+
+/* roles */
+.roles{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
+.roles button{font:inherit;font-size:14px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;cursor:pointer}
+.roles button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.rolecard{border-left:5px solid var(--amber)}
+.note{font-size:14px;color:var(--ink-2)}
+
+/* lock */
+.lockbox{margin-top:18px;background:var(--night-2);color:#e8f1f2;border-radius:14px;padding:16px}
+.lockbox .lbl{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--glow);margin-bottom:8px}
+.fields{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:4px;font-size:13px;color:#b9c6d6}
+.field input{font-family:var(--mono);font-size:22px;letter-spacing:.12em;width:var(--w,150px);padding:8px 10px;border-radius:9px;border:2px solid #3b4d6b;background:#0d1b2a;color:#fff;text-transform:uppercase}
+.field input:focus{outline:none;border-color:var(--amber)}
+.btn{font:inherit;font-weight:700;border:0;border-radius:10px;padding:11px 18px;cursor:pointer;background:var(--amber);color:var(--ink)}
+.btn:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent;color:#cfe0ea;border:1px solid #3b4d6b;font-weight:500}
+.btn.dark{background:var(--ink);color:#fff}
+.feedback{margin-top:10px;min-height:24px;font-size:15px}
+.feedback.bad{color:#ffb3bd}.feedback.good{color:#9ff0b8}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.hints{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.hinttext{background:#fff7e8;border:1px dashed var(--amber);border-radius:10px;padding:8px 12px;margin-top:8px;font-size:14px;color:var(--ink)}
+
+/* intro / finale */
+.center{text-align:center}
+.setup{display:grid;gap:12px;max-width:520px;margin:14px auto 0;text-align:left}
+.setup label{font-size:14px;font-weight:600}
+.setup input,.setup select{font:inherit;width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:#fff}
+.cert{border:3px double var(--ink);border-radius:14px;padding:22px;background:#fff;max-width:620px;margin:16px auto 0}
+.cert .pw{font-family:var(--mono);font-size:30px;letter-spacing:.25em;background:var(--ink);color:var(--glow);display:inline-block;padding:6px 16px;border-radius:10px;margin:6px 0}
+.stats{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:10px 0}
+.stats div{background:#f2efe6;border-radius:10px;padding:8px 14px;font-size:14px}
+.stats b{display:block;font-family:var(--mono);font-size:20px}
+.foot{color:#7f90a8;font-size:12px;text-align:center;margin-top:22px}
+.foot a{color:#9fd9d4}
+.reset{background:none;border:0;color:#7f90a8;text-decoration:underline;cursor:pointer;font:inherit;font-size:12px}
+.confirm{display:none;margin-top:8px;color:#e8f1f2;font-size:13px}
+.confirm.on{display:block}
+svg text{font-family:var(--sans)}
+.tchip{cursor:pointer;font:inherit;font-family:var(--mono);font-size:13px;background:var(--night-2);border:1px solid #2f3e5a;color:#e8f1f2;padding:5px 10px;border-radius:8px}
+.tchip b{color:var(--amber)} .tchip.low{border-color:var(--red);animation:pulse 1s infinite} .tchip.low b{color:#ffb3bd}
+@keyframes pulse{50%{box-shadow:0 0 0 3px rgba(209,73,91,.35)}}
+#timerBox{display:none;margin-top:12px;background:var(--night-2);border:1px solid #3b4d6b;border-radius:12px;padding:12px 14px;color:#e8f1f2}
+#timerBox.on{display:block}
+#timerBox form{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#timerBox input{font-family:var(--mono);font-size:18px;letter-spacing:.1em;width:160px;padding:7px 10px;border-radius:8px;border:2px solid #3b4d6b;background:#0d1b2a;color:#fff;text-transform:uppercase}
+#timerMsg{font-size:14px;margin-top:6px;min-height:20px}
+.timeup{text-align:center}
+.timeup h2{font-size:40px;color:var(--red);margin:6px 0}
+.fcode{font-family:var(--mono);font-size:26px;letter-spacing:.12em;background:#fff7e8;border:2px dashed var(--amber);display:inline-block;padding:4px 14px;border-radius:10px;margin:4px 0}
+@media print{body{background:#fff}.hall,.hud,.foot,.no-print{display:none!important}.panel{box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="unit">AP Biology · Unit 2: Cell Structure and Function</div>
+      <h1>VECTOR&#39;s Cell Block</h1>
+    </div>
+    <div class="spacer"></div>
+    <div class="hud" id="hud"></div>
+  </header>
+  <div id="timerBox" class="no-print">
+    <form id="timerForm" autocomplete="off"><span>⏲ Class timer code (from the board):</span>
+      <input id="timerInput" placeholder="1452-AB" aria-label="Class timer code">
+      <button class="btn" type="submit" style="padding:8px 14px">Set</button>
+      <button class="btn ghost" type="button" id="timerClose" style="padding:8px 12px">Close</button></form>
+    <div id="timerMsg" aria-live="polite"></div>
+  </div>
+  <nav class="hall" id="hall" aria-label="Door progress"></nav>
+  <main class="panel" id="stage"></main>
+  <div class="foot">
+    Mr. C's Science · <a href="index.html">All escape rooms</a> ·
+    <button class="reset" id="resetBtn">Reset this device</button>
+    <div class="confirm" id="confirmBox">Erase all progress on this device?
+      <button class="btn ghost" id="resetYes" style="padding:4px 10px">Yes, reset</button>
+      <button class="btn ghost" id="resetNo" style="padding:4px 10px">Cancel</button></div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   ESCAPE ROOM ENGINE (reusable). To make a new unit, copy this file and
+   replace the ROOM object below. Answers are stored only as salted
+   hashes (cyrb53); generate them with the helper in the teacher guide.
+   ===================================================================== */
+function cyrb53(str, seed = 0) {
+  let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+  for (let i = 0, ch; i < str.length; i++) { ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507); h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507); h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+
+/* ---------- CLASS TIMER + FINISH CODES (shared with teacher.html; keep identical) ---------- */
+const TALPH = 'ACDEFGHJKMNPQRTUVWXY34679';
+const pad2 = n => String(n).padStart(2, '0');
+function dayKey(d = new Date()) { return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+function tmac(s, day) { const h = parseInt(cyrb53('mrc-class-timer::' + (day || dayKey()) + '::' + s), 36); return TALPH[h % 25] + TALPH[Math.floor(h / 25) % 25]; }
+function timerCode(endMs) { const d = new Date(endMs), t = pad2(d.getHours()) + pad2(d.getMinutes()); return t + '-' + tmac('T' + t); }
+function offCode() { return 'OFF-' + tmac('OFF'); }
+function finishCode(ms, hints) { const d = new Date(ms), t = pad2(d.getHours()) + pad2(d.getMinutes()) + pad2(d.getSeconds()); return t + '-' + hints + '-' + tmac('F' + t + '-' + hints); }
+function cleanCode(raw) { return String(raw || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
+// -> {type:'end', end:ms} | {type:'off'} | null
+function parseTimerCode(raw) {
+  const c = cleanCode(raw); let m;
+  if ((m = c.match(/^OFF([A-Z0-9]{2})$/)) && m[1] === tmac('OFF')) return { type: 'off' };
+  if ((m = c.match(/^(\d{4})([A-Z0-9]{2})$/)) && m[2] === tmac('T' + m[1])) {
+    const hh = +m[1].slice(0, 2), mm = +m[1].slice(2); if (hh > 23 || mm > 59) return null;
+    const d = new Date(); d.setHours(hh, mm, 0, 0); return { type: 'end', end: d.getTime() };
+  }
+  return null;
+}
+// -> {finish:ms, hints:n} | null
+function parseFinishCode(raw) {
+  const c = String(raw || '').toUpperCase().replace(/\s/g, ''); const m = c.match(/^(\d{6})-?(\d{1,2})-?([A-Z0-9]{2})$/);
+  if (!m || m[3] !== tmac('F' + m[1] + '-' + (+m[2]))) return null;
+  const d = new Date(); d.setHours(+m[1].slice(0, 2), +m[1].slice(2, 4), +m[1].slice(4), 0);
+  return { finish: d.getTime(), hints: +m[2] };
+}
+
+/* ---------- drawing helpers ---------- */
+const sub = (main, s) => `${main}<tspan dy="4" font-size="10">${s}</tspan><tspan dy="-4"></tspan>`;
+// Force diagram: dot on a dashed grid, arrows measured in grid units
+function forceDiagram(forces, opts = {}) {
+  const u = 16, size = opts.size || 176, c = size / 2;
+  let g = '';
+  for (let x = c % u; x <= size; x += u) g += `<line x1="${x}" y1="0" x2="${x}" y2="${size}" stroke="#b9c3cf" stroke-dasharray="3 3" stroke-width="1"/>`;
+  for (let y = c % u; y <= size; y += u) g += `<line x1="0" y1="${y}" x2="${size}" y2="${y}" stroke="#b9c3cf" stroke-dasharray="3 3" stroke-width="1"/>`;
+  let a = '';
+  const dirs = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+  forces.forEach(f => {
+    const [dx, dy] = dirs[f.dir], L = f.len * u, x2 = c + dx * L, y2 = c + dy * L;
+    a += `<line x1="${c}" y1="${c}" x2="${x2 - dx * 7}" y2="${y2 - dy * 7}" stroke="#14213d" stroke-width="3"/>`;
+    const p = dx ? `${x2},${y2} ${x2 - dx * 10},${y2 - 6} ${x2 - dx * 10},${y2 + 6}` : `${x2},${y2} ${x2 - 6},${y2 - dy * 10} ${x2 + 6},${y2 - dy * 10}`;
+    a += `<polygon points="${p}" fill="#14213d"/>`;
+    // vertical arrows: label beside the tip; horizontal arrows: label above the tip, pulled inward
+    const out = !!f.mag; // labels with magnitudes go outward past the tip (canvas is padded)
+    const lx = dx ? x2 + (out ? dx * 8 : 0) : c + 8, ly = dy ? y2 + (dy > 0 ? 14 : -4) : (out ? c + 5 : c - 12);
+    const anchor = out ? (dx < 0 ? 'end' : 'start') : (dx > 0 ? 'end' : 'start');
+    a += `<text x="${lx}" y="${ly}" font-size="14" font-style="italic" fill="#0b6b6d" text-anchor="${anchor}">${sub('F', f.lab)}${f.mag ? ` = ${f.mag}` : ''}</text>`;
+  });
+  const px = opts.padX || 0;
+  return `<svg viewBox="${-px} 0 ${size + 2 * px} ${size}" width="${size + 2 * px}" height="${size}" style="max-width:100%;height:auto" role="img" aria-label="force diagram"><rect width="${size}" height="${size}" fill="#fff"/>${g}${a}<circle cx="${c}" cy="${c}" r="5.5" fill="#d1495b"/></svg>`;
+}
+// Line graph on a grid. pts in data units.
+function graph({ pts, xmax, ymax, xstep, ystep, xlab, ylab, w = 420, h = 250, ticks = true }) {
+  const L = 48, B = 36, T = 12, R = 14, W = w - L - R, H = h - T - B;
+  const X = x => L + x / xmax * W, Y = y => T + H - y / ymax * H;
+  let s = `<rect width="${w}" height="${h}" fill="#fff"/>`;
+  for (let x = 0; x <= xmax + 1e-9; x += xstep) s += `<line x1="${X(x)}" y1="${T}" x2="${X(x)}" y2="${T + H}" stroke="#dde3ea"/>` + (ticks ? `<text x="${X(x)}" y="${T + H + 16}" font-size="12" text-anchor="middle" fill="#3d4a66">${+x.toFixed(2)}</text>` : '');
+  for (let y = 0; y <= ymax + 1e-9; y += ystep) s += `<line x1="${L}" y1="${Y(y)}" x2="${L + W}" y2="${Y(y)}" stroke="#dde3ea"/>` + (ticks ? `<text x="${L - 7}" y="${Y(y) + 4}" font-size="12" text-anchor="end" fill="#3d4a66">${+y.toFixed(2)}</text>` : '');
+  s += `<line x1="${L}" y1="${T + H}" x2="${L + W}" y2="${T + H}" stroke="#14213d" stroke-width="2"/><line x1="${L}" y1="${T}" x2="${L}" y2="${T + H}" stroke="#14213d" stroke-width="2"/>`;
+  s += `<polyline points="${pts.map(p => X(p[0]) + ',' + Y(p[1])).join(' ')}" fill="none" stroke="#d1495b" stroke-width="3.5" stroke-linejoin="round"/>`;
+  s += `<text x="${L + W / 2}" y="${h - 3}" font-size="13" text-anchor="middle" fill="#14213d">${xlab}</text>`;
+  s += `<text x="13" y="${T + H / 2}" font-size="13" text-anchor="middle" fill="#14213d" transform="rotate(-90 13 ${T + H / 2})">${ylab}</text>`;
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;height:auto" role="img" aria-label="graph">${s}</svg>`;
+}
+function vectorBot(mood = 'smug') {
+  const eyes = mood === 'mad' ? '<path d="M18 22 l8 3 M42 22 l-8 3" stroke="#0d1b2a" stroke-width="3" stroke-linecap="round"/>' : '';
+  const mouth = mood === 'happy' ? '<path d="M22 36 q8 7 16 0" stroke="#0d1b2a" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    : mood === 'mad' ? '<path d="M22 39 q8 -6 16 0" stroke="#0d1b2a" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    : '<path d="M23 37 h14" stroke="#0d1b2a" stroke-width="3" stroke-linecap="round"/>';
+  return `<svg width="60" height="60" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="32" r="25" fill="#7ee8e0"/><circle cx="30" cy="32" r="25" fill="none" stroke="#0f8b8d" stroke-width="3"/><rect x="14" y="20" width="32" height="12" rx="6" fill="#0d1b2a" opacity=".12"/><circle cx="22" cy="27" r="4" fill="#0d1b2a"/><circle cx="38" cy="27" r="4" fill="#0d1b2a"/>${eyes}${mouth}<line x1="30" y1="7" x2="30" y2="1" stroke="#0f8b8d" stroke-width="3"/><circle cx="30" cy="1.5" r="3" fill="#f4a259"/></svg>`;
+}
+const say = (html, mood) => `<div class="vector">${vectorBot(mood)}<div><div class="who">VECTOR</div><p>${html}</p></div></div>`;
+
+/* ---------- extra drawing helpers (AP Bio Unit 2) ---------- */
+const opts = list => `<div style="margin-top:6px">${list.map(([k, t]) => `<div class="stmt"><span class="num">${k}</span><span>${t}</span></div>`).join('')}</div>`;
+const svgT = (x, y, t, c = '#14213d', sz = 13, a = 'middle', wt = 400) => `<text x="${x}" y="${y}" font-size="${sz}" text-anchor="${a}" fill="${c}" font-weight="${wt}">${t}</text>`;
+// Animal cell with numbered, named structures
+function cellDiagram() {
+  const W = 680, H = 430; let s = `<rect width="${W}" height="${H}" fill="#fff"/>`;
+  for (let x = 8; x < W; x += 16) s += `<line x1="${x}" y1="0" x2="${x}" y2="${H}" stroke="#eef1f5" stroke-dasharray="3 3"/>`;
+  for (let y = 8; y < H; y += 16) s += `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="#eef1f5" stroke-dasharray="3 3"/>`;
+  // plasma membrane
+  s += `<ellipse cx="340" cy="215" rx="290" ry="180" fill="#f7fbfb" stroke="#0f8b8d" stroke-width="5"/>`;
+  // nucleus + nucleolus
+  s += `<circle cx="220" cy="215" r="68" fill="#e7eef8" stroke="#14213d" stroke-width="4"/><circle cx="205" cy="205" r="18" fill="#9fb3d1"/>`;
+  // rough ER: arcs around nucleus (right side) studded with ribosomes
+  [88, 104, 120].forEach(r => {
+    const a0 = -55 * Math.PI / 180, a1 = 55 * Math.PI / 180, P = a => [220 + r * Math.cos(a), 215 + r * Math.sin(a)];
+    const [x0, y0] = P(a0), [x1, y1] = P(a1);
+    s += `<path d="M${x0} ${y0} A ${r} ${r} 0 0 1 ${x1} ${y1}" fill="none" stroke="#14213d" stroke-width="5"/>`;
+    for (let a = a0 + 0.08; a < a1; a += 0.17) { const [x, y] = [220 + (r + 6) * Math.cos(a), 215 + (r + 6) * Math.sin(a)]; s += `<circle cx="${x}" cy="${y}" r="2.6" fill="#d1495b"/>`; }
+  });
+  // smooth ER: wavy tubes, lower left, no ribosomes
+  s += `<path d="M110 320 q15 -18 30 0 t30 0 t30 0 t30 0" fill="none" stroke="#14213d" stroke-width="5"/><path d="M118 340 q15 -18 30 0 t30 0 t30 0" fill="none" stroke="#14213d" stroke-width="5"/>`;
+  // Golgi stack
+  [0, 1, 2, 3].forEach(k => s += `<path d="M${420 + k * 9} ${150 + k * 3} q 34 ${40 - k * 2} 0 ${84 - k * 6}" fill="none" stroke="#f4a259" stroke-width="7" stroke-linecap="round"/>`);
+  // secretory vesicle fusing with membrane (upper right)
+  s += `<circle cx="545" cy="92" r="15" fill="#fff7e8" stroke="#f4a259" stroke-width="4"/><circle cx="545" cy="92" r="4" fill="#d1495b"/><circle cx="550" cy="97" r="3" fill="#d1495b"/>`;
+  // mitochondrion
+  s += `<ellipse cx="470" cy="315" rx="52" ry="24" fill="#fdecea" stroke="#d1495b" stroke-width="3"/><path d="M432 315 q8 -16 16 0 t16 0 t16 0 t16 0 t12 0" fill="none" stroke="#d1495b" stroke-width="2"/>`;
+  // lysosome
+  s += `<circle cx="340" cy="345" r="20" fill="#efe7d6" stroke="#3d4a66" stroke-width="3"/>${[[333, 340], [346, 349], [338, 352], [348, 338]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3" fill="#3d4a66"/>`).join('')}`;
+  // free ribosomes in cytosol
+  [[380, 92], [392, 100], [372, 104], [385, 112], [560, 220], [572, 230], [556, 236]].forEach(([x, y]) => s += `<circle cx="${x}" cy="${y}" r="3.2" fill="#d1495b"/>`);
+  // callouts: [num, name, targetX, targetY, labelX, labelY, anchor]
+  const C = [
+    [16, 'nucleus', 190, 250, 20, 50, 'start'],
+    [1, 'bound ribosome', 318, 185, 290, 30, 'middle'],
+    [18, 'rough ER', 327, 262, 270, 410, 'middle'],
+    [9, 'smooth ER', 140, 330, 80, 395, 'middle'],
+    [3, 'Golgi apparatus', 450, 190, 480, 30, 'middle'],
+    [5, 'secretory vesicle', 560, 92, 676, 132, 'end'],
+    [12, 'plasma membrane', 626, 270, 676, 300, 'end'],
+    [20, 'free ribosome', 572, 230, 676, 196, 'end'],
+    [14, 'mitochondrion', 495, 335, 565, 410, 'middle'],
+    [22, 'lysosome', 345, 366, 390, 410, 'middle']
+  ];
+  C.forEach(([n, name, tx, ty, lx, ly, a]) => {
+    s += `<line x1="${tx}" y1="${ty}" x2="${lx}" y2="${ly - 5}" stroke="#3d4a66" stroke-width="1.5"/><circle cx="${tx}" cy="${ty}" r="3" fill="#3d4a66"/>`;
+    const label = `${n} · ${name}`, wd = label.length * 7.9 + 14, bx = a === 'end' ? lx - wd : a === 'middle' ? lx - wd / 2 : lx;
+    s += `<rect x="${bx}" y="${ly - 14}" width="${wd}" height="20" rx="5" fill="#14213d"/>` + svgT(bx + wd / 2, ly + 1, label, '#fff', 12.5, 'middle', 600);
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px;height:auto" role="img" aria-label="animal cell diagram with numbered structures">${s}</svg>`;
+}
+// oblique box sketch (dimensions in µm)
+function boxSketch(l, w, h, lab, scale = 9) {
+  const L = l * scale, Hh = h * scale, D = w * scale * 0.5, x0 = 56, y0 = 20 + D;
+  const W = L + D + 120, H = Hh + D + 46;
+  let s = `<rect width="${W}" height="${H}" fill="#fff"/>`;
+  s += `<polygon points="${x0},${y0} ${x0 + L},${y0} ${x0 + L},${y0 + Hh} ${x0},${y0 + Hh}" fill="#e7f4f4" stroke="#14213d" stroke-width="2"/>`;
+  s += `<polygon points="${x0},${y0} ${x0 + D},${y0 - D} ${x0 + L + D},${y0 - D} ${x0 + L},${y0}" fill="#f4fbfb" stroke="#14213d" stroke-width="2"/>`;
+  s += `<polygon points="${x0 + L},${y0} ${x0 + L + D},${y0 - D} ${x0 + L + D},${y0 - D + Hh} ${x0 + L},${y0 + Hh}" fill="#cfe9e9" stroke="#14213d" stroke-width="2"/>`;
+  s += svgT(x0 + L / 2, y0 + Hh + 18, lab[0], '#0b6b6d', 13);
+  s += svgT(x0 - 6, y0 + Hh / 2 + 4, lab[1], '#0b6b6d', 13, 'end');
+  if (lab[2]) s += svgT(x0 + L + D + 8, y0 - D / 2 + 2, lab[2], '#0b6b6d', 13, 'start');
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px;height:auto" role="img" aria-label="box-shaped cell sketch">${s}</svg>`;
+}
+// rooted rRNA gene tree (rectangular cladogram)
+function rRNATree() {
+  const leaves = [
+    ['T', 'Bacillus (bacterium)'], ['I', 'Synechocystis (cyanobacterium)'], ['E', 'corn chloroplast rRNA gene'],
+    ['M', 'E. coli (γ-proteobacterium)'], ['W', 'Rhodobacter (α-proteobacterium)'], ['H', 'human mitochondrial rRNA gene'],
+    ['S', 'Sulfolobus (archaeon)'], ['A', 'corn nuclear rRNA gene'], ['N', 'yeast nuclear rRNA gene'], ['O', 'human nuclear rRNA gene']
+  ];
+  const W = 640, H = 400, X = 360, y = i => 30 + i * 38;
+  let s = `<rect width="${W}" height="${H}" fill="#fff"/>`;
+  for (let x = 8; x < W; x += 16) s += `<line x1="${x}" y1="0" x2="${x}" y2="${H}" stroke="#eef1f5" stroke-dasharray="3 3"/>`;
+  const ln = (x1, y1, x2, y2) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#14213d" stroke-width="3" stroke-linecap="round"/>`;
+  // node(x, children) where child = leaf index or node object; returns y
+  const node = (x, kids) => {
+    const ys = kids.map(k => typeof k === 'number' ? (s += ln(x, y(k), X, y(k)), y(k)) : (s += '', node(k.x, k.c)));
+    const kx = kids.map(k => typeof k === 'number' ? X : k.x);
+    ys.forEach((yy, i) => { if (typeof kids[i] !== 'number') s += ln(x, yy, kx[i], yy); });
+    s += ln(x, Math.min(...ys), x, Math.max(...ys));
+    return (Math.min(...ys) + Math.max(...ys)) / 2;
+  };
+  const tree = { x: 30, c: [
+    { x: 80, c: [0, { x: 140, c: [{ x: 250, c: [1, 2] }, { x: 210, c: [3, { x: 290, c: [4, 5] }] }] }] },
+    { x: 140, c: [6, { x: 230, c: [7, { x: 300, c: [8, 9] }] }] }
+  ] };
+  const ry = node(tree.x, tree.c);
+  s += ln(8, ry, 30, ry) + svgT(10, ry + 18, 'root', '#3d4a66', 11, 'start');
+  leaves.forEach(([k, name], i) => {
+    s += `<rect x="${X + 8}" y="${y(i) - 12}" width="24" height="24" rx="5" fill="#14213d"/>` + svgT(X + 20, y(i) + 5, k, '#fff', 14, 'middle', 700);
+    s += svgT(X + 40, y(i) + 5, name, '#14213d', 13.5, 'start');
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px;height:auto" role="img" aria-label="rRNA gene tree">${s}</svg>`;
+}
+
+/* =====================================================================
+   ROOM DATA: AP Biology · Unit 2: Cell Structure and Function
+   ===================================================================== */
+const ROOM = {
+  id: 'apbio-u2',
+  salt: 'apbio-u2::',
+  title: "VECTOR's Shrink Ray",
+  intro: `The class robot vacuum, <b>VECTOR</b>, found the biology department's (totally real) shrink ray. It has shrunk your whole team
+    and locked you inside <b>Cell Block 2</b>, a giant animal cell it built from spare parts. Your guides: <b>Gerald</b>, a garden slug with
+    a deep fear of salt, and <b>Captain Rhodo</b>, a bacterium who swears his family moved into eukaryotic cells about two billion years ago.
+    Five membrane-bound doors stand between you and normal size.`,
+  finaleCipher: [115,98,47,114,102,45,38,126,61], // teacher password, XOR-locked with the final door's code
+  wrongLines: [
+    "Denied! That answer is impermeable to my lock.",
+    "Nope. Your code just got exocytosed.",
+    "Wrong. That code has a water potential of zero... and so does your score.",
+    "Incorrect! Even my lysosomes couldn't digest that answer.",
+    "That's not it. Try some facilitated diffusion of ideas with your team."
+  ],
+  doors: [
+    /* ---------------- DOOR 1 ---------------- */
+    {
+      name: 'Shipping Department', tag: 'Topics 2.1, 2.2, 2.10 · Organelles & the endomembrane system',
+      render: () => `
+        ${say(`Cell Block 2 runs a shipping business. Its best seller is <b>Lintase</b>, a digestive enzyme that the cell <b>secretes</b> to dissolve dust bunnies. Trace Lintase's path in the six steps below. Each step's structure has a number. Convert the numbers to letters (<b>A = 1, B = 2, … Z = 26</b>) to spell a <b>6-letter word</b>.`)}
+        <div class="card fd">${cellDiagram()}</div>
+        <ol class="problems" style="margin-top:12px">
+          <li><span class="slot">1</span><span>The structure where the Lintase <b>gene</b> is stored and copied into mRNA.</span></li>
+          <li><span class="slot">2</span><span>The structure that <b>synthesizes</b> the Lintase polypeptide while threading it into the ER.</span></li>
+          <li><span class="slot">3</span><span>The compartment where the new polypeptide <b>folds</b> and gets its first modifications.</span></li>
+          <li><span class="slot">4</span><span>The organelle that further <b>modifies, sorts, and packages</b> the protein.</span></li>
+          <li><span class="slot">5</span><span>The structure that <b>carries</b> the finished protein to the cell surface.</span></li>
+          <li><span class="slot">6</span><span>The structure Lintase passes through when it <b>leaves</b> the cell by exocytosis.</span></li>
+        </ol>`,
+      fields: [{ label: 'Code word', w: 200, kind: 'word' }],
+      answers: ['1dmmoja99pj'],
+      hints: [
+        'Secreted proteins travel the endomembrane system: nucleus → ribosome on the ER → rough ER → Golgi → vesicle → plasma membrane.',
+        'Careful: proteins destined for secretion are made by ribosomes <b>bound</b> to the rough ER, not by free ribosomes in the cytosol. The smooth ER makes lipids and detoxifies; it has no ribosomes.'
+      ],
+      success: 'Package delivered! Door 1 unlocked.'
+    },
+    /* ---------------- DOOR 2 ---------------- */
+    {
+      name: 'Shrink-Ray Relay', tag: 'Topic 2.3 · Cell size & SA:V · team relay',
+      roles: true,
+      render: () => `
+        ${say(`My shrink ray can reshape any cell, but it <b>never changes the volume</b>. I designed four box-shaped cells. Each player picks a card on their own Chromebook. Card A goes first; everyone else needs Card A's numbers. Team of 3? Whoever finishes first also takes Card D.`)}
+        <p class="note"><b>Formulas:</b> surface area of a rectangular box = 2(lw + lh + wh) · volume = l·w·h · SA:V = surface area ÷ volume. All lengths in µm.
+        <b>Enter every SA:V × 10, rounded to the nearest whole number</b> (for example, 1.48 µm⁻¹ → 15).</p>
+        <div class="roles" data-roles></div>
+        <div data-rolecard></div>`,
+      roleCards: {
+        A: `<div class="card rolecard"><h4>Card A · The Original Cube</h4>
+            <div class="fd">${boxSketch(4, 4, 4, ['4 µm', '4 µm', '4 µm'], 14)}</div>
+            <p>VECTOR's starting cell is a <b>cube 4 µm on each edge</b>.</p>
+            <p><b>Your question:</b> What is its SA:V (× 10)? Then tell everyone the cube's <b>volume</b> and <b>edge length</b>.</p></div>`,
+        B: `<div class="card rolecard"><h4>Card B · The Pancake</h4>
+            <div class="fd">${boxSketch(8, 8, 1, ['8 µm', '? µm', '8 µm'])}</div>
+            <p>The shrink ray flattens Card A's cube into a thin square slab with a base of <b>8 µm × 8 µm</b>. Its volume is the <b>same</b> as Card A's cube.</p>
+            <p><b>Your question:</b> How thick is the slab? Then find the slab's SA:V (× 10).</p></div>`,
+        C: `<div class="card rolecard"><h4>Card C · The Noodle</h4>
+            <div class="fd">${boxSketch(16, 2, 2, ['16 µm', '? µm', '? µm'], 8)}</div>
+            <p>The shrink ray stretches Card A's cube into a long rod, <b>16 µm long</b>, with a <b>square</b> cross-section. Its volume is the <b>same</b> as Card A's cube.</p>
+            <p><b>Your question:</b> What is the width of the square end? Then find the rod's SA:V (× 10).</p></div>`,
+        D: `<div class="card rolecard"><h4>Card D · The Splitter</h4>
+            <div class="fd">${boxSketch(2, 2, 2, ['? µm', '? µm', '? µm'], 18)}</div>
+            <p>Instead of reshaping it, the shrink ray slices Card A's cube into <b>8 identical smaller cubes</b> (the total volume does not change), like a cell dividing three times.</p>
+            <p><b>Your question:</b> What is the edge length of each small cube? Then find the SA:V (× 10) of the set of 8 cubes.</p></div>`
+      },
+      fields: [
+        { label: 'A · cube SA:V ×10', w: 120, kind: 'num' }, { label: 'B · slab SA:V ×10', w: 120, kind: 'num' },
+        { label: 'C · rod SA:V ×10', w: 120, kind: 'num' }, { label: 'D · 8 cubes SA:V ×10', w: 120, kind: 'num' }
+      ],
+      answers: ['1gocupw36hi'],
+      hints: [
+        'Card A: SA = 6 × 4² = 96 µm², V = 4³ = 64 µm³. Everyone else: your shape also has V = 64 µm³, so use it to find the missing dimension.',
+        'B: 8 × 8 × t = 64. C: 16 × w × w = 64. D: 8 small cubes with total volume 64 means each is 8 µm³. The SA:V of identical cubes is the same as the SA:V of one of them.'
+      ],
+      success: 'Flatter, thinner, smaller: more surface for every bit of volume. Door 2 unlocked.'
+    },
+    /* ---------------- DOOR 3 ---------------- */
+    {
+      name: 'Bouncer at the Bilayer', tag: 'Topics 2.4–2.7, 2.9 · Membranes & transport',
+      render: () => `
+        ${say(`I'm the bouncer at the plasma membrane, and every guest wears a numbered badge. Sort the guests by <b>how they cross</b>. Then, for each category, <b>add up the badge numbers</b>. Four sums, one lock.`)}
+        ${[
+          [44, 'Glucose moves <b>into</b> an intestinal lining cell <b>against</b> its concentration gradient, through a protein that also lets Na⁺ flow in <b>down</b> its gradient.'],
+          [17, 'An estrogen (steroid hormone) molecule crosses the plasma membrane of a target cell.'],
+          [31, 'K⁺ ions flow <b>out</b> of a neuron, down their concentration gradient, through open potassium channels.'],
+          [53, 'A pancreatic cell releases insulin packaged in vesicles that fuse with the plasma membrane.'],
+          [12, 'O₂ moves from the air in a lung into a cell lining the alveolus, where O₂ concentration is lower.'],
+          [26, 'Glucose moves <b>into</b> a red blood cell, down its concentration gradient, through a GLUT1 carrier protein. No ATP is used.'],
+          [38, 'A protein uses ATP to move 3 Na⁺ out of a cell and 2 K⁺ in, both against their gradients.'],
+          [23, 'Water rushes into a kidney cell through aquaporins.'],
+          [45, 'A macrophage wraps its membrane around a bacterium and pulls it inside a vacuole.']
+        ].map(([n, t]) => `<div class="stmt"><span class="num">${n}</span><span>${t}</span></div>`).join('')}
+        <p class="note">Every guest fits exactly one category. "Active transport" includes any membrane protein that moves something against its gradient, whether it uses ATP directly or the energy of another ion's gradient.</p>`,
+      fields: [
+        { label: 'Simple diffusion', w: 120, kind: 'num' }, { label: 'Facilitated diffusion', w: 120, kind: 'num' },
+        { label: 'Active transport', w: 120, kind: 'num' }, { label: 'Endo-/exocytosis', w: 120, kind: 'num' }
+      ],
+      answers: ['2g9tyzs7m7q'],
+      hints: [
+        'Small nonpolar molecules (O₂, steroids) slip straight through the phospholipid tails. Ions, glucose, and large amounts of water need a channel or carrier protein.',
+        'Down the gradient through a protein = facilitated diffusion (3 guests). Against the gradient = active transport (2 guests, one of them cotransport). Vesicles = endo/exocytosis (2 guests).'
+      ],
+      success: 'The bouncer nods. You are on the list. Door 3 unlocked.'
+    },
+    /* ---------------- DOOR 4 ---------------- */
+    {
+      name: "Gerald's Potato Panic", tag: 'Topics 2.8, 2.9 · Tonicity & water potential · lab FRQ relay',
+      roles: true,
+      render: () => `
+        ${say(`Gerald the garden slug wants to snack on a potato slice soaked in salt water. Gerald is terrified of salt. Your team will predict what happens to the potato using <b>real lab data</b>. Each player picks a card. Team of 3? Whoever finishes first also takes Card D.`, 'mad')}
+        <p class="note"><b>AP equations:</b> Ψ = Ψ<sub>P</sub> + Ψ<sub>S</sub> · Ψ<sub>S</sub> = −iCRT · R = 0.0831 L·bar/(mol·K) · T in kelvins (K = °C + 273). Open beakers have Ψ<sub>P</sub> = 0.</p>
+        <div class="roles" data-roles></div>
+        <div data-rolecard></div>`,
+      roleCards: {
+        A: `<div class="card rolecard"><h4>Card A · The Lab Analyst</h4>
+            <p>Students weighed potato cores, soaked them in sucrose solutions for 24 hours at 22 °C, and weighed them again. Percent change in mass:</p>
+            <table class="data"><tr><th>Sucrose (M)</th><th>Trial 1</th><th>Trial 2</th><th>Trial 3</th></tr>
+              <tr><td>0.0</td><td>+15.9%</td><td>+17.2%</td><td>+16.1%</td></tr>
+              <tr><td>0.2</td><td>+7.5%</td><td>+6.1%</td><td>+7.1%</td></tr>
+              <tr><td>0.4</td><td>−1.6%</td><td>−2.8%</td><td>−1.9%</td></tr>
+              <tr><td>0.6</td><td>−12.4%</td><td>−11.0%</td><td>−12.0%</td></tr>
+              <tr><td>0.8</td><td>−19.1%</td><td>−20.4%</td><td>−19.3%</td></tr></table>
+            <p><b>Your question:</b> Average the trials, graph mean % change vs. sucrose molarity, and draw a best-fit line. At what molarity is there <b>no net change</b> in mass? Enter it <b>× 100</b> (e.g., 0.29 M → 29). Tell Card B.</p></div>`,
+        B: `<div class="card rolecard"><h4>Card B · The Potato Whisperer</h4>
+            <p>At the molarity from Card A, the potato cells and the sucrose solution are <b>isotonic</b>: there is no net movement of water, so their water potentials are equal. Sucrose does not ionize (i = 1). The lab was at 22 °C.</p>
+            <p><b>Your question:</b> What is the <b>water potential of the potato cells</b>, in bars? Enter its size (no negative sign) <b>× 10</b>, nearest whole number (e.g., −6.43 bars → 64). Tell Card D.</p></div>`,
+        C: `<div class="card rolecard"><h4>Card C · The Salt Chemist</h4>
+            <p>Gerald's soaking solution is <b>0.10 M NaCl</b> in an open beaker at 22 °C. Assume NaCl dissociates completely.</p>
+            <p><b>Your question:</b> What is the <b>water potential of the salt solution</b>, in bars? Enter its size (no negative sign) <b>× 10</b>, nearest whole number. Tell Card D.</p></div>`,
+        D: `<div class="card rolecard"><h4>Card D · The Predictor</h4>
+            <p>Gerald drops a fresh potato slice into the salt solution. You need the water potentials from <b>Card B</b> (potato cells) and <b>Card C</b> (salt solution). Remember: both numbers are negative.</p>
+            <p><b>Your question:</b> What happens to the slice's mass at first? Enter the code:</p>
+            ${opts([['1', 'It gains mass: water has a higher water potential outside, so net water moves into the cells.'], ['2', 'It loses mass: water has a higher water potential inside the cells, so net water moves out.'], ['3', 'No change: the cells and solution are isotonic.']])}</div>`
+      },
+      fields: [
+        { label: 'A · molarity ×100', w: 120, kind: 'num' }, { label: 'B · |Ψ potato| ×10', w: 120, kind: 'num' },
+        { label: 'C · |Ψ salt| ×10', w: 120, kind: 'num' }, { label: 'D · code', w: 90, kind: 'num' }
+      ],
+      answers: ['2dttbp5eu8p','1jb6m6fobsq','2evccv1io3c','1hppx6rzyms','7kexvq5ywx','11x7d3vok2l','2cslf3rmw02','12o9u2px6e2','1alxeu1lnl5','2ckqmbr0hzm','234vu0onhfe','1zynw48hdl3','c22zzzmspy','1r30t9gswve','a8yv6i4akj','q6rcejojaz','rnh9eycvdz','12i4ru92cnu','17v6p6esr2n','1gkqhtk4hdd','x71k9j8xqj','2flonkch0y0','1gdjzyfwppr','1j6jvhvka8l','142tpu0ix77','teq1ry0c8z','1v0liyvn2sf','maa3ul4nl','4kmc8wrot5','628u4rs6m9','1ujd4upsukl','sqmknti1lw','1snug5qqrv5','mqtmymz96x','1n76q5obre2','1i5v8szgmxb','1dw8k25yhtq','2cbgn96eey5','1zhvs24ali3','15s32gm4uhx','rbvkc2a6n7','1lv89lx435d','rnxs09ajd4','1t73bwlp7mb','22jpug4u9j9','aexxskgs66','y0j1vbizqd','e4vbghgk8d','11gb0vla062','1dmprb9yx1y','2fkoncgoemw','1s7yzei474','ukzb9zt5ui','lq1bpd84aq','10ddwo3g1n4','14muc5wbymu','54uvwdl3sh','1bcbslinmyp','eigxza6gmd','skr722hqt9'],
+      hints: [
+        'Card A: the best-fit line crosses 0% between 0.2 M and 0.4 M. Card B: Ψ = Ψ<sub>S</sub> = −iCRT with i = 1 and T = 295 K. Card C: NaCl makes 2 particles, so i = 2.',
+        'The no-change point is a little above 0.3 M. Water moves from higher (less negative) water potential to lower (more negative) water potential, so put the negative signs back on Cards B and C before comparing.'
+      ],
+      success: 'Gerald watches the slice plump up and decides salt water is, perhaps, not so scary. Door 4 unlocked.'
+    },
+    /* ---------------- DOOR 5 ---------------- */
+    {
+      name: "Captain Rhodo's Family Tree", tag: 'Topics 2.10–2.11 · Compartmentalization & endosymbiosis',
+      render: () => `
+        ${say(`Last door! Captain Rhodo insists that mitochondria are his long-lost relatives. Prove it, or stay small forever. This tree was built by comparing <b>ribosomal RNA (rRNA) gene sequences</b>. Some genes came from free-living prokaryotes; others came from organelles or nuclei of eukaryotic cells.`, 'mad')}
+        <div class="card fd">${rRNATree()}</div>
+        <ol class="problems" style="margin-top:12px">
+          <li><span class="slot">1</span><span>Which <b>free-living prokaryote</b> is most closely related to the human mitochondrial rRNA gene? (leaf letter)</span></li>
+          <li><span class="slot">2</span><span>Which <b>free-living prokaryote</b> is most closely related to the corn chloroplast rRNA gene? (leaf letter)</span></li>
+          <li><span class="slot">3</span><span>Which <b>prokaryote</b> is most closely related to the eukaryotic <b>nuclear</b> rRNA genes? (leaf letter)</span></li>
+          <li><span class="slot">4</span><span>Which observation, <b>if it were found</b>, would most <b>weaken</b> the claim that mitochondria descended from engulfed bacteria?
+            ${opts([['K', 'Mitochondria contain their own circular DNA.'], ['D', 'Mitochondria divide by a process that resembles binary fission.'], ['P', 'Mitochondrial rRNA sequences are most similar to the nuclear rRNA sequences of the same eukaryote.'], ['F', 'Mitochondrial ribosomes resemble bacterial ribosomes more than the eukaryote\'s own cytosolic ribosomes.']])}</span></li>
+        </ol>
+        <p class="note">The four letters spell the code word. Then count: how many leaves on the tree are genes from a eukaryote's <b>organelle or nucleus</b>?</p>`,
+      fields: [{ label: 'Code word (Q1–Q4)', w: 170, kind: 'word' }, { label: 'Organelle + nuclear leaves', w: 120, kind: 'num' }],
+      answers: ['2d9i2yw6c5n'],
+      hints: [
+        'On a tree, the closest relative is the leaf that shares the most recent branch point (node) with your leaf. Mitochondria cluster with one group of bacteria; chloroplasts with another.',
+        'Endosymbiosis predicts organelle genes look bacterial, not like the host\'s nuclear genes. For the count: include every mitochondrial, chloroplast, and nuclear gene on the tree; skip the free-living prokaryotes.'
+      ],
+      success: 'NOOO! My shrink ray is reversing!'
+    }
+  ]
+};
+
+/* =====================================================================
+   ENGINE
+   ===================================================================== */
+const KEY = 'escape:' + ROOM.id;
+const store = {
+  get() { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch (e) { return null; } },
+  set(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} },
+  clear() { try { localStorage.removeItem(KEY); } catch (e) {} }
+};
+let S = store.get() || { started: false, team: '', size: 4, start: 0, end: 0, door: 0, hints: {}, wrong: 0, role: 'A', timer: null };
+const save = () => store.set(S);
+const $ = (q, el = document) => el.querySelector(q);
+const fmt = ms => { const s = Math.max(0, Math.floor(ms / 1000)); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
+const hintsUsed = () => Object.values(S.hints).reduce((a, b) => a + b, 0);
+
+function timerLive() { return S.timer && S.timer.end && S.timer.day === dayKey(); }
+function timeUp() { return timerLive() && Date.now() >= S.timer.end && !S.end; }
+function hud() {
+  const t = S.started ? fmt((S.end || Date.now()) - S.start) : '00:00';
+  let chip;
+  if (timerLive() && !S.end) { const left = S.timer.end - Date.now();
+    chip = `<button class="tchip ${left < 5 * 60000 ? 'low' : ''}" id="tchip" title="Class timer">⏳ Class <b>${left > 0 ? fmt(left) : '0:00'}</b></button>`; }
+  else chip = `<button class="tchip" id="tchip" title="Enter class timer code">⏲ ${S.timer && S.timer.off && S.timer.day === dayKey() ? 'Timer off' : 'Timer code'}</button>`;
+  $('#hud').innerHTML = `${chip}<span title="Your team's time">⏱ <b>${t}</b></span><span title="Hints used">💡 <b>${hintsUsed()}</b></span><span title="Wrong codes">✖ <b>${S.wrong}</b></span>`;
+  $('#tchip').onclick = () => { $('#timerBox').classList.toggle('on'); $('#timerInput').focus(); };
+}
+let shownTimeUp = false;
+setInterval(() => { hud(); const up = timeUp() && S.started; if (up !== shownTimeUp) render(); }, 1000);
+function applyTimerCode(raw, msgEl) {
+  const r = parseTimerCode(raw);
+  if (!r) { if (msgEl) { msgEl.style.color = '#ffb3bd'; msgEl.textContent = "That timer code isn't valid. Check the board and try again."; } return false; }
+  S.timer = r.type === 'off' ? { off: true, end: null, day: dayKey() } : { off: false, end: r.end, day: dayKey() };
+  save();
+  if (msgEl) { msgEl.style.color = '#9ff0b8'; msgEl.textContent = r.type === 'off' ? 'Timer turned off. Keep going!' : `Timer set: ends at ${new Date(r.end).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}.`; }
+  render(); return true;
+}
+
+function hall() {
+  $('#hall').innerHTML = ROOM.doors.map((d, i) => {
+    const cls = i < S.door ? 'open' : (i === S.door && S.started && !S.end ? 'current' : '');
+    return `<div class="door-pill ${cls}"><span class="lock"></span><span class="n">${i + 1}</span>${d.name}</div>`;
+  }).join('');
+}
+
+function normalize(v, f) {
+  v = String(v).trim();
+  if (f.kind === 'word') return v.toUpperCase().replace(/[^A-Z]/g, '');
+  const m = v.replace(/,/g, '').match(/-?\d*\.?\d+/); // first number only, so units like "W/m2" are ignored
+  if (!m) return '';
+  const n = parseFloat(m[0]);
+  const r = f.roundTo || 1;
+  return String(Math.round(Math.abs(n) / r) * r);
+}
+
+function render() {
+  hud(); hall();
+  const st = $('#stage');
+  if (!S.started) return renderIntro(st);
+  if (S.door >= ROOM.doors.length) { shownTimeUp = false; return renderFinale(st); }
+  shownTimeUp = timeUp();
+  if (shownTimeUp) return renderTimeUp(st);
+  const i = S.door, d = ROOM.doors[i];
+  st.innerHTML = `<span class="tag">Door ${i + 1} of ${ROOM.doors.length} · ${d.tag}</span><h2>${d.name}</h2>${d.render()}
+    <div class="lockbox">
+      <div class="lbl">🔒 Door ${i + 1} lock</div>
+      <form class="fields" id="lockForm" autocomplete="off">
+        ${d.fields.map((f, k) => `<label class="field">${f.label}<input style="--w:${f.w}px" name="f${k}" inputmode="${f.kind === 'num' ? 'decimal' : 'text'}" required></label>`).join('')}
+        <button class="btn" type="submit">Try code</button>
+      </form>
+      <div class="feedback" id="fb" aria-live="polite"></div>
+      <div class="hints no-print">${d.hints.map((h, k) => `<button class="btn ghost" data-hint="${k}" ${k > (S.hints[i] || 0) ? 'disabled style="opacity:.4"' : ''}>💡 Hint ${k + 1}</button>`).join('')}</div>
+      <div id="hintOut">${d.hints.slice(0, S.hints[i] || 0).map(h => `<div class="hinttext">${h}</div>`).join('')}</div>
+    </div>`;
+  if (d.roles) setupRoles(st, d);
+  $('#lockForm').addEventListener('submit', e => { e.preventDefault(); check(d, i); });
+  st.querySelectorAll('[data-hint]').forEach(b => b.addEventListener('click', () => {
+    const k = +b.dataset.hint; if ((S.hints[i] || 0) <= k) { S.hints[i] = k + 1; save(); render(); }
+  }));
+  const first = st.querySelector('#lockForm input'); if (first && document.activeElement === document.body) first.focus({ preventScroll: true });
+}
+
+function setupRoles(st, d) {
+  const box = $('[data-roles]', st), out = $('[data-rolecard]', st);
+  const keys = Object.keys(d.roleCards);
+  const draw = () => {
+    box.innerHTML = '<span class="note" style="align-self:center;margin-right:4px">I am holding:</span>' + keys.map(k => `<button type="button" class="${k === S.role ? 'on' : ''}" data-r="${k}">Card ${k}</button>`).join('');
+    out.innerHTML = d.roleCards[S.role] || '';
+    box.querySelectorAll('[data-r]').forEach(b => b.addEventListener('click', () => { S.role = b.dataset.r; save(); draw(); }));
+  };
+  draw();
+}
+
+function check(d, i) {
+  const form = $('#lockForm'), fb = $('#fb');
+  const vals = d.fields.map((f, k) => normalize(form.elements['f' + k].value, f));
+  const h = cyrb53(ROOM.salt + 'd' + (i + 1) + '::' + vals.join('|'));
+  if (d.answers.includes(h)) {
+    S.door = i + 1;
+    if (S.door >= ROOM.doors.length) { S.end = Date.now(); S.key = vals.join('|'); }
+    save();
+    fb.className = 'feedback good'; fb.textContent = '✔ ' + d.success;
+    form.querySelector('button').disabled = true;
+    setTimeout(render, 1400);
+  } else {
+    S.wrong++; save(); hud();
+    fb.className = 'feedback bad';
+    fb.textContent = '✖ ' + ROOM.wrongLines[Math.floor(Math.random() * ROOM.wrongLines.length)];
+    form.classList.remove('shake'); void form.offsetWidth; form.classList.add('shake');
+  }
+}
+
+function renderIntro(st) {
+  st.innerHTML = `<div class="center">
+      <span class="tag">Escape Room · Teams of 3–4</span>
+      <h2>${ROOM.title}</h2></div>
+      ${say(ROOM.intro + ' <br><br>The clock starts when you press the button. Hints are free, but I <i>count</i> them. Mwahaha.')}
+      <div class="setup">
+        <div><label for="team">Team name</label><input id="team" maxlength="40" placeholder="e.g., The Golgi Getters" value="${S.team || ''}"></div>
+        <div><label for="names">Team members</label><input id="names" maxlength="120" placeholder="First names" value="${S.names || ''}"></div>
+        <div><label for="size">Players</label><select id="size"><option value="3">3 players</option><option value="4" selected>4 players</option></select></div>
+        <div><label for="tcode">Class timer code <span class="note">(from the board, if your teacher posted one)</span></label><input id="tcode" maxlength="12" placeholder="e.g., 1452-AB" style="font-family:var(--mono);text-transform:uppercase"></div>
+        <div id="tcodeMsg" class="note"></div>
+        <p class="note" style="margin:0">Every player opens this page on their own Chromebook and enters the <b>same</b> team name. Bring paper, a pencil, and a calculator.</p>
+        <button class="btn dark" id="go">Start the clock ▶</button>
+      </div>`;
+  $('#size').value = S.size || 4;
+  $('#go').addEventListener('click', () => {
+    const tc = $('#tcode').value.trim();
+    if (tc && !parseTimerCode(tc)) { $('#tcodeMsg').style.color = '#d1495b'; $('#tcodeMsg').textContent = "That timer code isn't valid. Fix it or leave it blank."; return; }
+    S.team = $('#team').value.trim() || 'Unnamed Team'; S.names = $('#names').value.trim(); S.size = +$('#size').value;
+    if (tc) { const r = parseTimerCode(tc); S.timer = r.type === 'off' ? { off: true, end: null, day: dayKey() } : { off: false, end: r.end, day: dayKey() }; }
+    S.started = true; S.start = Date.now(); save(); render();
+  });
+}
+
+function renderFinale(st) {
+  const t = fmt(S.end - S.start);
+  st.innerHTML = `<div class="center">
+      ${say(`Fine. FINE. You escaped. I'll go back to vacuuming. Show this screen to your teacher.`, 'happy')}
+      <div class="cert">
+        <div class="tag">Certificate of Escape</div>
+        <h2 style="margin:4px 0">${escapeHtml(S.team)}</h2>
+        <div class="note">${escapeHtml(S.names || '')}</div>
+        <div class="stats"><div>Time<b>${t}</b></div><div>Hints<b>${hintsUsed()}</b></div><div>Wrong codes<b>${S.wrong}</b></div></div>
+        <div class="note">Finish code (your teacher types this in)</div>
+        <div class="fcode">${finishCode(S.end, Math.min(99, hintsUsed()))}</div>
+        <div class="note" style="margin-top:8px">Teacher password</div>
+        <div class="pw">${unlockPw()}</div>
+        <div class="note">${new Date(S.end).toLocaleString()} · AP Biology · Unit 2: Cell Structure and Function · ${ROOM.title}</div>
+      </div>
+      <p class="no-print"><button class="btn dark" onclick="window.print()">Print certificate</button></p>
+    </div>`;
+}
+function renderTimeUp(st) {
+  const opened = S.door;
+  st.innerHTML = `<div class="timeup">
+      ${say(`Beep boop... <b>TIME'S UP!</b> The lab stays locked. Show this screen to your teacher.`, 'happy')}
+      <h2>⏰ Time's Up</h2>
+      <div class="cert">
+        <h2 style="margin:4px 0;color:var(--ink);font-size:24px">${escapeHtml(S.team)}</h2>
+        <div class="note">${escapeHtml(S.names || '')}</div>
+        <div class="stats"><div>Doors opened<b>${opened} / ${ROOM.doors.length}</b></div><div>Hints<b>${hintsUsed()}</b></div><div>Wrong codes<b>${S.wrong}</b></div></div>
+        <div class="note">Stopped on Door ${Math.min(opened + 1, ROOM.doors.length)}: ${ROOM.doors[Math.min(opened, ROOM.doors.length - 1)].name}</div>
+      </div>
+      <p class="note">Did your teacher give more time? Type the new code from the board:</p>
+      <form id="moreTime" autocomplete="off" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <input id="moreInput" placeholder="1505-AB" style="font-family:var(--mono);font-size:20px;letter-spacing:.1em;width:180px;padding:8px 10px;border-radius:9px;border:2px solid var(--line);text-transform:uppercase">
+        <button class="btn dark" type="submit">Keep going</button></form>
+      <div id="moreMsg" class="note" style="margin-top:6px"></div>
+    </div>`;
+  $('#moreTime').addEventListener('submit', e => { e.preventDefault(); const m = $('#moreMsg'); applyTimerCode($('#moreInput').value, m); if (m.textContent.startsWith('That')) m.style.color = '#d1495b'; });
+}
+function pwKey(s) { return cyrb53(ROOM.salt + 'pw1::' + s) + cyrb53('pw2::' + s + ROOM.salt) + cyrb53(s + '::pw3' + ROOM.salt); }
+function unlockPw() { const k = pwKey(S.key || ''); return ROOM.finaleCipher.map((b, i) => String.fromCharCode(b ^ k.charCodeAt(i % k.length))).join(''); }
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+$('#timerForm').addEventListener('submit', e => { e.preventDefault(); if (applyTimerCode($('#timerInput').value, $('#timerMsg'))) { $('#timerInput').value = ''; setTimeout(() => $('#timerBox').classList.remove('on'), 1600); } });
+$('#timerClose').addEventListener('click', () => $('#timerBox').classList.remove('on'));
+$('#resetBtn').addEventListener('click', () => $('#confirmBox').classList.add('on'));
+$('#resetNo').addEventListener('click', () => $('#confirmBox').classList.remove('on'));
+$('#resetYes').addEventListener('click', () => { store.clear(); S = { started: false, team: '', size: 4, start: 0, end: 0, door: 0, hints: {}, wrong: 0, role: 'A', timer: null }; $('#confirmBox').classList.remove('on'); render(); });
+render();
+</script>
+</body>
+</html>

@@ -240,7 +240,7 @@ const ROOM = {
   intro: `The class robot vacuum, <b>VECTOR</b>, has gotten a firmware update and a big ego. It has locked
     the lab doors and won't let anyone out until your team proves you understand <b>forces</b>.
     Five doors stand between you and the hallway. Each one needs a code.`,
-  finaleCipher: [46,62,104,39,96,100,39], // teacher password, XOR-locked with the final door's code
+  finaleCipher: [120,44,41,53,99,32,120], // teacher password, XOR-locked with the final door's code
   wrongLines: [
     "Nope. That code has a net force of zero on my locks.",
     "Incorrect. I remain at rest, and so does this door.",
@@ -434,8 +434,9 @@ function hall() {
 function normalize(v, f) {
   v = String(v).trim();
   if (f.kind === 'word') return v.toUpperCase().replace(/[^A-Z]/g, '');
-  const n = parseFloat(v.replace(/,/g, '').replace(/[^0-9.\-]/g, ''));
-  if (isNaN(n)) return '';
+  const m = v.replace(/,/g, '').match(/-?\d*\.?\d+/); // first number only, so units like "W/m2" are ignored
+  if (!m) return '';
+  const n = parseFloat(m[0]);
   const r = f.roundTo || 1;
   return String(Math.round(Math.abs(n) / r) * r);
 }
@@ -558,7 +559,8 @@ function renderTimeUp(st) {
     </div>`;
   $('#moreTime').addEventListener('submit', e => { e.preventDefault(); const m = $('#moreMsg'); applyTimerCode($('#moreInput').value, m); if (m.textContent.startsWith('That')) m.style.color = '#d1495b'; });
 }
-function unlockPw() { const k = ROOM.salt + (S.key || ''); return ROOM.finaleCipher.map((b, i) => String.fromCharCode(b ^ k.charCodeAt(i % k.length))).join(''); }
+function pwKey(s) { return cyrb53(ROOM.salt + 'pw1::' + s) + cyrb53('pw2::' + s + ROOM.salt) + cyrb53(s + '::pw3' + ROOM.salt); }
+function unlockPw() { const k = pwKey(S.key || ''); return ROOM.finaleCipher.map((b, i) => String.fromCharCode(b ^ k.charCodeAt(i % k.length))).join(''); }
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
 $('#timerForm').addEventListener('submit', e => { e.preventDefault(); if (applyTimerCode($('#timerInput').value, $('#timerMsg'))) { $('#timerInput').value = ''; setTimeout(() => $('#timerBox').classList.remove('on'), 1600); } });

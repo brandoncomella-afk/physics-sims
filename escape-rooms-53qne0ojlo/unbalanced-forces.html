@@ -302,7 +302,7 @@ const ROOM = {
     <b>Elevator Operator Supreme</b>. It plays smooth jazz, refuses to stop at your floor, and says it will only let you out
     if your team can handle <b>unbalanced forces</b>. Five doors stand between you and the exit. Each one needs a code.
     Use <b>g = 9.8 N/kg</b> (9.8 m/s²) everywhere in this room unless a door says otherwise.`,
-  finaleCipher: [51,53,99,38,39,45,47], // teacher password, XOR-locked with the final door's code
+  finaleCipher: [103,39,118,33,37,39,124], // teacher password, XOR-locked with the final door's code
   wrongLines: [
     "Denied. Your answer has an unbalanced force, and it's pointing the wrong way.",
     "Nope. That code has too much friction to get through my door.",
@@ -513,8 +513,9 @@ function hall() {
 function normalize(v, f) {
   v = String(v).trim();
   if (f.kind === 'word') return v.toUpperCase().replace(/[^A-Z]/g, '');
-  const n = parseFloat(v.replace(/,/g, '').replace(/[^0-9.\-]/g, ''));
-  if (isNaN(n)) return '';
+  const m = v.replace(/,/g, '').match(/-?\d*\.?\d+/); // first number only, so units like "W/m2" are ignored
+  if (!m) return '';
+  const n = parseFloat(m[0]);
   const r = f.roundTo || 1;
   return String(Math.round(Math.abs(n) / r) * r);
 }
@@ -637,7 +638,8 @@ function renderTimeUp(st) {
     </div>`;
   $('#moreTime').addEventListener('submit', e => { e.preventDefault(); const m = $('#moreMsg'); applyTimerCode($('#moreInput').value, m); if (m.textContent.startsWith('That')) m.style.color = '#d1495b'; });
 }
-function unlockPw() { const k = ROOM.salt + (S.key || ''); return ROOM.finaleCipher.map((b, i) => String.fromCharCode(b ^ k.charCodeAt(i % k.length))).join(''); }
+function pwKey(s) { return cyrb53(ROOM.salt + 'pw1::' + s) + cyrb53('pw2::' + s + ROOM.salt) + cyrb53(s + '::pw3' + ROOM.salt); }
+function unlockPw() { const k = pwKey(S.key || ''); return ROOM.finaleCipher.map((b, i) => String.fromCharCode(b ^ k.charCodeAt(i % k.length))).join(''); }
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
 $('#timerForm').addEventListener('submit', e => { e.preventDefault(); if (applyTimerCode($('#timerInput').value, $('#timerMsg'))) { $('#timerInput').value = ''; setTimeout(() => $('#timerBox').classList.remove('on'), 1600); } });

@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Escape Room · AP Chemistry · Unit 9: Thermodynamics and Electrochemistry · VECTOR's Dead Battery</title>
+<style>
+:root{
+  --ink:#14213d; --ink-2:#3d4a66; --paper:#fbf8f1; --card:#ffffff; --line:#d9d2c3;
+  --teal:#0f8b8d; --teal-d:#0b6b6d; --amber:#f4a259; --red:#d1495b; --green:#3a9d5d;
+  --night:#0d1b2a; --night-2:#1b263b; --glow:#7ee8e0;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  --sans:"Avenir Next","Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:var(--sans);color:var(--ink);background:var(--night);
+  background-image:linear-gradient(rgba(126,232,224,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(126,232,224,.06) 1px,transparent 1px);
+  background-size:28px 28px;min-height:100vh;line-height:1.5}
+.wrap{max-width:980px;margin:0 auto;padding:20px 18px 60px}
+header.top{display:flex;align-items:center;gap:14px;color:#e8f1f2;flex-wrap:wrap}
+header.top .unit{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--glow)}
+header.top h1{margin:0;font-size:26px;letter-spacing:.01em}
+header.top .spacer{flex:1}
+.hud{display:flex;gap:10px;font-family:var(--mono);font-size:13px}
+.hud span{background:var(--night-2);border:1px solid #2f3e5a;color:#e8f1f2;padding:5px 10px;border-radius:8px}
+.hud b{color:var(--glow);font-weight:600}
+
+/* progress hallway */
+.hall{display:flex;gap:8px;margin:18px 0 18px;flex-wrap:wrap}
+.door-pill{flex:1;min-width:120px;background:var(--night-2);border:1px solid #2f3e5a;color:#8fa0b8;border-radius:10px;padding:8px 10px;font-size:13px;display:flex;gap:8px;align-items:center}
+.door-pill .n{font-family:var(--mono);font-size:11px;border:1px solid currentColor;border-radius:5px;padding:0 5px}
+.door-pill.open{color:#bff3ee;border-color:var(--teal)}
+.door-pill.current{color:#fff;border-color:var(--amber);box-shadow:0 0 0 2px rgba(244,162,89,.25)}
+.door-pill.open .lock::before{content:"🔓"} .door-pill .lock::before{content:"🔒"}
+
+.panel{background:var(--paper);border-radius:16px;padding:22px 24px;box-shadow:0 18px 50px rgba(0,0,0,.35);position:relative}
+.panel h2{margin:0 0 4px;font-size:22px}
+.tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;background:#e7f4f4;color:var(--teal-d);border-radius:6px;padding:2px 8px;margin-bottom:10px}
+.vector{text-align:left;display:flex;gap:14px;align-items:flex-start;background:var(--night);color:#e8f1f2;border-radius:12px;padding:12px 14px;margin:10px 0 16px}
+.vector svg{flex:0 0 auto}
+.vector p{margin:0}
+.vector .who{font-family:var(--mono);font-size:11px;color:var(--glow);letter-spacing:.12em;text-transform:uppercase}
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.card h4{margin:0 0 6px;font-size:15px}
+.badge{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;background:var(--ink);color:#fff;font-weight:700;font-family:var(--mono);margin-right:8px}
+.fd{text-align:center}
+.fd .badge{background:var(--teal)}
+table.data{border-collapse:collapse;margin:8px 0;font-family:var(--mono);font-size:14px}
+table.data th,table.data td{border:1px solid var(--line);padding:6px 12px;text-align:center;background:#fff}
+table.data th{background:#eef2f6}
+ol.problems{padding-left:0;list-style:none;margin:0}
+ol.problems li{display:flex;gap:10px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+ol.problems .slot{flex:0 0 auto;font-family:var(--mono);font-weight:700;background:var(--amber);color:var(--ink);border-radius:6px;padding:0 8px;height:26px;line-height:26px}
+.stmt{display:flex;gap:10px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin-bottom:7px}
+.stmt .num{flex:0 0 auto;min-width:34px;text-align:center;font-family:var(--mono);font-weight:700;background:#efe7d6;border-radius:6px;padding:1px 6px}
+
+/* roles */
+.roles{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
+.roles button{font:inherit;font-size:14px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;cursor:pointer}
+.roles button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.rolecard{border-left:5px solid var(--amber)}
+.note{font-size:14px;color:var(--ink-2)}
+
+/* lock */
+.lockbox{margin-top:18px;background:var(--night-2);color:#e8f1f2;border-radius:14px;padding:16px}
+.lockbox .lbl{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--glow);margin-bottom:8px}
+.fields{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:4px;font-size:13px;color:#b9c6d6}
+.field input{font-family:var(--mono);font-size:22px;letter-spacing:.12em;width:var(--w,150px);padding:8px 10px;border-radius:9px;border:2px solid #3b4d6b;background:#0d1b2a;color:#fff;text-transform:uppercase}
+.field input:focus{outline:none;border-color:var(--amber)}
+.btn{font:inherit;font-weight:700;border:0;border-radius:10px;padding:11px 18px;cursor:pointer;background:var(--amber);color:var(--ink)}
+.btn:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent;color:#cfe0ea;border:1px solid #3b4d6b;font-weight:500}
+.btn.dark{background:var(--ink);color:#fff}
+.feedback{margin-top:10px;min-height:24px;font-size:15px}
+.feedback.bad{color:#ffb3bd}.feedback.good{color:#9ff0b8}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.hints{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.hinttext{background:#fff7e8;border:1px dashed var(--amber);border-radius:10px;padding:8px 12px;margin-top:8px;font-size:14px;color:var(--ink)}
+
+/* intro / finale */
+.center{text-align:center}
+.setup{display:grid;gap:12px;max-width:520px;margin:14px auto 0;text-align:left}
+.setup label{font-size:14px;font-weight:600}
+.setup input,.setup select{font:inherit;width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:#fff}
+.cert{border:3px double var(--ink);border-radius:14px;padding:22px;background:#fff;max-width:620px;margin:16px auto 0}
+.cert .pw{font-family:var(--mono);font-size:30px;letter-spacing:.25em;background:var(--ink);color:var(--glow);display:inline-block;padding:6px 16px;border-radius:10px;margin:6px 0}
+.stats{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:10px 0}
+.stats div{background:#f2efe6;border-radius:10px;padding:8px 14px;font-size:14px}
+.stats b{display:block;font-family:var(--mono);font-size:20px}
+.foot{color:#7f90a8;font-size:12px;text-align:center;margin-top:22px}
+.foot a{color:#9fd9d4}
+.reset{background:none;border:0;color:#7f90a8;text-decoration:underline;cursor:pointer;font:inherit;font-size:12px}
+.confirm{display:none;margin-top:8px;color:#e8f1f2;font-size:13px}
+.confirm.on{display:block}
+svg text{font-family:var(--sans)}
+.tchip{cursor:pointer;font:inherit;font-family:var(--mono);font-size:13px;background:var(--night-2);border:1px solid #2f3e5a;color:#e8f1f2;padding:5px 10px;border-radius:8px}
+.tchip b{color:var(--amber)} .tchip.low{border-color:var(--red);animation:pulse 1s infinite} .tchip.low b{color:#ffb3bd}
+@keyframes pulse{50%{box-shadow:0 0 0 3px rgba(209,73,91,.35)}}
+#timerBox{display:none;margin-top:12px;background:var(--night-2);border:1px solid #3b4d6b;border-radius:12px;padding:12px 14px;color:#e8f1f2}
+#timerBox.on{display:block}
+#timerBox form{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#timerBox input{font-family:var(--mono);font-size:18px;letter-spacing:.1em;width:160px;padding:7px 10px;border-radius:8px;border:2px solid #3b4d6b;background:#0d1b2a;color:#fff;text-transform:uppercase}
+#timerMsg{font-size:14px;margin-top:6px;min-height:20px}
+.timeup{text-align:center}
+.timeup h2{font-size:40px;color:var(--red);margin:6px 0}
+.fcode{font-family:var(--mono);font-size:26px;letter-spacing:.12em;background:#fff7e8;border:2px dashed var(--amber);display:inline-block;padding:4px 14px;border-radius:10px;margin:4px 0}
+@media print{body{background:#fff}.hall,.hud,.foot,.no-print{display:none!important}.panel{box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="unit">AP Chemistry · Unit 9: Thermodynamics and Electrochemistry</div>
+      <h1>VECTOR's Dead Battery</h1>
+    </div>
+    <div class="spacer"></div>
+    <div class="hud" id="hud"></div>
+  </header>
+  <div id="timerBox" class="no-print">
+    <form id="timerForm" autocomplete="off"><span>⏲ Class timer code (from the board):</span>
+      <input id="timerInput" placeholder="1452-AB" aria-label="Class timer code">
+      <button class="btn" type="submit" style="padding:8px 14px">Set</button>
+      <button class="btn ghost" type="button" id="timerClose" style="padding:8px 12px">Close</button></form>
+    <div id="timerMsg" aria-live="polite"></div>
+  </div>
+  <nav class="hall" id="hall" aria-label="Door progress"></nav>
+  <main class="panel" id="stage"></main>
+  <div class="foot">
+    Mr. C's Science · <a href="index.html">All escape rooms</a> ·
+    <button class="reset" id="resetBtn">Reset this device</button>
+    <div class="confirm" id="confirmBox">Erase all progress on this device?
+      <button class="btn ghost" id="resetYes" style="padding:4px 10px">Yes, reset</button>
+      <button class="btn ghost" id="resetNo" style="padding:4px 10px">Cancel</button></div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   ESCAPE ROOM ENGINE (reusable). To make a new unit, copy this file and
+   replace the ROOM object below. Answers are stored only as salted
+   hashes (cyrb53); generate them with the helper in the teacher guide.
+   ===================================================================== */
+function cyrb53(str, seed = 0) {
+  let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+  for (let i = 0, ch; i < str.length; i++) { ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507); h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507); h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+
+/* ---------- CLASS TIMER + FINISH CODES (shared with teacher.html; keep identical) ---------- */
+const TALPH = 'ACDEFGHJKMNPQRTUVWXY34679';
+const pad2 = n => String(n).padStart(2, '0');
+function dayKey(d = new Date()) { return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+function tmac(s, day) { const h = parseInt(cyrb53('mrc-class-timer::' + (day || dayKey()) + '::' + s), 36); return TALPH[h % 25] + TALPH[Math.floor(h / 25) % 25]; }
+function timerCode(endMs) { const d = new Date(endMs), t = pad2(d.getHours()) + pad2(d.getMinutes()); return t + '-' + tmac('T' + t); }
+function offCode() { return 'OFF-' + tmac('OFF'); }
+function finishCode(ms, hints) { const d = new Date(ms), t = pad2(d.getHours()) + pad2(d.getMinutes()) + pad2(d.getSeconds()); return t + '-' + hints + '-' + tmac('F' + t + '-' + hints); }
+function cleanCode(raw) { return String(raw || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
+// -> {type:'end', end:ms} | {type:'off'} | null
+function parseTimerCode(raw) {
+  const c = cleanCode(raw); let m;
+  if ((m = c.match(/^OFF([A-Z0-9]{2})$/)) && m[1] === tmac('OFF')) return { type: 'off' };
+  if ((m = c.match(/^(\d{4})([A-Z0-9]{2})$/)) && m[2] === tmac('T' + m[1])) {
+    const hh = +m[1].slice(0, 2), mm = +m[1].slice(2); if (hh > 23 || mm > 59) return null;
+    const d = new Date(); d.setHours(hh, mm, 0, 0); return { type: 'end', end: d.getTime() };
+  }
+  return null;
+}
+// -> {finish:ms, hints:n} | null
+function parseFinishCode(raw) {
+  const c = String(raw || '').toUpperCase().replace(/\s/g, ''); const m = c.match(/^(\d{6})-?(\d{1,2})-?([A-Z0-9]{2})$/);
+  if (!m || m[3] !== tmac('F' + m[1] + '-' + (+m[2]))) return null;
+  const d = new Date(); d.setHours(+m[1].slice(0, 2), +m[1].slice(2, 4), +m[1].slice(4), 0);
+  return { finish: d.getTime(), hints: +m[2] };
+}
+
+/* ---------- drawing helpers ---------- */
+const sub = (main, s) => `${main}<tspan dy="4" font-size="10">${s}</tspan><tspan dy="-4"></tspan>`;
+// Force diagram: dot on a dashed grid, arrows measured in grid units
+function forceDiagram(forces, opts = {}) {
+  const u = 16, size = opts.size || 176, c = size / 2;
+  let g = '';
+  for (let x = c % u; x <= size; x += u) g += `<line x1="${x}" y1="0" x2="${x}" y2="${size}" stroke="#b9c3cf" stroke-dasharray="3 3" stroke-width="1"/>`;
+  for (let y = c % u; y <= size; y += u) g += `<line x1="0" y1="${y}" x2="${size}" y2="${y}" stroke="#b9c3cf" stroke-dasharray="3 3" stroke-width="1"/>`;
+  let a = '';
+  const dirs = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+  forces.forEach(f => {
+    const [dx, dy] = dirs[f.dir], L = f.len * u, x2 = c + dx * L, y2 = c + dy * L;
+    a += `<line x1="${c}" y1="${c}" x2="${x2 - dx * 7}" y2="${y2 - dy * 7}" stroke="#14213d" stroke-width="3"/>`;
+    const p = dx ? `${x2},${y2} ${x2 - dx * 10},${y2 - 6} ${x2 - dx * 10},${y2 + 6}` : `${x2},${y2} ${x2 - 6},${y2 - dy * 10} ${x2 + 6},${y2 - dy * 10}`;
+    a += `<polygon points="${p}" fill="#14213d"/>`;
+    // vertical arrows: label beside the tip; horizontal arrows: label above the tip, pulled inward
+    const out = !!f.mag; // labels with magnitudes go outward past the tip (canvas is padded)
+    const lx = dx ? x2 + (out ? dx * 8 : 0) : c + 8, ly = dy ? y2 + (dy > 0 ? 14 : -4) : (out ? c + 5 : c - 12);
+    const anchor = out ? (dx < 0 ? 'end' : 'start') : (dx > 0 ? 'end' : 'start');
+    a += `<text x="${lx}" y="${ly}" font-size="14" font-style="italic" fill="#0b6b6d" text-anchor="${anchor}">${sub('F', f.lab)}${f.mag ? ` = ${f.mag}` : ''}</text>`;
+  });
+  const px = opts.padX || 0;
+  return `<svg viewBox="${-px} 0 ${size + 2 * px} ${size}" width="${size + 2 * px}" height="${size}" style="max-width:100%;height:auto" role="img" aria-label="force diagram"><rect width="${size}" height="${size}" fill="#fff"/>${g}${a}<circle cx="${c}" cy="${c}" r="5.5" fill="#d1495b"/></svg>`;
+}
+// Line graph on a grid. pts in data units.
+function graph({ pts, xmax, ymax, xstep, ystep, xlab, ylab, w = 420, h = 250, ticks = true }) {
+  const L = 48, B = 36, T = 12, R = 14, W = w - L - R, H = h - T - B;
+  const X = x => L + x / xmax * W, Y = y => T + H - y / ymax * H;
+  let s = `<rect width="${w}" height="${h}" fill="#fff"/>`;
+  for (let x = 0; x <= xmax + 1e-9; x += xstep) s += `<line x1="${X(x)}" y1="${T}" x2="${X(x)}" y2="${T + H}" stroke="#dde3ea"/>` + (ticks ? `<text x="${X(x)}" y="${T + H + 16}" font-size="12" text-anchor="middle" fill="#3d4a66">${+x.toFixed(2)}</text>` : '');
+  for (let y = 0; y <= ymax + 1e-9; y += ystep) s += `<line x1="${L}" y1="${Y(y)}" x2="${L + W}" y2="${Y(y)}" stroke="#dde3ea"/>` + (ticks ? `<text x="${L - 7}" y="${Y(y) + 4}" font-size="12" text-anchor="end" fill="#3d4a66">${+y.toFixed(2)}</text>` : '');
+  s += `<line x1="${L}" y1="${T + H}" x2="${L + W}" y2="${T + H}" stroke="#14213d" stroke-width="2"/><line x1="${L}" y1="${T}" x2="${L}" y2="${T + H}" stroke="#14213d" stroke-width="2"/>`;
+  s += `<polyline points="${pts.map(p => X(p[0]) + ',' + Y(p[1])).join(' ')}" fill="none" stroke="#d1495b" stroke-width="3.5" stroke-linejoin="round"/>`;
+  s += `<text x="${L + W / 2}" y="${h - 3}" font-size="13" text-anchor="middle" fill="#14213d">${xlab}</text>`;
+  s += `<text x="13" y="${T + H / 2}" font-size="13" text-anchor="middle" fill="#14213d" transform="rotate(-90 13 ${T + H / 2})">${ylab}</text>`;
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;height:auto" role="img" aria-label="graph">${s}</svg>`;
+}
+function vectorBot(mood = 'smug') {
+  const eyes = mood === 'mad' ? '<path d="M18 22 l8 3 M42 22 l-8 3" stroke="#0d1b2a" stroke-width="3" stroke-linecap="round"/>' : '';
+  const mouth = mood === 'happy' ? '<path d="M22 36 q8 7 16 0" stroke="#0d1b2a" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    : mood === 'mad' ? '<path d="M22 39 q8 -6 16 0" stroke="#0d1b2a" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    : '<path d="M23 37 h14" stroke="#0d1b2a" stroke-width="3" stroke-linecap="round"/>';
+  return `<svg width="60" height="60" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="32" r="25" fill="#7ee8e0"/><circle cx="30" cy="32" r="25" fill="none" stroke="#0f8b8d" stroke-width="3"/><rect x="14" y="20" width="32" height="12" rx="6" fill="#0d1b2a" opacity=".12"/><circle cx="22" cy="27" r="4" fill="#0d1b2a"/><circle cx="38" cy="27" r="4" fill="#0d1b2a"/>${eyes}${mouth}<line x1="30" y1="7" x2="30" y2="1" stroke="#0f8b8d" stroke-width="3"/><circle cx="30" cy="1.5" r="3" fill="#f4a259"/></svg>`;
+}
+const say = (html, mood) => `<div class="vector">${vectorBot(mood)}<div><div class="who">VECTOR</div><p>${html}</p></div></div>`;
+
+/* =====================================================================
+   ROOM DATA: AP Chemistry Unit 9 Thermodynamics and Electrochemistry
+   ===================================================================== */
+// Beaker with electrode; returns SVG fragment. x = left edge, liquid color, labels
+function beaker(x, y, w, h, fill, elec, elecLab, solLab) {
+  let s = `<rect x="${x}" y="${y + h * 0.25}" width="${w}" height="${h * 0.75}" fill="${fill}" opacity=".55"/>`;
+  s += `<path d="M${x} ${y} V${y + h} H${x + w} V${y}" fill="none" stroke="#14213d" stroke-width="3"/>`;
+  if (elec) s += `<rect x="${x + w / 2 - 9}" y="${y - 30}" width="18" height="${h * 0.8 + 30}" fill="${elec}" stroke="#14213d" stroke-width="1.5"/>`;
+  s += `<text x="${x + w / 2}" y="${y + h * 0.92}" font-size="13" text-anchor="middle" fill="#14213d">${solLab}</text>`;
+  if (elecLab) s += `<text x="${x + w / 2 + (x < 200 ? -16 : 16)}" y="${y - 8}" font-size="14" font-weight="700" text-anchor="${x < 200 ? 'end' : 'start'}" fill="#14213d">${elecLab}</text>`;
+  return s;
+}
+function galvanicCell() {
+  const w = 560, h = 300;
+  let s = `<rect width="${w}" height="${h}" fill="#fff"/>`;
+  s += beaker(40, 130, 170, 150, '#b9e3d9', '#8a99a8', 'metal X', '1.0 M X(NO₃)₂') + beaker(350, 130, 170, 150, '#8cc3ea', '#c97b4a', 'Cu', '1.0 M Cu(NO₃)₂');
+  // salt bridge
+  s += `<path d="M175 210 V150 Q175 118 207 118 H353 Q385 118 385 150 V210" fill="none" stroke="#d9d2c3" stroke-width="22"/><path d="M175 210 V150 Q175 118 207 118 H353 Q385 118 385 150 V210" fill="none" stroke="#14213d" stroke-width="1.5" stroke-dasharray="4 4"/>`;
+  s += `<text x="280" y="140" font-size="12" text-anchor="middle" fill="#3d4a66">salt bridge (KNO₃)</text>`;
+  // meter
+  s += `<rect x="225" y="18" width="110" height="62" rx="10" fill="#14213d"/><rect x="237" y="28" width="86" height="28" rx="4" fill="#7ee8e0"/><text x="280" y="49" font-size="17" font-family="monospace" text-anchor="middle" fill="#0d1b2a">? V</text>`;
+  s += `<text x="280" y="73" font-size="10" text-anchor="middle" fill="#e8f1f2">multimeter</text>`;
+  s += `<path d="M240 80 Q190 95 125 70 L125 100" fill="none" stroke="#14213d" stroke-width="3"/><path d="M320 80 Q370 95 435 70 L435 100" fill="none" stroke="#d1495b" stroke-width="3"/>`;
+  s += `<text x="150" y="62" font-size="12" fill="#14213d">black (COM)</text><text x="375" y="62" font-size="12" fill="#d1495b">red (+)</text>`;
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;height:auto" role="img" aria-label="voltaic cell with multimeter">${s}</svg>`;
+}
+function platingCells() {
+  const w = 600, h = 330;
+  let s = `<rect width="${w}" height="${h}" fill="#fff"/>`;
+  s += beaker(40, 170, 220, 130, '#dfe6ee', null, '', '');
+  s += beaker(340, 170, 220, 130, '#f6e7b0', null, '', '');
+  const el = (x, c, lab, left) => `<rect x="${x - 9}" y="140" width="18" height="140" fill="${c}" stroke="#14213d" stroke-width="1.5"/><text x="${x + (left ? -14 : 14)}" y="160" font-size="12" font-weight="700" text-anchor="${left ? 'end' : 'start'}" fill="#14213d">${lab}</text>`;
+  s += el(95, '#9aa5b1', 'anode', true) + el(205, '#f4a259', 'trophy', false) + el(395, '#9aa5b1', 'anode', true) + el(505, '#f4a259', 'medal', false);
+  s += `<text x="150" y="292" font-size="13" text-anchor="middle" fill="#14213d">Ag⁺(aq) cell</text><text x="450" y="292" font-size="13" text-anchor="middle" fill="#14213d">Au³⁺(aq) cell</text>`;
+  s += `<rect x="245" y="12" width="110" height="52" rx="8" fill="#14213d"/><text x="300" y="36" font-size="14" font-family="monospace" text-anchor="middle" fill="#7ee8e0">5.00 A</text><text x="300" y="55" font-size="10" text-anchor="middle" fill="#e8f1f2">DC power supply</text>`;
+  s += `<text x="234" y="32" font-size="16" font-weight="700" text-anchor="middle" fill="#d1495b">+</text><text x="366" y="32" font-size="18" font-weight="700" text-anchor="middle" fill="#14213d">−</text>`;
+  s += `<path d="M245 40 H95 V140" fill="none" stroke="#d1495b" stroke-width="3"/>`;
+  s += `<path d="M205 140 V100 H395 V140" fill="none" stroke="#14213d" stroke-width="3"/>`;
+  s += `<path d="M355 40 H505 V140" fill="none" stroke="#14213d" stroke-width="3"/>`;
+  s += `<text x="300" y="${h - 8}" font-size="13" text-anchor="middle" fill="#3d4a66">One continuous circuit: the two cells are in SERIES, so the same current flows through both.</text>`;
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;height:auto" role="img" aria-label="two electroplating cells in series">${s}</svg>`;
+}
+
+const ROOM = {
+  id: 'apchem-u9-thermo-electrochem',
+  salt: 'apchem-u9::',
+  title: "VECTOR's Dead Battery",
+  intro: `The class robot vacuum, <b>VECTOR</b>, has a dying battery and a big plan: it wired the lab doors into its charging station and
+    won't open them until it's fully recharged. The only way out is to prove your team understands <b>entropy, free energy, and
+    electrochemistry</b> better than a vacuum does. Five doors. Five codes. Stay positive (unless it's ΔG).`,
+  finaleCipher: [119,47,61,55,126,98,56], // teacher password, XOR-locked with the final door's code
+  wrongLines: [
+    "Denied. ΔG for that code is positive.",
+    "Nope. That answer is thermodynamically unfavorable.",
+    "Wrong! That code would need a LOT of activation energy.",
+    "Incorrect. I'm positively charged with disappointment.",
+    "That code has high entropy and low accuracy."
+  ],
+  doors: [
+    /* ---------------- DOOR 1 ---------------- */
+    {
+      name: "Lady Entropia's Sorting Bins", tag: 'Topics 9.1–9.3 · entropy & favorability',
+      render: () => `
+        ${say(`<b>Lady Entropia</b>, a raccoon who loves a good mess, dumped seven reactions on the floor. Sort each one into a bin by <b>when it is thermodynamically favored</b>
+          (assume ΔH° and ΔS° don't change with temperature). The code is the <b>sum of the reaction numbers</b> in each bin.`)}
+        ${[
+          [1, '2 H<sub>2</sub>O<sub>2</sub>(l) → 2 H<sub>2</sub>O(l) + O<sub>2</sub>(g)', '−196'],
+          [2, 'CaCO<sub>3</sub>(s) → CaO(s) + CO<sub>2</sub>(g)', '+178'],
+          [4, 'N<sub>2</sub>(g) + 3 H<sub>2</sub>(g) → 2 NH<sub>3</sub>(g)', '−92'],
+          [8, '3 O<sub>2</sub>(g) → 2 O<sub>3</sub>(g)', '+285'],
+          [16, 'H<sub>2</sub>O(s) → H<sub>2</sub>O(l)', '+6.01'],
+          [32, '2 Mg(s) + O<sub>2</sub>(g) → 2 MgO(s)', '−1203'],
+          [64, 'C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>(s) + 6 O<sub>2</sub>(g) → 6 CO<sub>2</sub>(g) + 6 H<sub>2</sub>O(g)', '−2538'],
+        ].map(([n, r, dh]) => `<div class="stmt"><span class="num">${n}</span><span style="flex:1">${r}</span><span style="font-family:var(--mono);font-size:14px;white-space:nowrap">ΔH° = ${dh} kJ/mol<sub>rxn</sub></span></div>`).join('')}
+        <p class="note">You are not given ΔS°. Predict its sign from the states and the moles of gas. If a bin is empty, its sum is 0.</p>`,
+      fields: [{ label: 'Favored at ALL T', w: 130, kind: 'num' }, { label: 'Only at HIGH T', w: 130, kind: 'num' }, { label: 'Only at LOW T', w: 130, kind: 'num' }, { label: 'NEVER favored', w: 130, kind: 'num' }],
+      answers: ['exqfeclj5e'],
+      hints: [
+        'ΔS° &gt; 0 when the moles of gas increase, or when a solid becomes a liquid. ΔS° &lt; 0 when gas moles decrease. Then use ΔG° = ΔH° − TΔS°.',
+        'ΔH° &lt; 0 and ΔS° &gt; 0: always favored. ΔH° &gt; 0 and ΔS° &lt; 0: never. Both positive: only at high T. Both negative: only at low T. Each bin has one or two reactions.'
+      ],
+      success: 'Lady Entropia is horrified by how tidy that was. Door 1 unlocked.'
+    },
+    /* ---------------- DOOR 2 ---------------- */
+    {
+      name: "Grandma Kiln's Lime", tag: 'Topics 9.2–9.3, 9.5 · ΔG relay (FRQ-style)',
+      roles: true,
+      render: () => `
+        ${say(`<b>Grandma Kiln</b>, a mole who has been baking limestone for 90 years, wants to know how hot her kiln must be.
+          Everyone takes a card; Cards C and D need A's and B's answers. Team of 3? Whoever finishes first takes Card D.`)}
+        <p class="note" style="text-align:center;font-size:16px"><b>CaCO<sub>3</sub>(s) → CaO(s) + CO<sub>2</sub>(g)</b></p>
+        <div class="roles" data-roles></div>
+        <div data-rolecard></div>`,
+      roleCards: {
+        A: `<div class="card rolecard"><h4>Card A · The Enthalpy Accountant</h4>
+            <table class="data"><tr><th>Substance</th><th>ΔH<sub>f</sub>° (kJ/mol)</th></tr>
+              <tr><td>CaCO<sub>3</sub>(s)</td><td>−1207</td></tr><tr><td>CaO(s)</td><td>−635</td></tr><tr><td>CO<sub>2</sub>(g)</td><td>−394</td></tr></table>
+            <p><b>Your question:</b> What is <b>ΔH°<sub>rxn</sub></b> in kJ/mol<sub>rxn</sub>? Tell Cards C and D.</p></div>`,
+        B: `<div class="card rolecard"><h4>Card B · The Entropy Accountant</h4>
+            <table class="data"><tr><th>Substance</th><th>S° (J/(mol·K))</th></tr>
+              <tr><td>CaCO<sub>3</sub>(s)</td><td>93</td></tr><tr><td>CaO(s)</td><td>40</td></tr><tr><td>CO<sub>2</sub>(g)</td><td>214</td></tr></table>
+            <p><b>Your question:</b> What is <b>ΔS°<sub>rxn</sub></b> in J/(mol<sub>rxn</sub>·K)? Tell Cards C and D. (Watch the units: J, not kJ.)</p></div>`,
+        C: `<div class="card rolecard"><h4>Card C · The Room-Temperature Judge</h4>
+            <p>You need ΔH° from Card A and ΔS° from Card B.</p>
+            <p><b>Your question:</b> What is <b>ΔG°</b> at <b>298 K</b>, in kJ/mol<sub>rxn</sub>? Enter the magnitude, nearest whole number. Is the reaction favored at room temperature?</p></div>`,
+        D: `<div class="card rolecard"><h4>Card D · The Kiln Thermostat</h4>
+            <p>You need ΔH° from Card A and ΔS° from Card B. Assume they don't change with temperature.</p>
+            <p><b>Your question:</b> Above what temperature, in <b>kelvins</b>, does the reaction become thermodynamically favored? Nearest whole number.</p></div>`
+      },
+      fields: [
+        { label: '<span>A · ΔH° (kJ/mol<sub>rxn</sub>)</span>', w: 130, kind: 'num' }, { label: '<span>B · ΔS° (J/(mol<sub>rxn</sub>·K))</span>', w: 150, kind: 'num' },
+        { label: 'C · |ΔG°| at 298 K (kJ)', w: 130, kind: 'num' }, { label: 'D · temperature (K)', w: 130, kind: 'num' }
+      ],
+      answers: ['1ibwexc7zu4'],
+      hints: [
+        'A and B: "products minus reactants," each multiplied by its coefficient (all coefficients are 1 here). C: ΔG° = ΔH° − TΔS°, but convert ΔS° to kJ first (÷ 1000).',
+        'C: ΔG° = 178 − 298(0.161) ≈ +130 kJ/mol<sub>rxn</sub>, so NOT favored at room temperature. D: the switch happens where ΔG° = 0, so T = ΔH° ÷ ΔS° (same energy units!).'
+      ],
+      success: 'Grandma Kiln cranks the heat past 1100 K and hands you a lime cookie. Door 2 unlocked.'
+    },
+    /* ---------------- DOOR 3 ---------------- */
+    {
+      name: 'Free Energy Five', tag: 'Topics 9.4–9.6, 9.8–9.9 · justify the claim',
+      render: () => `
+        ${say(`Five AP-style questions, four choices each. The letter of each correct choice, in order 1 → 5, spells a <b>5-letter word</b> (fitting, really).`)}
+        ${[
+          ['1', 'Countess Carbonia\'s diamond tiara: C(diamond) → C(graphite) has ΔG° = −2.9 kJ/mol at 25 °C. Why is the tiara still diamond after 300 years?',
+            [['T', 'ΔG° for the change is actually positive at room temperature.'], ['G', 'The change is thermodynamically favored but under kinetic control: its activation energy is so large that the rate is negligible.'], ['P', 'Diamond and graphite are at equilibrium, so there is no net change.'], ['M', 'Graphite has lower entropy than diamond, so the change cannot happen.']]],
+          ['2', 'A reaction has ΔG° = −11.4 kJ/mol<sub>rxn</sub> at 298 K. Which value is closest to K? (R = 8.314 J/(mol·K))',
+            [['O', 'K ≈ 4.6'], ['I', 'K ≈ 1.0 × 10<sup>2</sup>'], ['E', 'K ≈ 1.0 × 10<sup>−2</sup>'], ['U', 'K ≈ 1.0']]],
+          ['3', 'Cells make glutamine by coupling two reactions:<br>glutamate + NH<sub>4</sub><sup>+</sup> → glutamine + H<sub>2</sub>O &nbsp; ΔG° = +14.2 kJ/mol<br>ATP + H<sub>2</sub>O → ADP + P<sub>i</sub> &nbsp; ΔG° = −30.5 kJ/mol<br>What is ΔG° for the coupled (overall) reaction?',
+            [['B', '−16.3 kJ/mol, so the overall process is favored'], ['D', '+44.7 kJ/mol, so it is not favored'], ['K', '−44.7 kJ/mol, so it is favored'], ['R', '+16.3 kJ/mol, so it is not favored']]],
+          ['4', 'For the cell Zn(s) + Cu<sup>2+</sup>(aq) → Zn<sup>2+</sup>(aq) + Cu(s), E°<sub>cell</sub> = +1.10 V. Which is true under standard conditions?',
+            [['B', 'ΔG° &lt; 0 and K &gt; 1'], ['N', 'ΔG° &gt; 0 and K &lt; 1'], ['C', 'ΔG° &lt; 0 and K &lt; 1'], ['H', 'ΔG° = 0 and K = 1']]],
+          ['5', 'The same zinc–copper cell is built with [Zn<sup>2+</sup>] = 1.0 M and [Cu<sup>2+</sup>] = 0.010 M. Which statement is correct?',
+            [['S', 'Q &gt; 1, so E<sub>cell</sub> is less than 1.10 V but still positive.'], ['Y', 'Q &lt; 1, so E<sub>cell</sub> is greater than 1.10 V.'], ['V', 'E<sub>cell</sub> = 1.10 V, because cell potential does not depend on concentration.'], ['X', 'Q &gt; 1, so E<sub>cell</sub> is negative and the cell runs in reverse.']]],
+        ].map(([n, q, opts]) => `<div class="card" style="margin-bottom:10px"><h4><span class="badge">${n}</span>${q}</h4>
+            ${opts.map(([k, t]) => `<div class="stmt" style="margin-bottom:5px"><span class="num">${k}</span><span>${t}</span></div>`).join('')}</div>`).join('')}`,
+      fields: [{ label: 'Code word', w: 180, kind: 'word' }],
+      answers: ['hml3lhzyfn'],
+      hints: [
+        'Thermodynamics tells you IF a process is favored; kinetics tells you how FAST. For #2, use ΔG° = −RT ln K, so K = e<sup>−ΔG°/RT</sup>. Convert kJ to J first!',
+        'Coupled reactions: just add the ΔG° values. A positive E° means ΔG° = −nFE° is negative and K &gt; 1. For #5, Q = [Zn<sup>2+</sup>]/[Cu<sup>2+</sup>]; when Q &gt; 1, the cell potential drops below E°.'
+      ],
+      success: "Five for five. That's a pretty free-energetic performance. Door 3 unlocked."
+    },
+    /* ---------------- DOOR 4 ---------------- */
+    {
+      name: "Ohm-ar's Voltage Lab", tag: 'Topics 9.7–9.8 · galvanic cell lab data',
+      render: () => `
+        ${say(`<b>Ohm-ar</b>, an electric eel with a lab coat, built voltaic cells using an unknown metal <b>X</b> that forms X<sup>2+</sup> ions. Identify X, then tell me ΔG° for Ohm-ar's cell.`)}
+        <div class="card" style="text-align:center">${galvanicCell()}</div>
+        <div class="grid g2" style="align-items:start;margin-top:10px">
+          <div>
+            <table class="data"><tr><th>Cell (1.0 M solutions, 25 °C)</th><th>Trial 1</th><th>Trial 2</th><th>Trial 3</th></tr>
+              <tr><td>Zn | Cu (meter check)</td><td>1.08 V</td><td>1.09 V</td><td>1.08 V</td></tr>
+              <tr><td>X | Cu</td><td>0.59 V</td><td>0.61 V</td><td>0.60 V</td></tr></table>
+            <p class="note">The reading is <b>positive</b> when the red (+) lead is on the electrode at higher potential (the cathode). In both cells the reading was positive with the red lead on <b>copper</b>.
+              The Zn | Cu check shows the meter reads within 0.02 V of the accepted value (1.10 V), so trust it.</p>
+          </div>
+          <div class="card"><h4>Standard reduction potentials (25 °C)</h4>
+            <table class="data" style="font-size:13px"><tr><th>Half-reaction</th><th>E° (V)</th></tr>
+              <tr><td>Ag<sup>+</sup> + e<sup>−</sup> → Ag</td><td>+0.80</td></tr>
+              <tr><td>Cu<sup>2+</sup> + 2e<sup>−</sup> → Cu</td><td>+0.34</td></tr>
+              <tr><td>Pb<sup>2+</sup> + 2e<sup>−</sup> → Pb</td><td>−0.13</td></tr>
+              <tr><td>Sn<sup>2+</sup> + 2e<sup>−</sup> → Sn</td><td>−0.14</td></tr>
+              <tr><td>Ni<sup>2+</sup> + 2e<sup>−</sup> → Ni</td><td>−0.26</td></tr>
+              <tr><td>Cd<sup>2+</sup> + 2e<sup>−</sup> → Cd</td><td>−0.40</td></tr>
+              <tr><td>Fe<sup>2+</sup> + 2e<sup>−</sup> → Fe</td><td>−0.45</td></tr>
+              <tr><td>Zn<sup>2+</sup> + 2e<sup>−</sup> → Zn</td><td>−0.76</td></tr></table></div>
+        </div>
+        <p class="note">Use the <b>mean</b> X | Cu voltage as E°<sub>cell</sub>. F = 96,485 C/mol e<sup>−</sup>. Enter X's <b>chemical symbol</b> and the <b>magnitude</b> of ΔG° in kJ/mol<sub>rxn</sub> (nearest whole number).</p>`,
+      fields: [{ label: 'Metal X (symbol)', w: 150, kind: 'word' }, { label: '|ΔG°| (kJ/mol)', w: 150, kind: 'num' }],
+      answers: ['1wu5otfwjjl',  'fj98yy47nq',  '22tymwyxshq',  '1dp6jpqp1c4',  'p1t9q43wml',  'w1hvlaj1t7',  '1fj7nm5rwmg',  '20051jghsq',  'q7n7f7b85x',  '1nrmitzfvm3'],
+      hints: [
+        'Copper is the cathode, so X is the anode: E°<sub>cell</sub> = E°<sub>cathode</sub> − E°<sub>anode</sub>, which means E°(X<sup>2+</sup>/X) = 0.34 V − (mean voltage). Find the closest value in the table.',
+        'ΔG° = −nFE°<sub>cell</sub> with n = 2 mol e<sup>−</sup> per mol<sub>rxn</sub>. That gives joules; divide by 1000 for kJ.'
+      ],
+      success: 'Ohm-ar does a happy little zap. Door 4 unlocked.'
+    },
+    /* ---------------- DOOR 5 ---------------- */
+    {
+      name: 'The Trophy Plating', tag: 'Topics 9.7, 9.10 · electrolysis relay (FRQ-style)',
+      roles: true,
+      render: () => `
+        ${say(`Last door. I'm using an <b>electrolytic</b> setup (an outside power supply forces a NONspontaneous reaction) to plate a silver trophy AND a gold medal for MYSELF.
+          Both cells are wired in series. Everyone takes a card. Team of 3? Whoever finishes first takes Card D.`, 'mad')}
+        <div class="card" style="text-align:center">${platingCells()}</div>
+        <div class="roles" data-roles style="margin-top:10px"></div>
+        <div data-rolecard></div>`,
+      roleCards: {
+        A: `<div class="card rolecard"><h4>Card A · The Ammeter</h4>
+            <p>The power supply pushes a steady <b>5.00 A</b> through the circuit for <b>32 minutes 10 seconds</b>.</p>
+            <p><b>Your question:</b> How much total charge passes through the circuit, in <b>coulombs</b>? Tell Card B.</p></div>`,
+        B: `<div class="card rolecard"><h4>Card B · The Electron Counter</h4>
+            <p>You need Card A's charge. <b>F = 96,485 C/mol e<sup>−</sup></b>.</p>
+            <p><b>Your question:</b> How many <b>millimoles of electrons</b> passed through the circuit? Nearest whole number. Tell Cards C and D.</p></div>`,
+        C: `<div class="card rolecard"><h4>Card C · The Silversmith</h4>
+            <p>In the first cell: Ag<sup>+</sup>(aq) + e<sup>−</sup> → Ag(s) at the trophy. Molar mass of Ag = 107.87 g/mol. You need Card B's electrons.</p>
+            <p><b>Your question:</b> What mass of silver plates onto the trophy? Enter <b>grams × 10</b>, nearest whole number (e.g., 3.27 g → 33).</p></div>`,
+        D: `<div class="card rolecard"><h4>Card D · The Goldsmith</h4>
+            <p>In the second cell: Au<sup>3+</sup>(aq) + 3e<sup>−</sup> → Au(s) at the medal. Molar mass of Au = 196.97 g/mol. Because the cells are in <b>series</b>, the same electrons pass through both. You need Card B's electrons.</p>
+            <p><b>Your question:</b> What mass of gold plates onto the medal? Enter <b>grams × 10</b>, nearest whole number.</p></div>`
+      },
+      fields: [
+        { label: 'A · charge (C)', w: 130, kind: 'num' }, { label: 'B · mmol e⁻', w: 130, kind: 'num' },
+        { label: 'C · Ag mass (g × 10)', w: 130, kind: 'num' }, { label: 'D · Au mass (g × 10)', w: 130, kind: 'num' }
+      ],
+      answers: ['1330yfug6jo'],
+      hints: [
+        'A: q = I·t, with t in SECONDS (32 min 10 s = 1930 s). B: mol e<sup>−</sup> = q ÷ F; then × 1000 for millimoles.',
+        'C: 1 mol e<sup>−</sup> plates 1 mol Ag. D: it takes 3 mol e<sup>−</sup> to plate 1 mol Au, so mol Au = mol e<sup>−</sup> ÷ 3. Then grams = mol × molar mass.'
+      ],
+      success: 'NOOO! My trophy! My medal! My power supply!'
+    }
+  ]
+};
+
+
+/* =====================================================================
+   ENGINE
+   ===================================================================== */
+const KEY = 'escape:' + ROOM.id;
+const store = {
+  get() { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch (e) { return null; } },
+  set(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} },
+  clear() { try { localStorage.removeItem(KEY); } catch (e) {} }
+};
+let S = store.get() || { started: false, team: '', size: 4, start: 0, end: 0, door: 0, hints: {}, wrong: 0, role: 'A', timer: null };
+const save = () => store.set(S);
+const $ = (q, el = document) => el.querySelector(q);
+const fmt = ms => { const s = Math.max(0, Math.floor(ms / 1000)); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
+const hintsUsed = () => Object.values(S.hints).reduce((a, b) => a + b, 0);
+
+function timerLive() { return S.timer && S.timer.end && S.timer.day === dayKey(); }
+function timeUp() { return timerLive() && Date.now() >= S.timer.end && !S.end; }
+function hud() {
+  const t = S.started ? fmt((S.end || Date.now()) - S.start) : '00:00';
+  let chip;
+  if (timerLive() && !S.end) { const left = S.timer.end - Date.now();
+    chip = `<button class="tchip ${left < 5 * 60000 ? 'low' : ''}" id="tchip" title="Class timer">⏳ Class <b>${left > 0 ? fmt(left) : '0:00'}</b></button>`; }
+  else chip = `<button class="tchip" id="tchip" title="Enter class timer code">⏲ ${S.timer && S.timer.off && S.timer.day === dayKey() ? 'Timer off' : 'Timer code'}</button>`;
+  $('#hud').innerHTML = `${chip}<span title="Your team's time">⏱ <b>${t}</b></span><span title="Hints used">💡 <b>${hintsUsed()}</b></span><span title="Wrong codes">✖ <b>${S.wrong}</b></span>`;
+  $('#tchip').onclick = () => { $('#timerBox').classList.toggle('on'); $('#timerInput').focus(); };
+}
+let shownTimeUp = false;
+setInterval(() => { hud(); const up = timeUp() && S.started; if (up !== shownTimeUp) render(); }, 1000);
+function applyTimerCode(raw, msgEl) {
+  const r = parseTimerCode(raw);
+  if (!r) { if (msgEl) { msgEl.style.color = '#ffb3bd'; msgEl.textContent = "That timer code isn't valid. Check the board and try again."; } return false; }
+  S.timer = r.type === 'off' ? { off: true, end: null, day: dayKey() } : { off: false, end: r.end, day: dayKey() };
+  save();
+  if (msgEl) { msgEl.style.color = '#9ff0b8'; msgEl.textContent = r.type === 'off' ? 'Timer turned off. Keep going!' : `Timer set: ends at ${new Date(r.end).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}.`; }
+  render(); return true;
+}
+
+function hall() {
+  $('#hall').innerHTML = ROOM.doors.map((d, i) => {
+    const cls = i < S.door ? 'open' : (i === S.door && S.started && !S.end ? 'current' : '');
+    return `<div class="door-pill ${cls}"><span class="lock"></span><span class="n">${i + 1}</span>${d.name}</div>`;
+  }).join('');
+}
+
+function normalize(v, f) {
+  v = String(v).trim();
+  if (f.kind === 'word') return v.toUpperCase().replace(/[^A-Z]/g, '');
+  const m = v.replace(/,/g, '').match(/-?\d*\.?\d+/); // first number only, so units like "W/m2" are ignored
+  if (!m) return '';
+  const n = parseFloat(m[0]);
+  const r = f.roundTo || 1;
+  return String(Math.round(Math.abs(n) / r) * r);
+}
+
+function render() {
+  hud(); hall();
+  const st = $('#stage');
+  if (!S.started) return renderIntro(st);
+  if (S.door >= ROOM.doors.length) { shownTimeUp = false; return renderFinale(st); }
+  shownTimeUp = timeUp();
+  if (shownTimeUp) return renderTimeUp(st);
+  const i = S.door, d = ROOM.doors[i];
+  st.innerHTML = `<span class="tag">Door ${i + 1} of ${ROOM.doors.length} · ${d.tag}</span><h2>${d.name}</h2>${d.render()}
+    <div class="lockbox">
+      <div class="lbl">🔒 Door ${i + 1} lock</div>
+      <form class="fields" id="lockForm" autocomplete="off">
+        ${d.fields.map((f, k) => `<label class="field">${f.label}<input style="--w:${f.w}px" name="f${k}" inputmode="${f.kind === 'num' ? 'decimal' : 'text'}" required></label>`).join('')}
+        <button class="btn" type="submit">Try code</button>
+      </form>
+      <div class="feedback" id="fb" aria-live="polite"></div>
+      <div class="hints no-print">${d.hints.map((h, k) => `<button class="btn ghost" data-hint="${k}" ${k > (S.hints[i] || 0) ? 'disabled style="opacity:.4"' : ''}>💡 Hint ${k + 1}</button>`).join('')}</div>
+      <div id="hintOut">${d.hints.slice(0, S.hints[i] || 0).map(h => `<div class="hinttext">${h}</div>`).join('')}</div>
+    </div>`;
+  if (d.roles) setupRoles(st, d);
+  $('#lockForm').addEventListener('submit', e => { e.preventDefault(); check(d, i); });
+  st.querySelectorAll('[data-hint]').forEach(b => b.addEventListener('click', () => {
+    const k = +b.dataset.hint; if ((S.hints[i] || 0) <= k) { S.hints[i] = k + 1; save(); render(); }
+  }));
+  const first = st.querySelector('#lockForm input'); if (first && document.activeElement === document.body) first.focus({ preventScroll: true });
+}
+
+function setupRoles(st, d) {
+  const box = $('[data-roles]', st), out = $('[data-rolecard]', st);
+  const keys = Object.keys(d.roleCards);
+  const draw = () => {
+    box.innerHTML = '<span class="note" style="align-self:center;margin-right:4px">I am holding:</span>' + keys.map(k => `<button type="button" class="${k === S.role ? 'on' : ''}" data-r="${k}">Card ${k}</button>`).join('');
+    out.innerHTML = d.roleCards[S.role] || '';
+    box.querySelectorAll('[data-r]').forEach(b => b.addEventListener('click', () => { S.role = b.dataset.r; save(); draw(); }));
+  };
+  draw();
+}
+
+function check(d, i) {
+  const form = $('#lockForm'), fb = $('#fb');
+  const vals = d.fields.map((f, k) => normalize(form.elements['f' + k].value, f));
+  const h = cyrb53(ROOM.salt + 'd' + (i + 1) + '::' + vals.join('|'));
+  if (d.answers.includes(h)) {
+    S.door = i + 1;
+    if (S.door >= ROOM.doors.length) { S.end = Date.now(); S.key = vals.join('|'); }
+    save();
+    fb.className = 'feedback good'; fb.textContent = '✔ ' + d.success;
+    form.querySelector('button').disabled = true;
+    setTimeout(render, 1400);
+  } else {
+    S.wrong++; save(); hud();
+    fb.className = 'feedback bad';
+    fb.textContent = '✖ ' + ROOM.wrongLines[Math.floor(Math.random() * ROOM.wrongLines.length)];
+    form.classList.remove('shake'); void form.offsetWidth; form.classList.add('shake');
+  }
+}
+
+function renderIntro(st) {
+  st.innerHTML = `<div class="center">
+      <span class="tag">Escape Room · Teams of 3–4</span>
+      <h2>${ROOM.title}</h2></div>
+      ${say(ROOM.intro + ' <br><br>The clock starts when you press the button. Hints are free, but I <i>count</i> them. Mwahaha.')}
+      <div class="setup">
+        <div><label for="team">Team name</label><input id="team" maxlength="40" placeholder="e.g., The Free Energizers" value="${S.team || ''}"></div>
+        <div><label for="names">Team members</label><input id="names" maxlength="120" placeholder="First names" value="${S.names || ''}"></div>
+        <div><label for="size">Players</label><select id="size"><option value="3">3 players</option><option value="4" selected>4 players</option></select></div>
+        <div><label for="tcode">Class timer code <span class="note">(from the board, if your teacher posted one)</span></label><input id="tcode" maxlength="12" placeholder="e.g., 1452-AB" style="font-family:var(--mono);text-transform:uppercase"></div>
+        <div id="tcodeMsg" class="note"></div>
+        <p class="note" style="margin:0">Every player opens this page on their own Chromebook and enters the <b>same</b> team name. Bring paper, a pencil, and a calculator.</p>
+        <button class="btn dark" id="go">Start the clock ▶</button>
+      </div>`;
+  $('#size').value = S.size || 4;
+  $('#go').addEventListener('click', () => {
+    const tc = $('#tcode').value.trim();
+    if (tc && !parseTimerCode(tc)) { $('#tcodeMsg').style.color = '#d1495b'; $('#tcodeMsg').textContent = "That timer code isn't valid. Fix it or leave it blank."; return; }
+    S.team = $('#team').value.trim() || 'Unnamed Team'; S.names = $('#names').value.trim(); S.size = +$('#size').value;
+    if (tc) { const r = parseTimerCode(tc); S.timer = r.type === 'off' ? { off: true, end: null, day: dayKey() } : { off: false, end: r.end, day: dayKey() }; }
+    S.started = true; S.start = Date.now(); save(); render();
+  });
+}
+
+function renderFinale(st) {
+  const t = fmt(S.end - S.start);
+  st.innerHTML = `<div class="center">
+      ${say(`Fine. FINE. You escaped. My battery is dead and so is my plan. I'll go back to vacuuming. Show this screen to your teacher.`, 'happy')}
+      <div class="cert">
+        <div class="tag">Certificate of Escape</div>
+        <h2 style="margin:4px 0">${escapeHtml(S.team)}</h2>
+        <div class="note">${escapeHtml(S.names || '')}</div>
+        <div class="stats"><div>Time<b>${t}</b></div><div>Hints<b>${hintsUsed()}</b></div><div>Wrong codes<b>${S.wrong}</b></div></div>
+        <div class="note">Finish code (your teacher types this in)</div>
+        <div class="fcode">${finishCode(S.end, Math.min(99, hintsUsed()))}</div>
+        <div class="note" style="margin-top:8px">Teacher password</div>
+        <div class="pw">${unlockPw()}</div>
+        <div class="note">${new Date(S.end).toLocaleString()} · AP Chemistry · Unit 9: Thermodynamics and Electrochemistry · ${ROOM.title}</div>
+      </div>
+      <p class="no-print"><button class="btn dark" onclick="window.print()">Print certificate</button></p>
+    </div>`;
+}
+function renderTimeUp(st) {
+  const opened = S.door;
+  st.innerHTML = `<div class="timeup">
+      ${say(`Beep boop... <b>TIME'S UP!</b> The lab stays locked. Show this screen to your teacher.`, 'happy')}
+      <h2>⏰ Time's Up</h2>
+      <div class="cert">
+        <h2 style="margin:4px 0;color:var(--ink);font-size:24px">${escapeHtml(S.team)}</h2>
+        <div class="note">${escapeHtml(S.names || '')}</div>
+        <div class="stats"><div>Doors opened<b>${opened} / ${ROOM.doors.length}</b></div><div>Hints<b>${hintsUsed()}</b></div><div>Wrong codes<b>${S.wrong}</b></div></div>
+        <div class="note">Stopped on Door ${Math.min(opened + 1, ROOM.doors.length)}: ${ROOM.doors[Math.min(opened, ROOM.doors.length - 1)].name}</div>
+      </div>
+      <p class="note">Did your teacher give more time? Type the new code from the board:</p>
+      <form id="moreTime" autocomplete="off" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <input id="moreInput" placeholder="1505-AB" style="font-family:var(--mono);font-size:20px;letter-spacing:.1em;width:180px;padding:8px 10px;border-radius:9px;border:2px solid var(--line);text-transform:uppercase">
+        <button class="btn dark" type="submit">Keep going</button></form>
+      <div id="moreMsg" class="note" style="margin-top:6px"></div>
+    </div>`;
+  $('#moreTime').addEventListener('submit', e => { e.preventDefault(); const m = $('#moreMsg'); applyTimerCode($('#moreInput').value, m); if (m.textContent.startsWith('That')) m.style.color = '#d1495b'; });
+}
+function pwKey(s) { return cyrb53(ROOM.salt + 'pw1::' + s) + cyrb53('pw2::' + s + ROOM.salt) + cyrb53(s + '::pw3' + ROOM.salt); }
+function unlockPw() { const k = pwKey(S.key || ''); return ROOM.finaleCipher.map((b, i) => String.fromCharCode(b ^ k.charCodeAt(i % k.length))).join(''); }
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+$('#timerForm').addEventListener('submit', e => { e.preventDefault(); if (applyTimerCode($('#timerInput').value, $('#timerMsg'))) { $('#timerInput').value = ''; setTimeout(() => $('#timerBox').classList.remove('on'), 1600); } });
+$('#timerClose').addEventListener('click', () => $('#timerBox').classList.remove('on'));
+$('#resetBtn').addEventListener('click', () => $('#confirmBox').classList.add('on'));
+$('#resetNo').addEventListener('click', () => $('#confirmBox').classList.remove('on'));
+$('#resetYes').addEventListener('click', () => { store.clear(); S = { started: false, team: '', size: 4, start: 0, end: 0, door: 0, hints: {}, wrong: 0, role: 'A', timer: null }; $('#confirmBox').classList.remove('on'); render(); });
+render();
+</script>
+</body>
+</html>

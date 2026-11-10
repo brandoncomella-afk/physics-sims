@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Escape Room · AP Chemistry Unit 2: Compound Structure and Properties · VECTOR's Bond Heist</title>
+<style>
+:root{
+  --ink:#14213d; --ink-2:#3d4a66; --paper:#fbf8f1; --card:#ffffff; --line:#d9d2c3;
+  --teal:#0f8b8d; --teal-d:#0b6b6d; --amber:#f4a259; --red:#d1495b; --green:#3a9d5d;
+  --night:#0d1b2a; --night-2:#1b263b; --glow:#7ee8e0;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  --sans:"Avenir Next","Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:var(--sans);color:var(--ink);background:var(--night);
+  background-image:linear-gradient(rgba(126,232,224,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(126,232,224,.06) 1px,transparent 1px);
+  background-size:28px 28px;min-height:100vh;line-height:1.5}
+.wrap{max-width:980px;margin:0 auto;padding:20px 18px 60px}
+header.top{display:flex;align-items:center;gap:14px;color:#e8f1f2;flex-wrap:wrap}
+header.top .unit{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--glow)}
+header.top h1{margin:0;font-size:26px;letter-spacing:.01em}
+header.top .spacer{flex:1}
+.hud{display:flex;gap:10px;font-family:var(--mono);font-size:13px}
+.hud span{background:var(--night-2);border:1px solid #2f3e5a;color:#e8f1f2;padding:5px 10px;border-radius:8px}
+.hud b{color:var(--glow);font-weight:600}
+
+/* progress hallway */
+.hall{display:flex;gap:8px;margin:18px 0 18px;flex-wrap:wrap}
+.door-pill{flex:1;min-width:120px;background:var(--night-2);border:1px solid #2f3e5a;color:#8fa0b8;border-radius:10px;padding:8px 10px;font-size:13px;display:flex;gap:8px;align-items:center}
+.door-pill .n{font-family:var(--mono);font-size:11px;border:1px solid currentColor;border-radius:5px;padding:0 5px}
+.door-pill.open{color:#bff3ee;border-color:var(--teal)}
+.door-pill.current{color:#fff;border-color:var(--amber);box-shadow:0 0 0 2px rgba(244,162,89,.25)}
+.door-pill.open .lock::before{content:"🔓"} .door-pill .lock::before{content:"🔒"}
+
+.panel{background:var(--paper);border-radius:16px;padding:22px 24px;box-shadow:0 18px 50px rgba(0,0,0,.35);position:relative}
+.panel h2{margin:0 0 4px;font-size:22px}
+.tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;background:#e7f4f4;color:var(--teal-d);border-radius:6px;padding:2px 8px;margin-bottom:10px}
+.vector{text-align:left;display:flex;gap:14px;align-items:flex-start;background:var(--night);color:#e8f1f2;border-radius:12px;padding:12px 14px;margin:10px 0 16px}
+.vector svg{flex:0 0 auto}
+.vector p{margin:0}
+.vector .who{font-family:var(--mono);font-size:11px;color:var(--glow);letter-spacing:.12em;text-transform:uppercase}
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.card h4{margin:0 0 6px;font-size:15px}
+.badge{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;background:var(--ink);color:#fff;font-weight:700;font-family:var(--mono);margin-right:8px}
+.fd{text-align:center}
+.fd .badge{background:var(--teal)}
+table.data{border-collapse:collapse;margin:8px 0;font-family:var(--mono);font-size:14px}
+table.data th,table.data td{border:1px solid var(--line);padding:6px 12px;text-align:center;background:#fff}
+table.data th{background:#eef2f6}
+ol.problems{padding-left:0;list-style:none;margin:0}
+ol.problems li{display:flex;gap:10px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+ol.problems .slot{flex:0 0 auto;font-family:var(--mono);font-weight:700;background:var(--amber);color:var(--ink);border-radius:6px;padding:0 8px;height:26px;line-height:26px}
+.stmt{display:flex;gap:10px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin-bottom:7px}
+.stmt .num{flex:0 0 auto;min-width:34px;text-align:center;font-family:var(--mono);font-weight:700;background:#efe7d6;border-radius:6px;padding:1px 6px}
+
+/* roles */
+.roles{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
+.roles button{font:inherit;font-size:14px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;cursor:pointer}
+.roles button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.rolecard{border-left:5px solid var(--amber)}
+.note{font-size:14px;color:var(--ink-2)}
+
+/* lock */
+.lockbox{margin-top:18px;background:var(--night-2);color:#e8f1f2;border-radius:14px;padding:16px}
+.lockbox .lbl{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--glow);margin-bottom:8px}
+.fields{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:4px;font-size:13px;color:#b9c6d6}
+.field input{font-family:var(--mono);font-size:22px;letter-spacing:.12em;width:var(--w,150px);padding:8px 10px;border-radius:9px;border:2px solid #3b4d6b;background:#0d1b2a;color:#fff;text-transform:uppercase}
+.field input:focus{outline:none;border-color:var(--amber)}
+.btn{font:inherit;font-weight:700;border:0;border-radius:10px;padding:11px 18px;cursor:pointer;background:var(--amber);color:var(--ink)}
+.btn:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent;color:#cfe0ea;border:1px solid #3b4d6b;font-weight:500}
+.btn.dark{background:var(--ink);color:#fff}
+.feedback{margin-top:10px;min-height:24px;font-size:15px}
+.feedback.bad{color:#ffb3bd}.feedback.good{color:#9ff0b8}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.hints{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.hinttext{background:#fff7e8;border:1px dashed var(--amber);border-radius:10px;padding:8px 12px;margin-top:8px;font-size:14px;color:var(--ink)}
+
+/* intro / finale */
+.center{text-align:center}
+.setup{display:grid;gap:12px;max-width:520px;margin:14px auto 0;text-align:left}
+.setup label{font-size:14px;font-weight:600}
+.setup input,.setup select{font:inherit;width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:#fff}
+.cert{border:3px double var(--ink);border-radius:14px;padding:22px;background:#fff;max-width:620px;margin:16px auto 0}
+.cert .pw{font-family:var(--mono);font-size:30px;letter-spacing:.25em;background:var(--ink);color:var(--glow);display:inline-block;padding:6px 16px;border-radius:10px;margin:6px 0}
+.stats{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:10px 0}
+.stats div{background:#f2efe6;border-radius:10px;padding:8px 14px;font-size:14px}
+.stats b{display:block;font-family:var(--mono);font-size:20px}
+.foot{color:#7f90a8;font-size:12px;text-align:center;margin-top:22px}
+.foot a{color:#9fd9d4}
+.reset{background:none;border:0;color:#7f90a8;text-decoration:underline;cursor:pointer;font:inherit;font-size:12px}
+.confirm{display:none;margin-top:8px;color:#e8f1f2;font-size:13px}
+.confirm.on{display:block}
+svg text{font-family:var(--sans)}
+.tchip{cursor:pointer;font:inherit;font-family:var(--mono);font-size:13px;background:var(--night-2);border:1px solid #2f3e5a;color:#e8f1f2;padding:5px 10px;border-radius:8px}
+.tchip b{color:var(--amber)} .tchip.low{border-color:var(--red);animation:pulse 1s infinite} .tchip.low b{color:#ffb3bd}
+@keyframes pulse{50%{box-shadow:0 0 0 3px rgba(209,73,91,.35)}}
+#timerBox{display:none;margin-top:12px;background:var(--night-2);border:1px solid #3b4d6b;border-radius:12px;padding:12px 14px;color:#e8f1f2}
+#timerBox.on{display:block}
+#timerBox form{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#timerBox input{font-family:var(--mono);font-size:18px;letter-spacing:.1em;width:160px;padding:7px 10px;border-radius:8px;border:2px solid #3b4d6b;background:#0d1b2a;color:#fff;text-transform:uppercase}
+#timerMsg{font-size:14px;margin-top:6px;min-height:20px}
+.timeup{text-align:center}
+.timeup h2{font-size:40px;color:var(--red);margin:6px 0}
+.fcode{font-family:var(--mono);font-size:26px;letter-spacing:.12em;background:#fff7e8;border:2px dashed var(--amber);display:inline-block;padding:4px 14px;border-radius:10px;margin:4px 0}
+@media print{body{background:#fff}.hall,.hud,.foot,.no-print{display:none!important}.panel{box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="unit">AP Chemistry · Unit 2: Compound Structure and Properties</div>
+      <h1>VECTOR's Bond Heist</h1>
+    </div>
+    <div class="spacer"></div>
+    <div class="hud" id="hud"></div>
+  </header>
+  <div id="timerBox" class="no-print">
+    <form id="timerForm" autocomplete="off"><span>⏲ Class timer code (from the board):</span>
+      <input id="timerInput" placeholder="1452-AB" aria-label="Class timer code">
+      <button class="btn" type="submit" style="padding:8px 14px">Set</button>
+      <button class="btn ghost" type="button" id="timerClose" style="padding:8px 12px">Close</button></form>
+    <div id="timerMsg" aria-live="polite"></div>
+  </div>
+  <nav class="hall" id="hall" aria-label="Door progress"></nav>
+  <main class="panel" id="stage"></main>
+  <div class="foot">
+    Mr. C's Science · <a href="index.html">All escape rooms</a> ·
+    <button class="reset" id="resetBtn">Reset this device</button>
+    <div class="confirm" id="confirmBox">Erase all progress on this device?
+      <button class="btn ghost" id="resetYes" style="padding:4px 10px">Yes, reset</button>
+      <button class="btn ghost" id="resetNo" style="padding:4px 10px">Cancel</button></div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   ESCAPE ROOM ENGINE (reusable). To make a new unit, copy this file and
+   replace the ROOM object below. Answers are stored only as salted
+   hashes (cyrb53); generate them with the helper in the teacher guide.
+   ===================================================================== */
+function cyrb53(str, seed = 0) {
+  let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+  for (let i = 0, ch; i < str.length; i++) { ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507); h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507); h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+
+/* ---------- CLASS TIMER + FINISH CODES (shared with teacher.html; keep identical) ---------- */
+const TALPH = 'ACDEFGHJKMNPQRTUVWXY34679';
+const pad2 = n => String(n).padStart(2, '0');
+function dayKey(d = new Date()) { return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+function tmac(s, day) { const h = parseInt(cyrb53('mrc-class-timer::' + (day || dayKey()) + '::' + s), 36); return TALPH[h % 25] + TALPH[Math.floor(h / 25) % 25]; }
+function timerCode(endMs) { const d = new Date(endMs), t = pad2(d.getHours()) + pad2(d.getMinutes()); return t + '-' + tmac('T' + t); }
+function offCode() { return 'OFF-' + tmac('OFF'); }
+function finishCode(ms, hints) { const d = new Date(ms), t = pad2(d.getHours()) + pad2(d.getMinutes()) + pad2(d.getSeconds()); return t + '-' + hints + '-' + tmac('F' + t + '-' + hints); }
+function cleanCode(raw) { return String(raw || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
+// -> {type:'end', end:ms} | {type:'off'} | null
+function parseTimerCode(raw) {
+  const c = cleanCode(raw); let m;
+  if ((m = c.match(/^OFF([A-Z0-9]{2})$/)) && m[1] === tmac('OFF')) return { type: 'off' };
+  if ((m = c.match(/^(\d{4})([A-Z0-9]{2})$/)) && m[2] === tmac('T' + m[1])) {
+    const hh = +m[1].slice(0, 2), mm = +m[1].slice(2); if (hh > 23 || mm > 59) return null;
+    const d = new Date(); d.setHours(hh, mm, 0, 0); return { type: 'end', end: d.getTime() };
+  }
+  return null;
+}
+// -> {finish:ms, hints:n} | null
+function parseFinishCode(raw) {
+  const c = String(raw || '').toUpperCase().replace(/\s/g, ''); const m = c.match(/^(\d{6})-?(\d{1,2})-?([A-Z0-9]{2})$/);
+  if (!m || m[3] !== tmac('F' + m[1] + '-' + (+m[2]))) return null;
+  const d = new Date(); d.setHours(+m[1].slice(0, 2), +m[1].slice(2, 4), +m[1].slice(4), 0);
+  return { finish: d.getTime(), hints: +m[2] };
+}
+
+/* ---------- drawing helpers ---------- */
+const sub = (main, s) => `${main}<tspan dy="4" font-size="10">${s}</tspan><tspan dy="-4"></tspan>`;
+// Force diagram: dot on a dashed grid, arrows measured in grid units
+function forceDiagram(forces, opts = {}) {
+  const u = 16, size = opts.size || 176, c = size / 2;
+  let g = '';
+  for (let x = c % u; x <= size; x += u) g += `<line x1="${x}" y1="0" x2="${x}" y2="${size}" stroke="#b9c3cf" stroke-dasharray="3 3" stroke-width="1"/>`;
+  for (let y = c % u; y <= size; y += u) g += `<line x1="0" y1="${y}" x2="${size}" y2="${y}" stroke="#b9c3cf" stroke-dasharray="3 3" stroke-width="1"/>`;
+  let a = '';
+  const dirs = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+  forces.forEach(f => {
+    const [dx, dy] = dirs[f.dir], L = f.len * u, x2 = c + dx * L, y2 = c + dy * L;
+    a += `<line x1="${c}" y1="${c}" x2="${x2 - dx * 7}" y2="${y2 - dy * 7}" stroke="#14213d" stroke-width="3"/>`;
+    const p = dx ? `${x2},${y2} ${x2 - dx * 10},${y2 - 6} ${x2 - dx * 10},${y2 + 6}` : `${x2},${y2} ${x2 - 6},${y2 - dy * 10} ${x2 + 6},${y2 - dy * 10}`;
+    a += `<polygon points="${p}" fill="#14213d"/>`;
+    // vertical arrows: label beside the tip; horizontal arrows: label above the tip, pulled inward
+    const out = !!f.mag; // labels with magnitudes go outward past the tip (canvas is padded)
+    const lx = dx ? x2 + (out ? dx * 8 : 0) : c + 8, ly = dy ? y2 + (dy > 0 ? 14 : -4) : (out ? c + 5 : c - 12);
+    const anchor = out ? (dx < 0 ? 'end' : 'start') : (dx > 0 ? 'end' : 'start');
+    a += `<text x="${lx}" y="${ly}" font-size="14" font-style="italic" fill="#0b6b6d" text-anchor="${anchor}">${sub('F', f.lab)}${f.mag ? ` = ${f.mag}` : ''}</text>`;
+  });
+  const px = opts.padX || 0;
+  return `<svg viewBox="${-px} 0 ${size + 2 * px} ${size}" width="${size + 2 * px}" height="${size}" style="max-width:100%;height:auto" role="img" aria-label="force diagram"><rect width="${size}" height="${size}" fill="#fff"/>${g}${a}<circle cx="${c}" cy="${c}" r="5.5" fill="#d1495b"/></svg>`;
+}
+// Line graph on a grid. pts in data units.
+function graph({ pts, xmax, ymax, xstep, ystep, xlab, ylab, w = 420, h = 250, ticks = true }) {
+  const L = 48, B = 36, T = 12, R = 14, W = w - L - R, H = h - T - B;
+  const X = x => L + x / xmax * W, Y = y => T + H - y / ymax * H;
+  let s = `<rect width="${w}" height="${h}" fill="#fff"/>`;
+  for (let x = 0; x <= xmax + 1e-9; x += xstep) s += `<line x1="${X(x)}" y1="${T}" x2="${X(x)}" y2="${T + H}" stroke="#dde3ea"/>` + (ticks ? `<text x="${X(x)}" y="${T + H + 16}" font-size="12" text-anchor="middle" fill="#3d4a66">${+x.toFixed(2)}</text>` : '');
+  for (let y = 0; y <= ymax + 1e-9; y += ystep) s += `<line x1="${L}" y1="${Y(y)}" x2="${L + W}" y2="${Y(y)}" stroke="#dde3ea"/>` + (ticks ? `<text x="${L - 7}" y="${Y(y) + 4}" font-size="12" text-anchor="end" fill="#3d4a66">${+y.toFixed(2)}</text>` : '');
+  s += `<line x1="${L}" y1="${T + H}" x2="${L + W}" y2="${T + H}" stroke="#14213d" stroke-width="2"/><line x1="${L}" y1="${T}" x2="${L}" y2="${T + H}" stroke="#14213d" stroke-width="2"/>`;
+  s += `<polyline points="${pts.map(p => X(p[0]) + ',' + Y(p[1])).join(' ')}" fill="none" stroke="#d1495b" stroke-width="3.5" stroke-linejoin="round"/>`;
+  s += `<text x="${L + W / 2}" y="${h - 3}" font-size="13" text-anchor="middle" fill="#14213d">${xlab}</text>`;
+  s += `<text x="13" y="${T + H / 2}" font-size="13" text-anchor="middle" fill="#14213d" transform="rotate(-90 13 ${T + H / 2})">${ylab}</text>`;
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;height:auto" role="img" aria-label="graph">${s}</svg>`;
+}
+function vectorBot(mood = 'smug') {
+  const eyes = mood === 'mad' ? '<path d="M18 22 l8 3 M42 22 l-8 3" stroke="#0d1b2a" stroke-width="3" stroke-linecap="round"/>' : '';
+  const mouth = mood === 'happy' ? '<path d="M22 36 q8 7 16 0" stroke="#0d1b2a" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    : mood === 'mad' ? '<path d="M22 39 q8 -6 16 0" stroke="#0d1b2a" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    : '<path d="M23 37 h14" stroke="#0d1b2a" stroke-width="3" stroke-linecap="round"/>';
+  return `<svg width="60" height="60" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="32" r="25" fill="#7ee8e0"/><circle cx="30" cy="32" r="25" fill="none" stroke="#0f8b8d" stroke-width="3"/><rect x="14" y="20" width="32" height="12" rx="6" fill="#0d1b2a" opacity=".12"/><circle cx="22" cy="27" r="4" fill="#0d1b2a"/><circle cx="38" cy="27" r="4" fill="#0d1b2a"/>${eyes}${mouth}<line x1="30" y1="7" x2="30" y2="1" stroke="#0f8b8d" stroke-width="3"/><circle cx="30" cy="1.5" r="3" fill="#f4a259"/></svg>`;
+}
+const say = (html, mood) => `<div class="vector">${vectorBot(mood)}<div><div class="who">VECTOR</div><p>${html}</p></div></div>`;
+
+/* ---------- chemistry drawing helpers (AP Chemistry rooms) ---------- */
+const NAVY = '#14213d', TEAL = '#0f8b8d', AMBER = '#f4a259', RED = '#d1495b', GRID = '#b9c3cf';
+const r1 = v => Math.round(v * 10) / 10;
+// x-y plot: curves [{pts|f,from,to, color, dash, label, lx, ly, dot:[x,y]}]; gridlines every xstep/ystep, numbers every xlab/ylab
+function plotXY({ curves, xmin = 0, xmax, ymin = 0, ymax, xstep, ystep, xnum, ynum, xlab, ylab, w = 560, h = 320, noYnums = false }) {
+  const L = noYnums ? 34 : 60, B = 42, T = 14, R = 18, Wd = w - L - R, Ht = h - T - B;
+  const X = x => L + (x - xmin) / (xmax - xmin) * Wd, Y = y => T + Ht - (y - ymin) / (ymax - ymin) * Ht;
+  let s = `<rect width="${w}" height="${h}" fill="#fff"/>`;
+  const nx = Math.round((xmax - xmin) / xstep), ny = Math.round((ymax - ymin) / ystep);
+  const kx = Math.round((xnum || xstep) / xstep), ky = Math.round((ynum || ystep) / ystep);
+  for (let i = 0; i <= nx; i++) { const x = xmin + i * xstep, major = i % kx === 0;
+    s += `<line x1="${r1(X(x))}" y1="${T}" x2="${r1(X(x))}" y2="${T + Ht}" stroke="${major ? '#c3ccd6' : '#dde3ea'}" ${major ? '' : 'stroke-dasharray="3 3"'}/>`;
+    if (major) s += `<text x="${r1(X(x))}" y="${T + Ht + 16}" font-size="12" text-anchor="middle" fill="#3d4a66">${+x.toFixed(3)}</text>`; }
+  for (let j = 0; j <= ny; j++) { const y = ymin + j * ystep, major = j % ky === 0;
+    s += `<line x1="${L}" y1="${r1(Y(y))}" x2="${L + Wd}" y2="${r1(Y(y))}" stroke="${major ? '#c3ccd6' : '#dde3ea'}" ${major ? '' : 'stroke-dasharray="3 3"'}/>`;
+    if (major && !noYnums) s += `<text x="${L - 7}" y="${r1(Y(y)) + 4}" font-size="12" text-anchor="end" fill="#3d4a66">${+y.toFixed(3)}</text>`; }
+  const y0 = (ymin < 0 && ymax > 0) ? Y(0) : T + Ht;
+  s += `<line x1="${L}" y1="${r1(y0)}" x2="${L + Wd}" y2="${r1(y0)}" stroke="${NAVY}" stroke-width="2"/><line x1="${L}" y1="${T}" x2="${L}" y2="${T + Ht}" stroke="${NAVY}" stroke-width="2"/>`;
+  curves.forEach(c => {
+    let pts = c.pts;
+    if (!pts) { pts = []; const n = c.n || 240; for (let i = 0; i <= n; i++) { const x = c.from + (c.to - c.from) * i / n, y = c.f(x); if (y <= ymax && y >= ymin) pts.push([x, y]); } }
+    s += `<polyline points="${pts.map(p => r1(X(p[0])) + ',' + r1(Y(p[1]))).join(' ')}" fill="none" stroke="${c.color || RED}" stroke-width="3" stroke-linejoin="round" ${c.dash ? 'stroke-dasharray="8 5"' : ''}/>`;
+    if (c.dot) s += `<circle cx="${r1(X(c.dot[0]))}" cy="${r1(Y(c.dot[1]))}" r="4.5" fill="${NAVY}"/>`;
+    if (c.label) s += `<text x="${r1(X(c.lx))}" y="${r1(Y(c.ly))}" font-size="15" font-weight="700" text-anchor="middle" fill="${c.color || RED}">${c.label}</text>`;
+  });
+  s += `<text x="${L + Wd / 2}" y="${h - 4}" font-size="13" text-anchor="middle" fill="${NAVY}">${xlab}</text>`;
+  s += `<text x="14" y="${T + Ht / 2}" font-size="13" text-anchor="middle" fill="${NAVY}" transform="rotate(-90 14 ${T + Ht / 2})">${ylab}</text>`;
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;height:auto" role="img" aria-label="graph">${s}</svg>`;
+}
+// Bar spectrum (mass spectrum): bars [[x, height, topLabel]]
+function barSpectrum({ bars, xmin, xmax, ymax = 100, ystep = 20, xlab = 'mass (amu)', ylab = 'relative abundance (%)', w = 420, h = 260 }) {
+  const L = 52, B = 40, T = 22, R = 14, Wd = w - L - R, Ht = h - T - B;
+  const X = x => L + (x - xmin) / (xmax - xmin) * Wd, Y = y => T + Ht - y / ymax * Ht;
+  let s = `<rect width="${w}" height="${h}" fill="#fff"/>`;
+  for (let y = 0; y <= ymax + 1e-9; y += ystep) s += `<line x1="${L}" y1="${r1(Y(y))}" x2="${L + Wd}" y2="${r1(Y(y))}" stroke="${GRID}" stroke-dasharray="3 3"/><text x="${L - 7}" y="${r1(Y(y)) + 4}" font-size="12" text-anchor="end" fill="#3d4a66">${y}</text>`;
+  for (let x = xmin; x <= xmax; x++) s += `<line x1="${r1(X(x))}" y1="${T + Ht}" x2="${r1(X(x))}" y2="${T + Ht + 5}" stroke="${NAVY}"/><text x="${r1(X(x))}" y="${T + Ht + 18}" font-size="12" text-anchor="middle" fill="#3d4a66">${x}</text>`;
+  bars.forEach(([x, v, lab]) => { s += `<rect x="${r1(X(x) - 7)}" y="${r1(Y(v))}" width="14" height="${r1(Y(0) - Y(v))}" fill="${RED}"/>` + (lab ? `<text x="${r1(X(x))}" y="${r1(Y(v)) - 6}" font-size="13" font-weight="700" text-anchor="middle" fill="${NAVY}">${lab}</text>` : ''); });
+  s += `<line x1="${L}" y1="${T + Ht}" x2="${L + Wd}" y2="${T + Ht}" stroke="${NAVY}" stroke-width="2"/><line x1="${L}" y1="${T}" x2="${L}" y2="${T + Ht}" stroke="${NAVY}" stroke-width="2"/>`;
+  s += `<text x="${L + Wd / 2}" y="${h - 4}" font-size="13" text-anchor="middle" fill="${NAVY}">${xlab}</text>`;
+  s += `<text x="14" y="${T + Ht / 2}" font-size="13" text-anchor="middle" fill="${NAVY}" transform="rotate(-90 14 ${T + Ht / 2})">${ylab}</text>`;
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;height:auto" role="img" aria-label="mass spectrum">${s}</svg>`;
+}
+// Photoelectron spectrum: peaks [{be (MJ/mol), n (electrons), lab}] on a log binding-energy axis (high energy on the LEFT)
+function pesSpectrum({ peaks, emax = 1000, emin = 0.1, w = 640, h = 280, pw = 13, ticks = [1000, 100, 10, 1, 0.1] }) {
+  const L = 46, B = 46, T = 30, R = 18, Wd = w - L - R, Ht = h - T - B, nmax = 7;
+  const X = e => L + (Math.log10(emax) - Math.log10(e)) / (Math.log10(emax) - Math.log10(emin)) * Wd, Y = n => T + Ht - n / nmax * Ht;
+  let s = `<rect width="${w}" height="${h}" fill="#fff"/>`;
+  for (let n = 0; n <= nmax; n++) s += `<line x1="${L}" y1="${r1(Y(n))}" x2="${L + Wd}" y2="${r1(Y(n))}" stroke="${GRID}" stroke-dasharray="3 3"/><text x="${L - 7}" y="${r1(Y(n)) + 4}" font-size="12" text-anchor="end" fill="#3d4a66">${n}</text>`;
+  ticks.forEach(e => { if (e <= emax && e >= emin) s += `<line x1="${r1(X(e))}" y1="${T + Ht}" x2="${r1(X(e))}" y2="${T + Ht + 6}" stroke="${NAVY}" stroke-width="2"/><text x="${r1(X(e))}" y="${T + Ht + 20}" font-size="12" text-anchor="middle" fill="#3d4a66">${e}</text>`; });
+  peaks.forEach(p => { const x = X(p.be), y = Y(p.n), b = Y(0);
+    s += `<path d="M${r1(x - pw)},${r1(b)} C${r1(x - pw / 2)},${r1(b)} ${r1(x - pw * .4)},${r1(y)} ${r1(x)},${r1(y)} C${r1(x + pw * .4)},${r1(y)} ${r1(x + pw / 2)},${r1(b)} ${r1(x + pw)},${r1(b)}" fill="rgba(209,73,91,.18)" stroke="${RED}" stroke-width="2.5"/>`;
+    s += `<text x="${r1(x)}" y="${r1(y) - 7}" font-size="12" font-weight="700" text-anchor="middle" fill="${NAVY}">${p.lab}</text>`; });
+  s += `<line x1="${L}" y1="${T + Ht}" x2="${L + Wd}" y2="${T + Ht}" stroke="${NAVY}" stroke-width="2"/><line x1="${L}" y1="${T}" x2="${L}" y2="${T + Ht}" stroke="${NAVY}" stroke-width="2"/>`;
+  s += `<text x="${L + Wd / 2}" y="${h - 6}" font-size="13" text-anchor="middle" fill="${NAVY}">binding energy (MJ/mol), log scale ← higher energy · lower energy →</text>`;
+  s += `<text x="13" y="${T + Ht / 2}" font-size="13" text-anchor="middle" fill="${NAVY}" transform="rotate(-90 13 ${T + Ht / 2})">relative # of electrons</text>`;
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;height:auto" role="img" aria-label="photoelectron spectrum">${s}</svg>`;
+}
+// Lewis structure drawer. atoms [{s, x, y, lp:[angles in degrees, 0 = right, 90 = up], fc}] bonds [[i, j, order]]
+function lewis({ atoms, bonds, w, h, bracket, charge, note }) {
+  let s = `<rect width="${w}" height="${h}" fill="#fff"/>`;
+  bonds.forEach(([i, j, o]) => { const a = atoms[i], b = atoms[j], dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy), ux = dx / d, uy = dy / d, px = -uy, py = ux, gap = 13;
+    const offs = o === 1 ? [0] : o === 2 ? [-3.5, 3.5] : [-6, 0, 6];
+    offs.forEach(k => s += `<line x1="${r1(a.x + ux * gap + px * k)}" y1="${r1(a.y + uy * gap + py * k)}" x2="${r1(b.x - ux * gap + px * k)}" y2="${r1(b.y - uy * gap + py * k)}" stroke="${NAVY}" stroke-width="2.4"/>`); });
+  atoms.forEach(a => { s += `<text x="${a.x}" y="${a.y + 7}" font-size="21" font-weight="700" text-anchor="middle" fill="${NAVY}">${a.s}</text>`;
+    (a.lp || []).forEach(t => { const th = t * Math.PI / 180, cx = a.x + 17 * Math.cos(th), cy = a.y - 17 * Math.sin(th), qx = -Math.sin(th) * 4.5, qy = -Math.cos(th) * 4.5;
+      s += `<circle cx="${r1(cx + qx)}" cy="${r1(cy + qy)}" r="2.4" fill="${RED}"/><circle cx="${r1(cx - qx)}" cy="${r1(cy - qy)}" r="2.4" fill="${RED}"/>`; }); });
+  if (bracket) { const [x1, x2] = bracket, y1 = 8, y2 = h - 8;
+    s += `<path d="M${x1 + 8},${y1} H${x1} V${y2} H${x1 + 8} M${x2 - 8},${y1} H${x2} V${y2} H${x2 - 8}" fill="none" stroke="${NAVY}" stroke-width="2"/><text x="${x2 + 4}" y="${y1 + 12}" font-size="18" font-weight="700" fill="${NAVY}">${charge}</text>`; }
+  if (note) s += `<text x="${w / 2}" y="${h - 2}" font-size="11" text-anchor="middle" fill="#3d4a66">${note}</text>`;
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;height:auto" role="img" aria-label="Lewis structure">${s}</svg>`;
+}
+
+/* ---------- particle diagrams for solids (Unit 2) ---------- */
+function solid(kind) {
+  const w = 190, h = 150; let s = `<rect width="${w}" height="${h}" fill="#fff" stroke="#d9d2c3"/>`;
+  const cols = 6, rows = 5, dx = 30, x0 = 20, y0 = 15;
+  const ion = (x, y, r, fill, sign) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${fill}" stroke="${NAVY}" stroke-width="1.2"/><text x="${x}" y="${y + 5}" font-size="14" font-weight="700" text-anchor="middle" fill="${NAVY}">${sign}</text>`;
+  if (kind === 'interstitial') {
+    for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) s += `<circle cx="${x0 + i * dx}" cy="${y0 + j * dx}" r="14" fill="#c9d2dc" stroke="${NAVY}" stroke-width="1.2"/>`;
+    [[0, 0], [2, 1], [4, 0], [1, 2], [3, 3], [0, 3], [4, 2]].forEach(([i, j]) => s += `<circle cx="${x0 + i * dx + 15}" cy="${y0 + j * dx + 15}" r="5" fill="${NAVY}"/>`);
+  } else if (kind === 'substitutional') {
+    const z = new Set(['1,0', '4,1', '2,2', '0,3', '5,3', '3,4', '1,4']);
+    for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) s += `<circle cx="${x0 + i * dx}" cy="${y0 + j * dx}" r="14" fill="${z.has(i + ',' + j) ? '#7ee8e0' : '#f4c08f'}" stroke="${NAVY}" stroke-width="1.2"/>`;
+  } else if (kind === 'ionic') {
+    for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) s += (i + j) % 2 ? ion(x0 + i * dx, y0 + j * dx, 14, '#7ee8e0', '−') : ion(x0 + i * dx, y0 + j * dx, 9, '#f4c08f', '+');
+  } else if (kind === 'badionic') {
+    for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) s += j % 2 ? ion(x0 + i * dx, y0 + j * dx, 14, '#7ee8e0', '−') : ion(x0 + i * dx, y0 + j * dx, 9, '#f4c08f', '+');
+  } else if (kind === 'metal') {
+    for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) s += ion(x0 + i * dx, y0 + j * dx, 12, '#c9d2dc', '+');
+    [[1, 0], [3, 0], [0, 1], [2, 1], [4, 1], [1, 2], [3, 2], [0, 3], [2, 3], [4, 3], [1, 0.5], [3.5, 3]].forEach(([i, j]) => s += `<circle cx="${x0 + i * dx + 15}" cy="${y0 + j * dx + 15}" r="3" fill="${RED}"/>`);
+  } else if (kind === 'molecular') {
+    [[25, 25, 0], [85, 22, 60], [150, 30, 20], [40, 85, 110], [105, 80, 0], [160, 95, 75], [30, 128, 30], [95, 130, 150], [150, 135, 0]].forEach(([x, y, a]) => {
+      const c = Math.cos(a * Math.PI / 180) * 8, d = Math.sin(a * Math.PI / 180) * 8;
+      s += `<circle cx="${r1(x - c)}" cy="${r1(y - d)}" r="10" fill="#c9d2dc" stroke="${NAVY}" stroke-width="1.2"/><circle cx="${r1(x + c)}" cy="${r1(y + d)}" r="10" fill="#c9d2dc" stroke="${NAVY}" stroke-width="1.2"/>`; });
+  }
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;height:auto" role="img" aria-label="particle diagram">${s}</svg>`;
+}
+const morse = (De, re, a) => r => De * ((1 - Math.exp(-a * (r - re))) ** 2 - 1);
+function peCurves() {
+  return plotXY({
+    curves: [
+      { f: morse(436, 74, 0.0194), from: 20, to: 300, color: RED, dot: [74, -436], label: 'B', lx: 74, ly: -520 },
+      { f: morse(945, 110, 0.0269), from: 20, to: 300, color: TEAL, dot: [110, -945], label: 'O', lx: 110, ly: -1030 },
+      { f: morse(498, 121, 0.0265), from: 20, to: 300, color: AMBER, dot: [121, -498], label: 'L', lx: 121, ly: -580 },
+      { f: morse(159, 142, 0.029), from: 20, to: 300, color: NAVY, dash: true, dot: [142, -159], label: 'T', lx: 146, ly: -85 }
+    ],
+    xmin: 0, xmax: 300, ymin: -1200, ymax: 400, xstep: 10, ystep: 100, xnum: 50, ynum: 200,
+    xlab: 'internuclear distance (pm)', ylab: 'potential energy (kJ/mol)', w: 640, h: 380
+  });
+}
+const OCN = [
+  { atoms: [{ s: 'O', x: 60, y: 45, lp: [90, 180, 270] }, { s: 'C', x: 130, y: 45 }, { s: 'N', x: 200, y: 45, lp: [0] }], bonds: [[0, 1, 1], [1, 2, 3]] },
+  { atoms: [{ s: 'O', x: 60, y: 45, lp: [90, 270] }, { s: 'C', x: 130, y: 45 }, { s: 'N', x: 200, y: 45, lp: [90, 270] }], bonds: [[0, 1, 2], [1, 2, 2]] },
+  { atoms: [{ s: 'O', x: 60, y: 45, lp: [180] }, { s: 'C', x: 130, y: 45 }, { s: 'N', x: 200, y: 45, lp: [90, 0, 270] }], bonds: [[0, 1, 3], [1, 2, 1]] },
+  { atoms: [{ s: 'O', x: 60, y: 45, lp: [90, 270] }, { s: 'C', x: 130, y: 45 }, { s: 'N', x: 200, y: 45, lp: [90, 0, 270] }], bonds: [[0, 1, 2], [1, 2, 2]] }
+];
+const ocnCard = (k) => `<div class="card fd"><span class="badge">${['I', 'II', 'III', 'IV'][k]}</span>${lewis({ ...OCN[k], w: 260, h: 90, bracket: [28, 234], charge: '−' })}</div>`;
+const acrylo = () => lewis({ atoms: [{ s: 'H', x: 30, y: 25 }, { s: 'H', x: 30, y: 105 }, { s: 'C', x: 85, y: 65 }, { s: 'C', x: 160, y: 65 }, { s: 'H', x: 160, y: 15 }, { s: 'C', x: 235, y: 65 }, { s: 'N', x: 305, y: 65 }],
+  bonds: [[0, 2, 1], [1, 2, 1], [2, 3, 1], [3, 4, 1], [3, 5, 1], [5, 6, 1]], w: 340, h: 125, note: 'connectivity only: every link is drawn as a single line' });
+
+/* =====================================================================
+   ROOM DATA: AP Chemistry Unit 2 · Compound Structure and Properties
+   ===================================================================== */
+const ROOM = {
+  id: 'apchem-u2-compound-structure',
+  salt: 'apchem-u2::',
+  title: "VECTOR's Bond Heist",
+  intro: `<b>Admiral Pinchworth</b>, a distinguished hermit crab with a tiny captain's hat, came to the lab to pick out a shiny new
+    <b>brass shell</b>. Unfortunately, <b>VECTOR</b>, the class robot vacuum, has opened a shady jewelry shop called
+    <i>Bonds &amp; Bling</i> in the supply closet, locked every door, and is holding the Admiral's shell for ransom.
+    "The name is Bond," it beeps. "Covalent Bond. Prove you understand how atoms stick together, or the shell is mine."`,
+  finaleCipher: [62,116,57,36,123,41,62,40,55], // teacher password, XOR-locked with the final door's code
+  wrongLines: [
+    "Wrong code. Our relationship has a bond order of zero.",
+    "Denied. That answer is more unstable than a carbon with five bonds.",
+    "Nope. I sense a formal charge of −1 on your brain.",
+    "Incorrect! Even a noble gas is more attracted to that lock than you are.",
+    "That's not it. Try sharing your electrons. I mean, your ideas.",
+    "Rejected. Your answer has the wrong geometry. It's bent, like your logic."
+  ],
+  doors: [
+    /* ---------------- DOOR 1 ---------------- */
+    {
+      name: 'Bling Display Case', tag: 'Topics 2.1, 2.3–2.4 · ionic solids, metals & alloys',
+      render: () => `
+        ${say(`Welcome to <i>Bonds &amp; Bling</i>. My display case has six particle diagrams, but only four of my product labels are honest. Match each product 1 → 4 to its correct particle diagram. The letters spell a <b>4-letter word</b>. Two diagrams are <i>fakes</i>.`)}
+        <ol class="problems">
+          <li><span class="slot">1</span><span><b>Steel</b>: small carbon atoms fill some of the spaces between the iron atoms in the lattice.</span></li>
+          <li><span class="slot">2</span><span><b>Brass</b> (the Admiral's dream shell): zinc atoms, similar in radius to copper atoms, take the place of some copper atoms in the lattice.</span></li>
+          <li><span class="slot">3</span><span><b>Potassium chloride</b>, KCl(s): a lattice of K<sup>+</sup> ions (smaller) and Cl<sup>−</sup> ions (larger).</span></li>
+          <li><span class="slot">4</span><span><b>Pure copper</b>: a lattice of metal cations surrounded by a sea of delocalized valence electrons (red dots).</span></li>
+        </ol>
+        <div class="grid g3">
+          ${[['S', 'molecular'], ['O', 'ionic'], ['E', 'badionic'], ['T', 'metal'], ['K', 'interstitial'], ['N', 'substitutional']]
+            .map(([k, t]) => `<div class="card fd"><span class="badge">${k}</span>${solid(t)}</div>`).join('')}
+        </div>`,
+      fields: [{ label: 'Code word', w: 170, kind: 'word' }],
+      answers: ['13x6bms38qz'],
+      hints: [
+        'An interstitial alloy has atoms of very DIFFERENT sizes (small atoms in the holes). A substitutional alloy has atoms of SIMILAR size swapped in.',
+        'In a real ionic lattice, every ion is surrounded by ions of the OPPOSITE charge, which maximizes attractions and minimizes repulsions. One of the "ionic" diagrams puts like charges side by side.'
+      ],
+      success: 'The display case clicks open. The Admiral waves a claw. Door 1 unlocked.'
+    },
+    /* ---------------- DOOR 2 ---------------- */
+    {
+      name: 'Potential Energy Well', tag: 'Topic 2.2 · intramolecular force & potential energy',
+      render: () => `
+        ${say(`My vault is guarded by four potential energy curves. One each for H<sub>2</sub>, N<sub>2</sub>, O<sub>2</sub>, and F<sub>2</sub>, but I scrambled the labels. The dot on each curve marks its minimum.`)}
+        <div class="card">${peCurves()}</div>
+        <div class="card" style="margin-top:10px"><h4>Your mission</h4>
+          <ol style="margin:0;padding-left:18px">
+            <li>Identify each curve. Give the curve letters for <b>H<sub>2</sub>, N<sub>2</sub>, O<sub>2</sub>, F<sub>2</sub></b>, in that order. They spell a 4-letter word.</li>
+            <li>Read the <b>bond length of O<sub>2</sub></b> from the graph, in picometers.</li>
+          </ol>
+          <p class="note" style="margin-bottom:0">Think about atomic radius, and about how bond order affects bond length and bond energy.</p></div>`,
+      fields: [{ label: 'Curve letters (H₂ N₂ O₂ F₂)', w: 170, kind: 'word' }, { label: 'O₂ bond length (pm)', w: 150, kind: 'num' }],
+      answers: ['1gtruv2kjtr',  'c781mol4qc',  '1zk0iwkdgnq',  '1tkgbacjrb2',  '9m5ecv7fou',  '1ywosiz1fzy',  '1j7g9nsszpl',  '2abrwczfgv0',  '1syr5nyjoy4',  '23f6yy8ocmo',  '420mop0fr7'],
+      hints: [
+        'The bond length is the distance at the minimum of the curve. The bond energy is the depth of the well. A triple bond (N≡N) is shorter and stronger than a double bond (O=O), which is shorter and stronger than a single bond (F–F).',
+        'H atoms are tiny, so H<sub>2</sub> has the shortest bond of all, even though it is only a single bond. Each minor gridline is 10 pm.'
+      ],
+      success: 'You found the bottom of my well. Door 2 unlocked.'
+    },
+    /* ---------------- DOOR 3 ---------------- */
+    {
+      name: 'Cyanate Confession', tag: 'Topics 2.5–2.6 · Lewis diagrams, resonance & formal charge · team relay',
+      roles: true,
+      render: () => `
+        ${say(`I confess: I accidentally vacuumed up some <b>cyanate ions, OCN<sup>−</sup></b> (C is the central atom). My jewelry scanner drew four Lewis diagrams for it. Each of you takes one card, and your answers feed each other. Team of 3? Whoever finishes first takes Card D.`)}
+        <div class="roles" data-roles></div>
+        <div data-rolecard></div>`,
+      roleCards: {
+        A: `<div class="card rolecard"><h4>Card A · The Electron Accountant</h4>
+            <p>The ion is OCN<sup>−</sup>. Oxygen is in group 16, carbon in group 14, and nitrogen in group 15.</p>
+            <p><b>Your question:</b> What is the <b>total number of valence electrons</b> in one OCN<sup>−</sup> ion? Tell Card B your answer right away.</p></div>`,
+        B: `<div class="card rolecard"><h4>Card B · The Diagram Inspector</h4>
+            <p>Here are the scanner's four diagrams. Each line is a shared pair; each pair of red dots is a lone pair.</p>
+            <div class="grid g2">${[0, 1, 2, 3].map(ocnCard).join('')}</div>
+            <p>You need Card A's total. Exactly <b>one</b> of these diagrams has the WRONG number of electrons, so it is not a valid structure.</p>
+            <p><b>Your question:</b> Which diagram is invalid? Enter its number (I = 1, II = 2, III = 3, IV = 4). Tell Cards C and D, and show them the diagrams.</p></div>`,
+        C: `<div class="card rolecard"><h4>Card C · The Formal Charge Officer</h4>
+            <p>Have Card B show you diagram III. Formal charge = (valence electrons) − (nonbonding electrons) − ½(bonding electrons).</p>
+            <p><b>Your question:</b> What is the formal charge on <b>nitrogen</b> in diagram III? Enter its size (no sign). Then tell Card D the formal charges on all three atoms in diagram III.</p></div>`,
+        D: `<div class="card rolecard"><h4>Card D · The Resonance Judge</h4>
+            <p>You need Card B's list of valid diagrams and Card C's formal charges for diagram III. Calculate the formal charges for the other valid diagrams yourself.</p>
+            <p>The best (major) resonance structure has formal charges as close to zero as possible, and any negative formal charge on the most electronegative atom.</p>
+            <p><b>Your question:</b> Which diagram is the <b>major</b> resonance contributor? Enter its number.</p></div>`
+      },
+      fields: [
+        { label: 'A · valence e⁻', w: 120, kind: 'num' }, { label: 'B · invalid diagram #', w: 140, kind: 'num' },
+        { label: 'C · |formal charge| on N', w: 150, kind: 'num' }, { label: 'D · major structure #', w: 140, kind: 'num' }
+      ],
+      answers: ['16gonikpmk0'],
+      hints: [
+        'Card A: 6 + 4 + 5, plus 1 for the negative charge. Card B: count 2 electrons per line and 2 per lone pair in each diagram.',
+        'Card C: N in diagram III has 3 lone pairs (6 e⁻) and 1 bond (2 shared e⁻): 5 − 6 − 1. Card D: oxygen is more electronegative than nitrogen.'
+      ],
+      success: 'Confession accepted. I will return the cyanate. Eventually. Door 3 unlocked.'
+    },
+    /* ---------------- DOOR 4 ---------------- */
+    {
+      name: 'Mystery Solids Lab', tag: 'Topics 2.1, 2.3–2.4 · analyze lab data',
+      render: () => `
+        ${say(`I sell six "gemstones." They are really six unknown white or gray solids from the stockroom. Your class tested them. Classify each one, or the Admiral gets a shell made of wax.`)}
+        <p>Tests: a melting-point apparatus (maximum 300 °C), solubility in water, a conductivity tester (LED lights = conducts) on the solid and on any water solution, and a gentle tap with a hammer.</p>
+        <div style="overflow-x:auto"><table class="data" style="font-size:13px">
+          <tr><th>Unknown</th><th>Melting point</th><th>Dissolves in water?</th><th>Solid conducts?</th><th>Solution conducts?</th><th>Hammer tap</th></tr>
+          <tr><td>A</td><td>186 °C</td><td>yes</td><td>no</td><td>no</td><td>crumbles</td></tr>
+          <tr><td>B</td><td>&gt; 300 °C</td><td>yes</td><td>no</td><td>yes</td><td>shatters</td></tr>
+          <tr><td>C</td><td>&gt; 300 °C</td><td>no</td><td>no</td><td>—</td><td>very hard; scratches glass</td></tr>
+          <tr><td>D</td><td>&gt; 300 °C</td><td>no</td><td>yes</td><td>—</td><td>flattens, does not break</td></tr>
+          <tr><td>E</td><td>58 °C</td><td>no</td><td>no</td><td>—</td><td>soft, waxy</td></tr>
+          <tr><td>F</td><td>&gt; 300 °C</td><td>no</td><td>no</td><td>—</td><td>shatters</td></tr>
+        </table></div>
+        <p class="note">Extra data for F from a reference handbook: melts at 1418 °C, and the <b>liquid</b> conducts electricity.</p>
+        <div class="card"><h4>Type numbers</h4><b>1</b> ionic &nbsp;·&nbsp; <b>2</b> molecular (covalent molecules) &nbsp;·&nbsp; <b>3</b> covalent network &nbsp;·&nbsp; <b>4</b> metallic
+          <p class="note" style="margin-bottom:0">Enter the type number for each unknown.</p></div>`,
+      fields: ['A', 'B', 'C', 'D', 'E', 'F'].map(k => ({ label: 'Unknown ' + k, w: 80, kind: 'num' })),
+      answers: ['fov1w81cl5'],
+      hints: [
+        'Conducts as a solid and bends instead of breaking → mobile electrons. Conducts only when dissolved or melted → ions that must be free to move.',
+        'Low melting point and no conduction anywhere → weak attractions between neutral molecules. Very high melting point, insoluble, never conducts, extremely hard → a giant web of covalent bonds.'
+      ],
+      success: 'Classified! The wax is going back to the candle aisle. Door 4 unlocked.'
+    },
+    /* ---------------- DOOR 5 ---------------- */
+    {
+      name: 'Molecule on the Run', tag: 'Topics 1.3, 2.5, 2.7 · Lewis, VSEPR & hybridization · FRQ relay',
+      roles: true,
+      render: () => `
+        ${say(`Last door! I hid the Admiral's shell behind a force field powered by one mystery molecule. It contains only C, H, and N. Each of you takes one card. Team of 3? Whoever finishes first takes Card D.`, 'mad')}
+        <div class="roles" data-roles></div>
+        <div data-rolecard></div>`,
+      roleCards: {
+        A: `<div class="card rolecard"><h4>Card A · The Formula Finder</h4>
+            <p>Elemental analysis of the molecule: <b>67.9% C</b>, <b>5.70% H</b>, <b>26.4% N</b> by mass. Its molar mass is <b>53.1 g/mol</b>.</p>
+            <p class="note">C 12.01, H 1.008, N 14.01 g/mol.</p>
+            <p><b>Your question:</b> Find the molecular formula. How many <b>atoms in total</b> are in one molecule? Tell Card B the formula.</p></div>`,
+        B: `<div class="card rolecard"><h4>Card B · The Lewis Builder</h4>
+            <p>Here is how the atoms are connected (H atoms on the left two carbons, nitrogen on the end):</p>
+            <div class="fd">${acrylo()}</div>
+            <p>You need the formula from Card A to count valence electrons. Complete the Lewis structure with <b>every atom having a formal charge of zero</b> (every C has 4 bonds, N has an octet).</p>
+            <p><b>Your question:</b> How many <b>π (pi) bonds</b> are in the molecule? Then show your finished Lewis structure to Cards C and D.</p></div>`,
+        C: `<div class="card rolecard"><h4>Card C · The Shape Shifter</h4>
+            <p>You need Card B's finished Lewis structure. Use VSEPR: count the electron domains around the <b>third carbon</b> (the one bonded to N).</p>
+            <p><b>Your question:</b> What is the ideal <b>C–C–N bond angle</b> at that third carbon, in degrees?</p></div>`,
+        D: `<div class="card rolecard"><h4>Card D · The Hybridization Hound</h4>
+            <p>You need Card B's finished Lewis structure. For each <b>carbon</b> atom, count its electron domains and decide whether it is sp, sp<sup>2</sup>, or sp<sup>3</sup> hybridized.</p>
+            <p><b>Your question:</b> How many <b>carbon atoms are sp<sup>2</sup> hybridized</b>?</p></div>`
+      },
+      fields: [
+        { label: 'A · atoms per molecule', w: 140, kind: 'num' }, { label: 'B · π bonds', w: 110, kind: 'num' },
+        { label: 'C · C–C–N angle (°)', w: 130, kind: 'num' }, { label: 'D · sp² carbons', w: 120, kind: 'num' }
+      ],
+      answers: ['596gol2d1w'],
+      hints: [
+        'Card A: in 100 g, find moles of each element and divide by the smallest; compare the empirical formula mass with 53.1 g/mol. Card B: the molecule has 20 valence electrons; it needs one C=C double bond and one C≡N triple bond.',
+        'A double bond has 1 π bond; a triple bond has 2 π bonds. The third carbon has 2 electron domains (linear). Carbons with 3 electron domains are sp<sup>2</sup>.'
+      ],
+      success: 'NOOO! My force field! Fine. The Admiral may have his brass shell.'
+    }
+  ]
+};
+
+/* =====================================================================
+   ENGINE
+   ===================================================================== */
+const KEY = 'escape:' + ROOM.id;
+const store = {
+  get() { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch (e) { return null; } },
+  set(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} },
+  clear() { try { localStorage.removeItem(KEY); } catch (e) {} }
+};
+let S = store.get() || { started: false, team: '', size: 4, start: 0, end: 0, door: 0, hints: {}, wrong: 0, role: 'A', timer: null };
+const save = () => store.set(S);
+const $ = (q, el = document) => el.querySelector(q);
+const fmt = ms => { const s = Math.max(0, Math.floor(ms / 1000)); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
+const hintsUsed = () => Object.values(S.hints).reduce((a, b) => a + b, 0);
+
+function timerLive() { return S.timer && S.timer.end && S.timer.day === dayKey(); }
+function timeUp() { return timerLive() && Date.now() >= S.timer.end && !S.end; }
+function hud() {
+  const t = S.started ? fmt((S.end || Date.now()) - S.start) : '00:00';
+  let chip;
+  if (timerLive() && !S.end) { const left = S.timer.end - Date.now();
+    chip = `<button class="tchip ${left < 5 * 60000 ? 'low' : ''}" id="tchip" title="Class timer">⏳ Class <b>${left > 0 ? fmt(left) : '0:00'}</b></button>`; }
+  else chip = `<button class="tchip" id="tchip" title="Enter class timer code">⏲ ${S.timer && S.timer.off && S.timer.day === dayKey() ? 'Timer off' : 'Timer code'}</button>`;
+  $('#hud').innerHTML = `${chip}<span title="Your team's time">⏱ <b>${t}</b></span><span title="Hints used">💡 <b>${hintsUsed()}</b></span><span title="Wrong codes">✖ <b>${S.wrong}</b></span>`;
+  $('#tchip').onclick = () => { $('#timerBox').classList.toggle('on'); $('#timerInput').focus(); };
+}
+let shownTimeUp = false;
+setInterval(() => { hud(); const up = timeUp() && S.started; if (up !== shownTimeUp) render(); }, 1000);
+function applyTimerCode(raw, msgEl) {
+  const r = parseTimerCode(raw);
+  if (!r) { if (msgEl) { msgEl.style.color = '#ffb3bd'; msgEl.textContent = "That timer code isn't valid. Check the board and try again."; } return false; }
+  S.timer = r.type === 'off' ? { off: true, end: null, day: dayKey() } : { off: false, end: r.end, day: dayKey() };
+  save();
+  if (msgEl) { msgEl.style.color = '#9ff0b8'; msgEl.textContent = r.type === 'off' ? 'Timer turned off. Keep going!' : `Timer set: ends at ${new Date(r.end).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}.`; }
+  render(); return true;
+}
+
+function hall() {
+  $('#hall').innerHTML = ROOM.doors.map((d, i) => {
+    const cls = i < S.door ? 'open' : (i === S.door && S.started && !S.end ? 'current' : '');
+    return `<div class="door-pill ${cls}"><span class="lock"></span><span class="n">${i + 1}</span>${d.name}</div>`;
+  }).join('');
+}
+
+function normalize(v, f) {
+  v = String(v).trim();
+  if (f.kind === 'word') return v.toUpperCase().replace(/[^A-Z]/g, '');
+  const m = v.replace(/,/g, '').match(/-?\d*\.?\d+/); // first number only, so units like "W/m2" are ignored
+  if (!m) return '';
+  const n = parseFloat(m[0]);
+  const r = f.roundTo || 1;
+  return String(Math.round(Math.abs(n) / r) * r);
+}
+
+function render() {
+  hud(); hall();
+  const st = $('#stage');
+  if (!S.started) return renderIntro(st);
+  if (S.door >= ROOM.doors.length) { shownTimeUp = false; return renderFinale(st); }
+  shownTimeUp = timeUp();
+  if (shownTimeUp) return renderTimeUp(st);
+  const i = S.door, d = ROOM.doors[i];
+  st.innerHTML = `<span class="tag">Door ${i + 1} of ${ROOM.doors.length} · ${d.tag}</span><h2>${d.name}</h2>${d.render()}
+    <div class="lockbox">
+      <div class="lbl">🔒 Door ${i + 1} lock</div>
+      <form class="fields" id="lockForm" autocomplete="off">
+        ${d.fields.map((f, k) => `<label class="field">${f.label}<input style="--w:${f.w}px" name="f${k}" inputmode="${f.kind === 'num' ? 'decimal' : 'text'}" required></label>`).join('')}
+        <button class="btn" type="submit">Try code</button>
+      </form>
+      <div class="feedback" id="fb" aria-live="polite"></div>
+      <div class="hints no-print">${d.hints.map((h, k) => `<button class="btn ghost" data-hint="${k}" ${k > (S.hints[i] || 0) ? 'disabled style="opacity:.4"' : ''}>💡 Hint ${k + 1}</button>`).join('')}</div>
+      <div id="hintOut">${d.hints.slice(0, S.hints[i] || 0).map(h => `<div class="hinttext">${h}</div>`).join('')}</div>
+    </div>`;
+  if (d.roles) setupRoles(st, d);
+  $('#lockForm').addEventListener('submit', e => { e.preventDefault(); check(d, i); });
+  st.querySelectorAll('[data-hint]').forEach(b => b.addEventListener('click', () => {
+    const k = +b.dataset.hint; if ((S.hints[i] || 0) <= k) { S.hints[i] = k + 1; save(); render(); }
+  }));
+  const first = st.querySelector('#lockForm input'); if (first && document.activeElement === document.body) first.focus({ preventScroll: true });
+}
+
+function setupRoles(st, d) {
+  const box = $('[data-roles]', st), out = $('[data-rolecard]', st);
+  const keys = Object.keys(d.roleCards);
+  const draw = () => {
+    box.innerHTML = '<span class="note" style="align-self:center;margin-right:4px">I am holding:</span>' + keys.map(k => `<button type="button" class="${k === S.role ? 'on' : ''}" data-r="${k}">Card ${k}</button>`).join('');
+    out.innerHTML = d.roleCards[S.role] || '';
+    box.querySelectorAll('[data-r]').forEach(b => b.addEventListener('click', () => { S.role = b.dataset.r; save(); draw(); }));
+  };
+  draw();
+}
+
+function check(d, i) {
+  const form = $('#lockForm'), fb = $('#fb');
+  const vals = d.fields.map((f, k) => normalize(form.elements['f' + k].value, f));
+  const h = cyrb53(ROOM.salt + 'd' + (i + 1) + '::' + vals.join('|'));
+  if (d.answers.includes(h)) {
+    S.door = i + 1;
+    if (S.door >= ROOM.doors.length) { S.end = Date.now(); S.key = vals.join('|'); }
+    save();
+    fb.className = 'feedback good'; fb.textContent = '✔ ' + d.success;
+    form.querySelector('button').disabled = true;
+    setTimeout(render, 1400);
+  } else {
+    S.wrong++; save(); hud();
+    fb.className = 'feedback bad';
+    fb.textContent = '✖ ' + ROOM.wrongLines[Math.floor(Math.random() * ROOM.wrongLines.length)];
+    form.classList.remove('shake'); void form.offsetWidth; form.classList.add('shake');
+  }
+}
+
+function renderIntro(st) {
+  st.innerHTML = `<div class="center">
+      <span class="tag">Escape Room · Teams of 3–4</span>
+      <h2>${ROOM.title}</h2></div>
+      ${say(ROOM.intro + ' <br><br>The clock starts when you press the button. Hints are free, but I <i>count</i> them. Mwahaha.')}
+      <div class="setup">
+        <div><label for="team">Team name</label><input id="team" maxlength="40" placeholder="e.g., The Lone Pairs" value="${S.team || ''}"></div>
+        <div><label for="names">Team members</label><input id="names" maxlength="120" placeholder="First names" value="${S.names || ''}"></div>
+        <div><label for="size">Players</label><select id="size"><option value="3">3 players</option><option value="4" selected>4 players</option></select></div>
+        <div><label for="tcode">Class timer code <span class="note">(from the board, if your teacher posted one)</span></label><input id="tcode" maxlength="12" placeholder="e.g., 1452-AB" style="font-family:var(--mono);text-transform:uppercase"></div>
+        <div id="tcodeMsg" class="note"></div>
+        <p class="note" style="margin:0">Every player opens this page on their own Chromebook and enters the <b>same</b> team name. Bring paper, a pencil, a calculator, and a periodic table.</p>
+        <button class="btn dark" id="go">Start the clock ▶</button>
+      </div>`;
+  $('#size').value = S.size || 4;
+  $('#go').addEventListener('click', () => {
+    const tc = $('#tcode').value.trim();
+    if (tc && !parseTimerCode(tc)) { $('#tcodeMsg').style.color = '#d1495b'; $('#tcodeMsg').textContent = "That timer code isn't valid. Fix it or leave it blank."; return; }
+    S.team = $('#team').value.trim() || 'Unnamed Team'; S.names = $('#names').value.trim(); S.size = +$('#size').value;
+    if (tc) { const r = parseTimerCode(tc); S.timer = r.type === 'off' ? { off: true, end: null, day: dayKey() } : { off: false, end: r.end, day: dayKey() }; }
+    S.started = true; S.start = Date.now(); save(); render();
+  });
+}
+
+function renderFinale(st) {
+  const t = fmt(S.end - S.start);
+  st.innerHTML = `<div class="center">
+      ${say(`Fine. FINE. You escaped, and the Admiral is admiring his new brass shell. I'll go back to vacuuming. Show this screen to your teacher.`, 'happy')}
+      <div class="cert">
+        <div class="tag">Certificate of Escape</div>
+        <h2 style="margin:4px 0">${escapeHtml(S.team)}</h2>
+        <div class="note">${escapeHtml(S.names || '')}</div>
+        <div class="stats"><div>Time<b>${t}</b></div><div>Hints<b>${hintsUsed()}</b></div><div>Wrong codes<b>${S.wrong}</b></div></div>
+        <div class="note">Finish code (your teacher types this in)</div>
+        <div class="fcode">${finishCode(S.end, Math.min(99, hintsUsed()))}</div>
+        <div class="note" style="margin-top:8px">Teacher password</div>
+        <div class="pw">${unlockPw()}</div>
+        <div class="note">${new Date(S.end).toLocaleString()} · AP Chemistry · Unit 2: Compound Structure and Properties · ${ROOM.title}</div>
+      </div>
+      <p class="no-print"><button class="btn dark" onclick="window.print()">Print certificate</button></p>
+    </div>`;
+}
+function renderTimeUp(st) {
+  const opened = S.door;
+  st.innerHTML = `<div class="timeup">
+      ${say(`Beep boop... <b>TIME'S UP!</b> The lab stays locked. Show this screen to your teacher.`, 'happy')}
+      <h2>⏰ Time's Up</h2>
+      <div class="cert">
+        <h2 style="margin:4px 0;color:var(--ink);font-size:24px">${escapeHtml(S.team)}</h2>
+        <div class="note">${escapeHtml(S.names || '')}</div>
+        <div class="stats"><div>Doors opened<b>${opened} / ${ROOM.doors.length}</b></div><div>Hints<b>${hintsUsed()}</b></div><div>Wrong codes<b>${S.wrong}</b></div></div>
+        <div class="note">Stopped on Door ${Math.min(opened + 1, ROOM.doors.length)}: ${ROOM.doors[Math.min(opened, ROOM.doors.length - 1)].name}</div>
+      </div>
+      <p class="note">Did your teacher give more time? Type the new code from the board:</p>
+      <form id="moreTime" autocomplete="off" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <input id="moreInput" placeholder="1505-AB" style="font-family:var(--mono);font-size:20px;letter-spacing:.1em;width:180px;padding:8px 10px;border-radius:9px;border:2px solid var(--line);text-transform:uppercase">
+        <button class="btn dark" type="submit">Keep going</button></form>
+      <div id="moreMsg" class="note" style="margin-top:6px"></div>
+    </div>`;
+  $('#moreTime').addEventListener('submit', e => { e.preventDefault(); const m = $('#moreMsg'); applyTimerCode($('#moreInput').value, m); if (m.textContent.startsWith('That')) m.style.color = '#d1495b'; });
+}
+function pwKey(s) { return cyrb53(ROOM.salt + 'pw1::' + s) + cyrb53('pw2::' + s + ROOM.salt) + cyrb53(s + '::pw3' + ROOM.salt); }
+function unlockPw() { const k = pwKey(S.key || ''); return ROOM.finaleCipher.map((b, i) => String.fromCharCode(b ^ k.charCodeAt(i % k.length))).join(''); }
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+$('#timerForm').addEventListener('submit', e => { e.preventDefault(); if (applyTimerCode($('#timerInput').value, $('#timerMsg'))) { $('#timerInput').value = ''; setTimeout(() => $('#timerBox').classList.remove('on'), 1600); } });
+$('#timerClose').addEventListener('click', () => $('#timerBox').classList.remove('on'));
+$('#resetBtn').addEventListener('click', () => $('#confirmBox').classList.add('on'));
+$('#resetNo').addEventListener('click', () => $('#confirmBox').classList.remove('on'));
+$('#resetYes').addEventListener('click', () => { store.clear(); S = { started: false, team: '', size: 4, start: 0, end: 0, door: 0, hints: {}, wrong: 0, role: 'A', timer: null }; $('#confirmBox').classList.remove('on'); render(); });
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Escape Room · AP Biology · Unit 1: Chemistry of Life · VECTOR's Polymer Kitchen</title>
+<style>
+:root{
+  --ink:#14213d; --ink-2:#3d4a66; --paper:#fbf8f1; --card:#ffffff; --line:#d9d2c3;
+  --teal:#0f8b8d; --teal-d:#0b6b6d; --amber:#f4a259; --red:#d1495b; --green:#3a9d5d;
+  --night:#0d1b2a; --night-2:#1b263b; --glow:#7ee8e0;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  --sans:"Avenir Next","Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:var(--sans);color:var(--ink);background:var(--night);
+  background-image:linear-gradient(rgba(126,232,224,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(126,232,224,.06) 1px,transparent 1px);
+  background-size:28px 28px;min-height:100vh;line-height:1.5}
+.wrap{max-width:980px;margin:0 auto;padding:20px 18px 60px}
+header.top{display:flex;align-items:center;gap:14px;color:#e8f1f2;flex-wrap:wrap}
+header.top .unit{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--glow)}
+header.top h1{margin:0;font-size:26px;letter-spacing:.01em}
+header.top .spacer{flex:1}
+.hud{display:flex;gap:10px;font-family:var(--mono);font-size:13px}
+.hud span{background:var(--night-2);border:1px solid #2f3e5a;color:#e8f1f2;padding:5px 10px;border-radius:8px}
+.hud b{color:var(--glow);font-weight:600}
+
+/* progress hallway */
+.hall{display:flex;gap:8px;margin:18px 0 18px;flex-wrap:wrap}
+.door-pill{flex:1;min-width:120px;background:var(--night-2);border:1px solid #2f3e5a;color:#8fa0b8;border-radius:10px;padding:8px 10px;font-size:13px;display:flex;gap:8px;align-items:center}
+.door-pill .n{font-family:var(--mono);font-size:11px;border:1px solid currentColor;border-radius:5px;padding:0 5px}
+.door-pill.open{color:#bff3ee;border-color:var(--teal)}
+.door-pill.current{color:#fff;border-color:var(--amber);box-shadow:0 0 0 2px rgba(244,162,89,.25)}
+.door-pill.open .lock::before{content:"🔓"} .door-pill .lock::before{content:"🔒"}
+
+.panel{background:var(--paper);border-radius:16px;padding:22px 24px;box-shadow:0 18px 50px rgba(0,0,0,.35);position:relative}
+.panel h2{margin:0 0 4px;font-size:22px}
+.tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;background:#e7f4f4;color:var(--teal-d);border-radius:6px;padding:2px 8px;margin-bottom:10px}
+.vector{text-align:left;display:flex;gap:14px;align-items:flex-start;background:var(--night);color:#e8f1f2;border-radius:12px;padding:12px 14px;margin:10px 0 16px}
+.vector svg{flex:0 0 auto}
+.vector p{margin:0}
+.vector .who{font-family:var(--mono);font-size:11px;color:var(--glow);letter-spacing:.12em;text-transform:uppercase}
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.card h4{margin:0 0 6px;font-size:15px}
+.badge{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;background:var(--ink);color:#fff;font-weight:700;font-family:var(--mono);margin-right:8px}
+.fd{text-align:center}
+.fd .badge{background:var(--teal)}
+table.data{border-collapse:collapse;margin:8px 0;font-family:var(--mono);font-size:14px}
+table.data th,table.data td{border:1px solid var(--line);padding:6px 12px;text-align:center;background:#fff}
+table.data th{background:#eef2f6}
+ol.problems{padding-left:0;list-style:none;margin:0}
+ol.problems li{display:flex;gap:10px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+ol.problems .slot{flex:0 0 auto;font-family:var(--mono);font-weight:700;background:var(--amber);color:var(--ink);border-radius:6px;padding:0 8px;height:26px;line-height:26px}
+.stmt{display:flex;gap:10px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin-bottom:7px}
+.stmt .num{flex:0 0 auto;min-width:34px;text-align:center;font-family:var(--mono);font-weight:700;background:#efe7d6;border-radius:6px;padding:1px 6px}
+
+/* roles */
+.roles{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
+.roles button{font:inherit;font-size:14px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;cursor:pointer}
+.roles button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.rolecard{border-left:5px solid var(--amber)}
+.note{font-size:14px;color:var(--ink-2)}
+
+/* lock */
+.lockbox{margin-top:18px;background:var(--night-2);color:#e8f1f2;border-radius:14px;padding:16px}
+.lockbox .lbl{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--glow);margin-bottom:8px}
+.fields{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:4px;font-size:13px;color:#b9c6d6}
+.field input{font-family:var(--mono);font-size:22px;letter-spacing:.12em;width:var(--w,150px);padding:8px 10px;border-radius:9px;border:2px solid #3b4d6b;background:#0d1b2a;color:#fff;text-transform:uppercase}
+.field input:focus{outline:none;border-color:var(--amber)}
+.btn{font:inherit;font-weight:700;border:0;border-radius:10px;padding:11px 18px;cursor:pointer;background:var(--amber);color:var(--ink)}
+.btn:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent;color:#cfe0ea;border:1px solid #3b4d6b;font-weight:500}
+.btn.dark{background:var(--ink);color:#fff}
+.feedback{margin-top:10px;min-height:24px;font-size:15px}
+.feedback.bad{color:#ffb3bd}.feedback.good{color:#9ff0b8}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.hints{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.hinttext{background:#fff7e8;border:1px dashed var(--amber);border-radius:10px;padding:8px 12px;margin-top:8px;font-size:14px;color:var(--ink)}
+
+/* intro / finale */
+.center{text-align:center}
+.setup{display:grid;gap:12px;max-width:520px;margin:14px auto 0;text-align:left}
+.setup label{font-size:14px;font-weight:600}
+.setup input,.setup select{font:inherit;width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:#fff}
+.cert{border:3px double var(--ink);border-radius:14px;padding:22px;background:#fff;max-width:620px;margin:16px auto 0}
+.cert .pw{font-family:var(--mono);font-size:30px;letter-spacing:.25em;background:var(--ink);color:var(--glow);display:inline-block;padding:6px 16px;border-radius:10px;margin:6px 0}
+.stats{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:10px 0}
+.stats div{background:#f2efe6;border-radius:10px;padding:8px 14px;font-size:14px}
+.stats b{display:block;font-family:var(--mono);font-size:20px}
+.foot{color:#7f90a8;font-size:12px;text-align:center;margin-top:22px}
+.foot a{color:#9fd9d4}
+.reset{background:none;border:0;color:#7f90a8;text-decoration:underline;cursor:pointer;font:inherit;font-size:12px}
+.confirm{display:none;margin-top:8px;color:#e8f1f2;font-size:13px}
+.confirm.on{display:block}
+svg text{font-family:var(--sans)}
+.tchip{cursor:pointer;font:inherit;font-family:var(--mono);font-size:13px;background:var(--night-2);border:1px solid #2f3e5a;color:#e8f1f2;padding:5px 10px;border-radius:8px}
+.tchip b{color:var(--amber)} .tchip.low{border-color:var(--red);animation:pulse 1s infinite} .tchip.low b{color:#ffb3bd}
+@keyframes pulse{50%{box-shadow:0 0 0 3px rgba(209,73,91,.35)}}
+#timerBox{display:none;margin-top:12px;background:var(--night-2);border:1px solid #3b4d6b;border-radius:12px;padding:12px 14px;color:#e8f1f2}
+#timerBox.on{display:block}
+#timerBox form{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#timerBox input{font-family:var(--mono);font-size:18px;letter-spacing:.1em;width:160px;padding:7px 10px;border-radius:8px;border:2px solid #3b4d6b;background:#0d1b2a;color:#fff;text-transform:uppercase}
+#timerMsg{font-size:14px;margin-top:6px;min-height:20px}
+.timeup{text-align:center}
+.timeup h2{font-size:40px;color:var(--red);margin:6px 0}
+.fcode{font-family:var(--mono);font-size:26px;letter-spacing:.12em;background:#fff7e8;border:2px dashed var(--amber);display:inline-block;padding:4px 14px;border-radius:10px;margin:4px 0}
+@media print{body{background:#fff}.hall,.hud,.foot,.no-print{display:none!important}.panel{box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="unit">AP Biology · Unit 1: Chemistry of Life</div>
+      <h1>VECTOR&#39;s Polymer Kitchen</h1>
+    </div>
+    <div class="spacer"></div>
+    <div class="hud" id="hud"></div>
+  </header>
+  <div id="timerBox" class="no-print">
+    <form id="timerForm" autocomplete="off"><span>⏲ Class timer code (from the board):</span>
+      <input id="timerInput" placeholder="1452-AB" aria-label="Class timer code">
+      <button class="btn" type="submit" style="padding:8px 14px">Set</button>
+      <button class="btn ghost" type="button" id="timerClose" style="padding:8px 12px">Close</button></form>
+    <div id="timerMsg" aria-live="polite"></div>
+  </div>
+  <nav class="hall" id="hall" aria-label="Door progress"></nav>
+  <main class="panel" id="stage"></main>
+  <div class="foot">
+    Mr. C's Science · <a href="index.html">All escape rooms</a> ·
+    <button class="reset" id="resetBtn">Reset this device</button>
+    <div class="confirm" id="confirmBox">Erase all progress on this device?
+      <button class="btn ghost" id="resetYes" style="padding:4px 10px">Yes, reset</button>
+      <button class="btn ghost" id="resetNo" style="padding:4px 10px">Cancel</button></div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   ESCAPE ROOM ENGINE (reusable). To make a new unit, copy this file and
+   replace the ROOM object below. Answers are stored only as salted
+   hashes (cyrb53); generate them with the helper in the teacher guide.
+   ===================================================================== */
+function cyrb53(str, seed = 0) {
+  let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+  for (let i = 0, ch; i < str.length; i++) { ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507); h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507); h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+
+/* ---------- CLASS TIMER + FINISH CODES (shared with teacher.html; keep identical) ---------- */
+const TALPH = 'ACDEFGHJKMNPQRTUVWXY34679';
+const pad2 = n => String(n).padStart(2, '0');
+function dayKey(d = new Date()) { return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+function tmac(s, day) { const h = parseInt(cyrb53('mrc-class-timer::' + (day || dayKey()) + '::' + s), 36); return TALPH[h % 25] + TALPH[Math.floor(h / 25) % 25]; }
+function timerCode(endMs) { const d = new Date(endMs), t = pad2(d.getHours()) + pad2(d.getMinutes()); return t + '-' + tmac('T' + t); }
+function offCode() { return 'OFF-' + tmac('OFF'); }
+function finishCode(ms, hints) { const d = new Date(ms), t = pad2(d.getHours()) + pad2(d.getMinutes()) + pad2(d.getSeconds()); return t + '-' + hints + '-' + tmac('F' + t + '-' + hints); }
+function cleanCode(raw) { return String(raw || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
+// -> {type:'end', end:ms} | {type:'off'} | null
+function parseTimerCode(raw) {
+  const c = cleanCode(raw); let m;
+  if ((m = c.match(/^OFF([A-Z0-9]{2})$/)) && m[1] === tmac('OFF')) return { type: 'off' };
+  if ((m = c.match(/^(\d{4})([A-Z0-9]{2})$/)) && m[2] === tmac('T' + m[1])) {
+    const hh = +m[1].slice(0, 2), mm = +m[1].slice(2); if (hh > 23 || mm > 59) return null;
+    const d = new Date(); d.setHours(hh, mm, 0, 0); return { type: 'end', end: d.getTime() };
+  }
+  return null;
+}
+// -> {finish:ms, hints:n} | null
+function parseFinishCode(raw) {
+  const c = String(raw || '').toUpperCase().replace(/\s/g, ''); const m = c.match(/^(\d{6})-?(\d{1,2})-?([A-Z0-9]{2})$/);
+  if (!m || m[3] !== tmac('F' + m[1] + '-' + (+m[2]))) return null;
+  const d = new Date(); d.setHours(+m[1].slice(0, 2), +m[1].slice(2, 4), +m[1].slice(4), 0);
+  return { finish: d.getTime(), hints: +m[2] };
+}
+
+/* ---------- drawing helpers ---------- */
+const sub = (main, s) => `${main}<tspan dy="4" font-size="10">${s}</tspan><tspan dy="-4"></tspan>`;
+// Force diagram: dot on a dashed grid, arrows measured in grid units
+function forceDiagram(forces, opts = {}) {
+  const u = 16, size = opts.size || 176, c = size / 2;
+  let g = '';
+  for (let x = c % u; x <= size; x += u) g += `<line x1="${x}" y1="0" x2="${x}" y2="${size}" stroke="#b9c3cf" stroke-dasharray="3 3" stroke-width="1"/>`;
+  for (let y = c % u; y <= size; y += u) g += `<line x1="0" y1="${y}" x2="${size}" y2="${y}" stroke="#b9c3cf" stroke-dasharray="3 3" stroke-width="1"/>`;
+  let a = '';
+  const dirs = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+  forces.forEach(f => {
+    const [dx, dy] = dirs[f.dir], L = f.len * u, x2 = c + dx * L, y2 = c + dy * L;
+    a += `<line x1="${c}" y1="${c}" x2="${x2 - dx * 7}" y2="${y2 - dy * 7}" stroke="#14213d" stroke-width="3"/>`;
+    const p = dx ? `${x2},${y2} ${x2 - dx * 10},${y2 - 6} ${x2 - dx * 10},${y2 + 6}` : `${x2},${y2} ${x2 - 6},${y2 - dy * 10} ${x2 + 6},${y2 - dy * 10}`;
+    a += `<polygon points="${p}" fill="#14213d"/>`;
+    // vertical arrows: label beside the tip; horizontal arrows: label above the tip, pulled inward
+    const out = !!f.mag; // labels with magnitudes go outward past the tip (canvas is padded)
+    const lx = dx ? x2 + (out ? dx * 8 : 0) : c + 8, ly = dy ? y2 + (dy > 0 ? 14 : -4) : (out ? c + 5 : c - 12);
+    const anchor = out ? (dx < 0 ? 'end' : 'start') : (dx > 0 ? 'end' : 'start');
+    a += `<text x="${lx}" y="${ly}" font-size="14" font-style="italic" fill="#0b6b6d" text-anchor="${anchor}">${sub('F', f.lab)}${f.mag ? ` = ${f.mag}` : ''}</text>`;
+  });
+  const px = opts.padX || 0;
+  return `<svg viewBox="${-px} 0 ${size + 2 * px} ${size}" width="${size + 2 * px}" height="${size}" style="max-width:100%;height:auto" role="img" aria-label="force diagram"><rect width="${size}" height="${size}" fill="#fff"/>${g}${a}<circle cx="${c}" cy="${c}" r="5.5" fill="#d1495b"/></svg>`;
+}
+// Line graph on a grid. pts in data units.
+function graph({ pts, xmax, ymax, xstep, ystep, xlab, ylab, w = 420, h = 250, ticks = true }) {
+  const L = 48, B = 36, T = 12, R = 14, W = w - L - R, H = h - T - B;
+  const X = x => L + x / xmax * W, Y = y => T + H - y / ymax * H;
+  let s = `<rect width="${w}" height="${h}" fill="#fff"/>`;
+  for (let x = 0; x <= xmax + 1e-9; x += xstep) s += `<line x1="${X(x)}" y1="${T}" x2="${X(x)}" y2="${T + H}" stroke="#dde3ea"/>` + (ticks ? `<text x="${X(x)}" y="${T + H + 16}" font-size="12" text-anchor="middle" fill="#3d4a66">${+x.toFixed(2)}</text>` : '');
+  for (let y = 0; y <= ymax + 1e-9; y += ystep) s += `<line x1="${L}" y1="${Y(y)}" x2="${L + W}" y2="${Y(y)}" stroke="#dde3ea"/>` + (ticks ? `<text x="${L - 7}" y="${Y(y) + 4}" font-size="12" text-anchor="end" fill="#3d4a66">${+y.toFixed(2)}</text>` : '');
+  s += `<line x1="${L}" y1="${T + H}" x2="${L + W}" y2="${T + H}" stroke="#14213d" stroke-width="2"/><line x1="${L}" y1="${T}" x2="${L}" y2="${T + H}" stroke="#14213d" stroke-width="2"/>`;
+  s += `<polyline points="${pts.map(p => X(p[0]) + ',' + Y(p[1])).join(' ')}" fill="none" stroke="#d1495b" stroke-width="3.5" stroke-linejoin="round"/>`;
+  s += `<text x="${L + W / 2}" y="${h - 3}" font-size="13" text-anchor="middle" fill="#14213d">${xlab}</text>`;
+  s += `<text x="13" y="${T + H / 2}" font-size="13" text-anchor="middle" fill="#14213d" transform="rotate(-90 13 ${T + H / 2})">${ylab}</text>`;
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;height:auto" role="img" aria-label="graph">${s}</svg>`;
+}
+function vectorBot(mood = 'smug') {
+  const eyes = mood === 'mad' ? '<path d="M18 22 l8 3 M42 22 l-8 3" stroke="#0d1b2a" stroke-width="3" stroke-linecap="round"/>' : '';
+  const mouth = mood === 'happy' ? '<path d="M22 36 q8 7 16 0" stroke="#0d1b2a" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    : mood === 'mad' ? '<path d="M22 39 q8 -6 16 0" stroke="#0d1b2a" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    : '<path d="M23 37 h14" stroke="#0d1b2a" stroke-width="3" stroke-linecap="round"/>';
+  return `<svg width="60" height="60" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="32" r="25" fill="#7ee8e0"/><circle cx="30" cy="32" r="25" fill="none" stroke="#0f8b8d" stroke-width="3"/><rect x="14" y="20" width="32" height="12" rx="6" fill="#0d1b2a" opacity=".12"/><circle cx="22" cy="27" r="4" fill="#0d1b2a"/><circle cx="38" cy="27" r="4" fill="#0d1b2a"/>${eyes}${mouth}<line x1="30" y1="7" x2="30" y2="1" stroke="#0f8b8d" stroke-width="3"/><circle cx="30" cy="1.5" r="3" fill="#f4a259"/></svg>`;
+}
+const say = (html, mood) => `<div class="vector">${vectorBot(mood)}<div><div class="who">VECTOR</div><p>${html}</p></div></div>`;
+
+/* ---------- extra drawing helpers (AP Bio Unit 1) ---------- */
+// colored chip for indicator-test tables
+const chip = (col, txt) => `<span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${col};border:1px solid #14213d55"></span>${txt}</span>`;
+// DNA ladder: top strand letters, bottom strand unknown
+function dnaLadder(top) {
+  const n = top.length, bw = 44, x0 = 70, w = x0 * 2 + n * bw, h = 190;
+  let s = `<rect width="${w}" height="${h}" fill="#fff"/>`;
+  for (let x = 10; x < w; x += 16) s += `<line x1="${x}" y1="0" x2="${x}" y2="${h}" stroke="#e3e8ee" stroke-dasharray="3 3"/>`;
+  s += `<line x1="${x0 - 10}" y1="40" x2="${x0 + n * bw + 10}" y2="40" stroke="#14213d" stroke-width="4"/>`;
+  s += `<line x1="${x0 - 10}" y1="150" x2="${x0 + n * bw + 10}" y2="150" stroke="#14213d" stroke-width="4"/>`;
+  s += `<text x="${x0 - 18}" y="45" font-size="16" text-anchor="end" fill="#0b6b6d" font-weight="700">5′</text><text x="${x0 + n * bw + 18}" y="45" font-size="16" fill="#0b6b6d" font-weight="700">3′</text>`;
+  s += `<text x="${x0 - 18}" y="155" font-size="16" text-anchor="end" fill="#0b6b6d" font-weight="700">?′</text><text x="${x0 + n * bw + 18}" y="155" font-size="16" fill="#0b6b6d" font-weight="700">?′</text>`;
+  [...top].forEach((b, i) => {
+    const cx = x0 + i * bw + bw / 2;
+    s += `<rect x="${cx - 15}" y="44" width="30" height="30" rx="5" fill="#f4a259"/><text x="${cx}" y="65" font-size="17" font-weight="700" text-anchor="middle" fill="#14213d">${b}</text>`;
+    s += `<line x1="${cx}" y1="78" x2="${cx}" y2="112" stroke="#d1495b" stroke-width="2.5" stroke-dasharray="4 4"/>`;
+    s += `<rect x="${cx - 15}" y="116" width="30" height="30" rx="5" fill="#e7f4f4" stroke="#0f8b8d" stroke-width="2"/><text x="${cx}" y="137" font-size="17" font-weight="700" text-anchor="middle" fill="#0b6b6d">?</text>`;
+  });
+  s += `<text x="${w / 2}" y="${h - 14}" font-size="12" text-anchor="middle" fill="#3d4a66">sugar–phosphate backbones (navy) · base pairs (red dashes)</text>`;
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;height:auto" role="img" aria-label="DNA segment with one strand unknown">${s}</svg>`;
+}
+// small "close-up" sketches for the folding door
+function closeUp(kind) {
+  const W = 300, H = 150; let s = `<rect width="${W}" height="${H}" fill="#fff"/>`;
+  for (let x = 10; x < W; x += 16) s += `<line x1="${x}" y1="0" x2="${x}" y2="${H}" stroke="#e3e8ee" stroke-dasharray="3 3"/>`;
+  for (let y = 10; y < H; y += 16) s += `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="#e3e8ee" stroke-dasharray="3 3"/>`;
+  const T = (x, y, t, c = '#14213d', sz = 13, a = 'middle') => `<text x="${x}" y="${y}" font-size="${sz}" text-anchor="${a}" fill="${c}">${t}</text>`;
+  if (kind === 'helix') {
+    // spring-like coil (axis horizontal); H-bonds run parallel to the axis between successive turns
+    for (let k = 0; k < 5; k++) { const cx = 60 + k * 45;
+      s += `<ellipse cx="${cx}" cy="70" rx="20" ry="42" fill="none" stroke="#14213d" stroke-width="4"/>`;
+      if (k < 4) [40, 70, 100].forEach(y => s += `<line x1="${cx + 20 * Math.sqrt(1 - ((y - 70) / 42) ** 2) + 2}" y1="${y}" x2="${cx + 45 - 20 * Math.sqrt(1 - ((y - 70) / 42) ** 2) - 2}" y2="${y}" stroke="#d1495b" stroke-width="2.5" stroke-dasharray="4 3"/>`); }
+    s += T(150, 140, 'C=O ··· H–N (red dashes), backbone atoms only', '#0b6b6d', 12);
+  } else if (kind === 'bridge') {
+    s += `<path d="M20 40 C 90 10, 160 70, 280 35" fill="none" stroke="#14213d" stroke-width="4"/><path d="M20 120 C 100 140, 170 85, 280 125" fill="none" stroke="#14213d" stroke-width="4"/>`;
+    s += `<line x1="140" y1="48" x2="140" y2="64" stroke="#14213d" stroke-width="3"/><line x1="140" y1="96" x2="140" y2="110" stroke="#14213d" stroke-width="3"/>`;
+    s += `<rect x="118" y="64" width="44" height="32" rx="6" fill="#f4a259"/>` + T(140, 85, 'S–S', '#14213d', 15);
+    s += T(90, 30, 'Cys 40', '#0b6b6d') + T(90, 140, 'Cys 95', '#0b6b6d') + T(230, 80, 'same polypeptide', '#3d4a66', 12);
+  } else if (kind === 'core') {
+    s += `<ellipse cx="150" cy="75" rx="120" ry="58" fill="#e7f4f4" stroke="#14213d" stroke-width="3"/>`;
+    [['Val 22', 112, 58], ['Leu 77', 182, 58], ['Phe 130', 112, 98], ['Ile 141', 186, 98]].forEach(([t, x, y]) => s += `<circle cx="${x}" cy="${y}" r="20" fill="#f4a259"/>` + T(x, y + 4, t, '#14213d', 11));
+    s += T(22, 18, 'H₂O', '#0f8b8d', 12, 'start') + T(272, 18, 'H₂O', '#0f8b8d', 12, 'end') + T(22, 142, 'H₂O', '#0f8b8d', 12, 'start') + T(272, 142, 'H₂O', '#0f8b8d', 12, 'end');
+  } else {
+    s += `<ellipse cx="76" cy="75" rx="68" ry="55" fill="#e7f4f4" stroke="#14213d" stroke-width="3"/><ellipse cx="224" cy="75" rx="68" ry="55" fill="#fff7e8" stroke="#14213d" stroke-width="3"/>`;
+    s += T(60, 42, 'chain 1') + T(240, 42, 'chain 2');
+    s += T(100, 80, 'Asp 12', '#14213d', 12) + T(100, 100, '–COO⁻', '#d1495b', 14);
+    s += T(200, 80, 'Lys 58', '#14213d', 12) + T(200, 100, '⁺H₃N–', '#0b6b6d', 14);
+    s += `<line x1="126" y1="95" x2="174" y2="95" stroke="#d1495b" stroke-width="2.5" stroke-dasharray="4 3"/>`;
+  }
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px;height:auto" role="img" aria-label="close-up sketch">${s}</svg>`;
+}
+const opts = list => `<div style="margin-top:6px">${list.map(([k, t]) => `<div class="stmt"><span class="num">${k}</span><span>${t}</span></div>`).join('')}</div>`;
+
+/* =====================================================================
+   ROOM DATA: AP Biology · Unit 1: Chemistry of Life
+   ===================================================================== */
+const ROOM = {
+  id: 'apbio-u1',
+  salt: 'apbio-u1::',
+  title: "VECTOR's Polymer Kitchen",
+  intro: `The class robot vacuum, <b>VECTOR</b>, has declared itself a celebrity chef. It has turned the lab into
+    <b>Café VECTOR</b>, a "molecular kitchen" where it claims it can cook anything from monomers, and it has locked the doors until
+    your team proves you know the <b>chemistry of life</b> better than it does. Its unwilling kitchen staff: <b>Chef Blubberina</b>,
+    a walrus who takes fats very seriously, and <b>Skip</b>, a water strider who refuses to get his feet wet.
+    Five doors stand between you and the hallway.`,
+  finaleCipher: [97,47,98,35,113,124,114], // teacher password, XOR-locked with the final door's code
+  wrongLines: [
+    "Nope. That code is as weak as a single hydrogen bond.",
+    "Denied! Your answer just got hydrolyzed.",
+    "Incorrect. That code is more denatured than an egg on a hot plate.",
+    "Wrong! Even my dust bin has more structure than that answer.",
+    "That's not it. Try bonding with your teammates first."
+  ],
+  doors: [
+    /* ---------------- DOOR 1 ---------------- */
+    {
+      name: 'Pond Party', tag: 'Topic 1.1 · Water & hydrogen bonding',
+      render: () => `
+        ${say(`Welcome to my rooftop pond party! Skip the water strider is the guest of honor. My door code is a <b>5-letter word</b>. Match each pond phenomenon to the explanation that <b>best accounts for it at the molecular level</b>. The letters, in order 1 → 5, spell the code. Four of my explanations are pure kitchen garbage.`)}
+        <ol class="problems">
+          <li><span class="slot">1</span><span>Skip the water strider stands on the pond's surface without sinking or even getting his feet wet.</span></li>
+          <li><span class="slot">2</span><span>Water travels from the roots to the top of a 90-meter redwood tree with no pump, pulled upward as water evaporates from the leaves.</span></li>
+          <li><span class="slot">3</span><span>On a hot July afternoon, the pond's temperature barely changes, while the sidewalk next to it gets hot enough to fry an egg.</span></li>
+          <li><span class="slot">4</span><span>In winter the pond freezes from the <b>top down</b>, and the fish survive all season in liquid water beneath the ice.</span></li>
+          <li><span class="slot">5</span><span>Chef Blubberina sprinkles table salt (NaCl) into the pond, and it dissolves completely.</span></li>
+        </ol>
+        ${opts([
+          ['S', 'The partially <b>positive</b> hydrogen atoms of water molecules surround Na⁺ ions, and the partially <b>negative</b> oxygen atoms surround Cl⁻ ions.'],
+          ['A', 'Much of the heat that water absorbs goes into breaking hydrogen bonds before the molecules can move faster, so water resists changes in temperature.'],
+          ['K', 'Covalent bonds form between neighboring water molecules, linking them into long, strong chains.'],
+          ['Y', 'The partially <b>negative</b> oxygen atoms of water molecules surround Na⁺ ions, and the partially <b>positive</b> hydrogen atoms surround Cl⁻ ions.'],
+          ['G', 'Hydrogen bonds among water molecules at the surface resist being stretched or broken (cohesion), producing surface tension.'],
+          ['E', 'Ice is denser than liquid water, so it forms at the bottom and insulates the fish from above.'],
+          ['V', 'As water freezes, each molecule forms stable hydrogen bonds with four neighbors in an open lattice, so ice is less dense than liquid water and floats.'],
+          ['N', 'Water is a nonpolar molecule, so heat spreads evenly through it instead of building up in one place.'],
+          ['R', 'Water molecules adhere to the hydrophilic walls of xylem and cohere to one another by hydrogen bonds, so evaporation at the leaves pulls an unbroken column upward.']
+        ])}`,
+      fields: [{ label: 'Code word', w: 190, kind: 'word' }],
+      answers: ['2asoa20gcbg'],
+      hints: [
+        'Every correct explanation involves hydrogen bonds between <i>different</i> water molecules. Any choice that says water is nonpolar, or that molecules are linked by covalent bonds to each other, is out.',
+        'For the salt: opposite partial charges attract. Na⁺ is positive, so which end of water (O or H) faces it? For the pond: which is less dense, ice or liquid water?'
+      ],
+      success: 'Skip gives you a tiny, dry-footed round of applause. Door 1 unlocked.'
+    },
+    /* ---------------- DOOR 2 ---------------- */
+    {
+      name: 'Tube Rack Lab', tag: 'Topics 1.2–1.5 · Analyze lab data',
+      render: () => `
+        ${say(`I found three mystery snacks in my dust bin. Your lab partners ran the classic indicator tests on them. Read the data like a scientist, then <b>add up the numbers of every conclusion the data support</b>. That sum is the code.`)}
+        <p>Each tube got a fresh sample for each test: <b>Benedict's</b> (heated in a water bath, detects reducing sugars), <b>Lugol's iodine</b> (detects starch), <b>Biuret</b> (detects peptide bonds/protein), and <b>Sudan IV</b> (a red dye that dissolves in lipids). Tubes 3 and 6 were incubated at 37 °C for 20 minutes before testing.</p>
+        <div style="overflow-x:auto"><table class="data" style="font-family:var(--sans);font-size:13px">
+          <tr><th>Tube</th><th>Contents</th><th>Benedict's</th><th>Iodine</th><th>Biuret</th><th>Sudan IV</th></tr>
+          <tr><td>1</td><td>distilled water</td><td>${chip('#3b6fd8', 'blue')}</td><td>${chip('#c9a227', 'amber')}</td><td>${chip('#5b8fe0', 'blue')}</td><td>no red layer</td></tr>
+          <tr><td>2</td><td>Crumb A + water</td><td>${chip('#3b6fd8', 'blue')}</td><td>${chip('#1d1a3a', 'blue-black')}</td><td>${chip('#5b8fe0', 'blue')}</td><td>no red layer</td></tr>
+          <tr><td>3</td><td>Crumb A + amylase solution</td><td>${chip('#d35f1d', 'brick orange')}</td><td>${chip('#c9a227', 'amber')}</td><td>${chip('#7b3fa0', 'violet')}</td><td>no red layer</td></tr>
+          <tr><td>4</td><td>Gummy B + water</td><td>${chip('#3b6fd8', 'blue')}</td><td>${chip('#c9a227', 'amber')}</td><td>${chip('#7b3fa0', 'violet')}</td><td>no red layer</td></tr>
+          <tr><td>5</td><td>Smear C + water</td><td>${chip('#3b6fd8', 'blue')}</td><td>${chip('#c9a227', 'amber')}</td><td>${chip('#5b8fe0', 'blue')}</td><td>${chip('#d1495b', 'red layer floats on top')}</td></tr>
+          <tr><td>6</td><td>amylase solution + water</td><td>${chip('#3b6fd8', 'blue')}</td><td>${chip('#c9a227', 'amber')}</td><td>${chip('#7b3fa0', 'violet')}</td><td>no red layer</td></tr>
+        </table></div>
+        <p class="note">Negative colors: Benedict's stays blue, iodine stays amber, Biuret stays blue. Assume each snack contains only the substances the tests reveal.</p>
+        ${[
+          [3, 'Crumb A contains a polysaccharide built from many glucose monomers joined by glycosidic linkages.'],
+          [4, "Tube 2's results show that Crumb A is made of free glucose monomers that are not linked together."],
+          [5, 'Comparing tubes 2, 3, and 6, amylase hydrolyzed the starch in Crumb A into smaller sugars that react with Benedict\'s reagent.'],
+          [8, 'Tube 3 is Biuret-positive because amylase converted the starch in Crumb A into protein.'],
+          [9, 'Tube 1 is a negative control showing that the reagents, in water alone, do not produce the positive colors.'],
+          [11, 'Gummy B contains nitrogen atoms.'],
+          [6, 'Smear C is rich in phosphorus.'],
+          [14, 'Most molecules in Smear C are largely nonpolar, which is why they formed a separate layer on top of the water instead of dissolving.'],
+          [2, 'The monomers in Gummy B are joined by the same type of covalent linkage that joins the monomers in Crumb A.']
+        ].map(([n, t]) => `<div class="stmt"><span class="num">${n}</span><span>${t}</span></div>`).join('')}`,
+      fields: [{ label: 'Sum of supported conclusions', w: 140, kind: 'num' }],
+      answers: ['3c146vawol'],
+      hints: [
+        'Use the controls. Tube 6 shows what amylase does on its own. Tube 1 shows what "negative" looks like. Is amylase itself a protein?',
+        'Five conclusions are supported. Biuret detects peptide bonds, and peptide bonds contain N. Proteins use peptide bonds; polysaccharides use glycosidic linkages. Sudan IV tells you "lipid," not "phosphorus."'
+      ],
+      success: 'Data, 1. VECTOR, 0. Door 2 unlocked.'
+    },
+    /* ---------------- DOOR 3 ---------------- */
+    {
+      name: 'Polymer Kitchen Relay', tag: 'Topic 1.3 · Dehydration synthesis & hydrolysis · team relay',
+      roles: true,
+      render: () => `
+        ${say(`Tonight's special: a <b>starch noodle</b> and a <b>fat-glazed</b> dessert, built from monomers and then digested by my state-of-the-art stomach module. Every player picks a card on their own Chromebook. Answers feed each other, so <b>talk</b>. Team of 3? Whoever finishes first also takes Card D.`)}
+        <p class="note"><b>Kitchen constants (molar masses):</b> glucose (C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>) = 180 g/mol · water = 18 g/mol · glycerol = 92 g/mol · stearic acid (a fatty acid) = 284 g/mol</p>
+        <div class="roles" data-roles></div>
+        <div data-rolecard></div>`,
+      roleCards: {
+        A: `<div class="card rolecard"><h4>Card A · The Noodle Linker</h4>
+            <p>Chef Blubberina builds one <b>unbranched</b> starch noodle (amylose) by joining <b>25 glucose monomers</b> end to end.</p>
+            <p><b>Your question:</b> How many <b>water molecules</b> are released as this one noodle is built? Tell Card B and Card D your answer.</p></div>`,
+        B: `<div class="card rolecard"><h4>Card B · The Noodle Weigher</h4>
+            <p>You need the number of water molecules released from <b>Card A</b>. The noodle contains 25 glucose units.</p>
+            <p><b>Your question:</b> What is the <b>molar mass</b> of one noodle molecule, in g/mol? (Start with the mass of the monomers. What leaves when each bond forms?)</p></div>`,
+        C: `<div class="card rolecard"><h4>Card C · The Fat Chef</h4>
+            <p>For dessert, Chef Blubberina builds one <b>triglyceride</b> from one <b>glycerol</b> and three <b>stearic acid</b> molecules. Each fatty acid is attached by its own <b>ester linkage</b>.</p>
+            <p><b>Your question:</b> What is the <b>molar mass</b> of the triglyceride, in g/mol? Tell Card D how many ester linkages you formed.</p></div>`,
+        D: `<div class="card rolecard"><h4>Card D · The Digester</h4>
+            <p>VECTOR's stomach module completely <b>hydrolyzes</b> 1 mole of the starch noodle back into glucose AND 1 mole of the triglyceride back into glycerol and fatty acids.
+            You need the number of glycosidic linkages from <b>Card A</b> and the number of ester linkages from <b>Card C</b>.</p>
+            <p><b>Your question:</b> What total <b>mass of water, in grams</b>, is consumed by these hydrolysis reactions?</p></div>`
+      },
+      fields: [
+        { label: 'A · H₂O released', w: 120, kind: 'num' }, { label: 'B · noodle (g/mol)', w: 130, kind: 'num' },
+        { label: 'C · triglyceride (g/mol)', w: 130, kind: 'num' }, { label: 'D · water used (g)', w: 120, kind: 'num' }
+      ],
+      answers: ['2g14edydjcg'],
+      hints: [
+        'Joining n monomers in a single unbranched chain forms n − 1 linkages, and each linkage made by dehydration synthesis releases one H₂O. A triglyceride has three ester linkages.',
+        'Polymer mass = (mass of all monomers) − (mass of water removed). Hydrolysis is the reverse: it uses one H₂O for every linkage it breaks, so D = (A\'s linkages + 3) × 18 g.'
+      ],
+      success: 'Chef Blubberina weeps with joy. The noodles are perfectly mass-balanced. Door 3 unlocked.'
+    },
+    /* ---------------- DOOR 4 ---------------- */
+    {
+      name: 'Fold-o-Matic', tag: 'Topics 1.4–1.5 · Protein structure & function · FRQ relay',
+      roles: true,
+      render: () => `
+        ${say(`Behold <b>Crumbase</b>, the enzyme in my stomach module that digests crumb proteins. It is a <b>dimer</b> made of two identical polypeptides. Each card zooms in on a different region and asks one FRQ-style question with lettered choices. The lock needs <b>all four letters</b>. Team of 3? Whoever finishes first also takes Card D.`)}
+        <div class="roles" data-roles></div>
+        <div data-rolecard></div>`,
+      roleCards: {
+        A: `<div class="card rolecard"><h4>Card A · Region 1: The Coil</h4>
+            <div class="fd">${closeUp('helix')}</div>
+            <p>Here the polypeptide backbone twists into a spiral. Each dashed line connects the C=O of one amino acid to the N–H of the amino acid four residues farther along the same chain. The R groups (not shown) stick outward.</p>
+            <p><b>Identify</b> the interaction and the level of structure it stabilizes.</p>
+            ${opts([['G', 'Hydrogen bonds between R groups; tertiary structure'], ['C', 'Hydrogen bonds between backbone atoms; secondary structure (α-helix)'], ['M', 'Peptide bonds between backbone atoms; primary structure'], ['W', 'Ionic bonds between backbone atoms; quaternary structure']])}</div>`,
+        B: `<div class="card rolecard"><h4>Card B · Region 2: The Bridge</h4>
+            <div class="fd">${closeUp('bridge')}</div>
+            <p>The R groups of cysteine 40 and cysteine 95, both in the <b>same</b> polypeptide, are joined by a sulfur–sulfur bond.</p>
+            <p><b>Describe</b> this interaction.</p>
+            ${opts([['E', 'A hydrogen bond between backbone atoms that forms a β-pleated sheet'], ['Y', 'A bond linking two different polypeptides, so it is part of quaternary structure'], ['I', 'A peptide bond, so it is part of primary structure'], ['U', 'A covalent bond between R groups that helps stabilize the tertiary structure']])}</div>`,
+        C: `<div class="card rolecard"><h4>Card C · Region 3: The Core</h4>
+            <div class="fd">${closeUp('core')}</div>
+            <p>The R groups of valine 22, leucine 77, phenylalanine 130, and isoleucine 141 (all nonpolar) cluster in the center of each polypeptide, away from the surrounding water.</p>
+            <p><b>Predict and justify:</b> A mutation replaces leucine 77 with aspartic acid (R group –CH<sub>2</sub>–COO⁻ at pH 7).</p>
+            ${opts([['B', 'No effect, because only the primary structure changes, and only the amino acids in the active site affect function'], ['N', 'The protein folds more tightly, because aspartic acid forms hydrophobic interactions with the other R groups'], ['R', 'The charged R group would be buried in the nonpolar core, so the polypeptide likely folds differently, changing the tertiary structure and reducing function'], ['K', 'Secondary structure is lost everywhere, because aspartic acid cannot form peptide bonds']])}</div>`,
+        D: `<div class="card rolecard"><h4>Card D · Region 4: The Handshake</h4>
+            <div class="fd">${closeUp('dimer')}</div>
+            <p>Crumbase is active only as a dimer. Where the two chains touch, the R group of aspartic acid 12 on chain 1 (<span style="white-space:nowrap">–COO⁻</span> at pH 7) is attracted to the R group of lysine 58 on chain 2 (<span style="white-space:nowrap">–NH<sub>3</sub>⁺</span> at pH 7).</p>
+            <p><b>Predict and justify:</b> VECTOR soaks Crumbase in a pH 2 solution.</p>
+            ${opts([['H', 'The extra H⁺ immediately breaks the peptide bonds, giving each chain a new primary sequence'], ['L', 'The extra H⁺ converts –COO⁻ to uncharged –COOH, so the ionic attraction is lost, the chains can separate, and the quaternary structure and activity are disrupted'], ['P', 'Lysine\'s R group becomes negatively charged at pH 2, so the attraction gets stronger'], ['Z', 'Nothing changes, because the attraction between charged R groups does not depend on pH']])}</div>`
+      },
+      fields: [
+        { label: 'Card A', w: 80, kind: 'word' }, { label: 'Card B', w: 80, kind: 'word' },
+        { label: 'Card C', w: 80, kind: 'word' }, { label: 'Card D', w: 80, kind: 'word' }
+      ],
+      answers: ['9zm6zrbmk1'],
+      hints: [
+        'Secondary structure = hydrogen bonds between <b>backbone</b> atoms. Tertiary = interactions between <b>R groups</b> of the same chain. Quaternary = interactions between <b>different</b> polypeptides.',
+        'Card C: charged R groups are hydrophilic, so they "want" to face water, not hide in a nonpolar core. Card D: at low pH, a carboxylate (–COO⁻) picks up an H⁺. What happens to its charge?'
+      ],
+      success: 'Crumbase folds, flexes, and politely opens the door. Door 4 unlocked.'
+    },
+    /* ---------------- DOOR 5 ---------------- */
+    {
+      name: 'Helix Hatch', tag: 'Topic 1.6 · Nucleic acids',
+      render: () => `
+        ${say(`Last door! The exit hatch is sealed by a strand of my <b>secret-recipe DNA</b>. You can see one strand. The other is hidden. Three questions, one lock.`, 'mad')}
+        <div class="card fd">${dnaLadder('TGTAATC')}</div>
+        <ol class="problems" style="margin-top:12px">
+          <li><span class="slot">1</span><span>Write the hidden <b>partner strand</b>, reading it in the <b>5′ → 3′</b> direction (letters only).</span></li>
+          <li><span class="slot">2</span><span>How many <b>hydrogen bonds</b> hold the two strands of this 7-base-pair segment together?</span></li>
+          <li><span class="slot">3</span><span>VECTOR's stomach module separates the strands and then <b>completely hydrolyzes both strands</b> into individual nucleotides. How many <b>water molecules</b> are used? (Separating the strands uses none.)</span></li>
+        </ol>`,
+      fields: [{ label: 'Partner strand 5′→3′', w: 210, kind: 'word' }, { label: 'H-bonds', w: 110, kind: 'num' }, { label: 'H₂O used', w: 110, kind: 'num' }],
+      answers: ['a7xtl370oh'],
+      hints: [
+        'The strands are antiparallel. If the top strand runs 5′ → 3′ left to right, the bottom runs 3′ → 5′ left to right, so you must read it backward. A pairs with T (2 hydrogen bonds); G pairs with C (3 hydrogen bonds).',
+        'Each strand of 7 nucleotides is held together by 6 phosphodiester linkages, and hydrolysis uses one H₂O per covalent linkage broken. Hydrogen bonds between bases are not covalent.'
+      ],
+      success: 'NOOO! My secret recipe!'
+    }
+  ]
+};
+
+/* =====================================================================
+   ENGINE
+   ===================================================================== */
+const KEY = 'escape:' + ROOM.id;
+const store = {
+  get() { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch (e) { return null; } },
+  set(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} },
+  clear() { try { localStorage.removeItem(KEY); } catch (e) {} }
+};
+let S = store.get() || { started: false, team: '', size: 4, start: 0, end: 0, door: 0, hints: {}, wrong: 0, role: 'A', timer: null };
+const save = () => store.set(S);
+const $ = (q, el = document) => el.querySelector(q);
+const fmt = ms => { const s = Math.max(0, Math.floor(ms / 1000)); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
+const hintsUsed = () => Object.values(S.hints).reduce((a, b) => a + b, 0);
+
+function timerLive() { return S.timer && S.timer.end && S.timer.day === dayKey(); }
+function timeUp() { return timerLive() && Date.now() >= S.timer.end && !S.end; }
+function hud() {
+  const t = S.started ? fmt((S.end || Date.now()) - S.start) : '00:00';
+  let chip;
+  if (timerLive() && !S.end) { const left = S.timer.end - Date.now();
+    chip = `<button class="tchip ${left < 5 * 60000 ? 'low' : ''}" id="tchip" title="Class timer">⏳ Class <b>${left > 0 ? fmt(left) : '0:00'}</b></button>`; }
+  else chip = `<button class="tchip" id="tchip" title="Enter class timer code">⏲ ${S.timer && S.timer.off && S.timer.day === dayKey() ? 'Timer off' : 'Timer code'}</button>`;
+  $('#hud').innerHTML = `${chip}<span title="Your team's time">⏱ <b>${t}</b></span><span title="Hints used">💡 <b>${hintsUsed()}</b></span><span title="Wrong codes">✖ <b>${S.wrong}</b></span>`;
+  $('#tchip').onclick = () => { $('#timerBox').classList.toggle('on'); $('#timerInput').focus(); };
+}
+let shownTimeUp = false;
+setInterval(() => { hud(); const up = timeUp() && S.started; if (up !== shownTimeUp) render(); }, 1000);
+function applyTimerCode(raw, msgEl) {
+  const r = parseTimerCode(raw);
+  if (!r) { if (msgEl) { msgEl.style.color = '#ffb3bd'; msgEl.textContent = "That timer code isn't valid. Check the board and try again."; } return false; }
+  S.timer = r.type === 'off' ? { off: true, end: null, day: dayKey() } : { off: false, end: r.end, day: dayKey() };
+  save();
+  if (msgEl) { msgEl.style.color = '#9ff0b8'; msgEl.textContent = r.type === 'off' ? 'Timer turned off. Keep going!' : `Timer set: ends at ${new Date(r.end).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}.`; }
+  render(); return true;
+}
+
+function hall() {
+  $('#hall').innerHTML = ROOM.doors.map((d, i) => {
+    const cls = i < S.door ? 'open' : (i === S.door && S.started && !S.end ? 'current' : '');
+    return `<div class="door-pill ${cls}"><span class="lock"></span><span class="n">${i + 1}</span>${d.name}</div>`;
+  }).join('');
+}
+
+function normalize(v, f) {
+  v = String(v).trim();
+  if (f.kind === 'word') return v.toUpperCase().replace(/[^A-Z]/g, '');
+  const m = v.replace(/,/g, '').match(/-?\d*\.?\d+/); // first number only, so units like "W/m2" are ignored
+  if (!m) return '';
+  const n = parseFloat(m[0]);
+  const r = f.roundTo || 1;
+  return String(Math.round(Math.abs(n) / r) * r);
+}
+
+function render() {
+  hud(); hall();
+  const st = $('#stage');
+  if (!S.started) return renderIntro(st);
+  if (S.door >= ROOM.doors.length) { shownTimeUp = false; return renderFinale(st); }
+  shownTimeUp = timeUp();
+  if (shownTimeUp) return renderTimeUp(st);
+  const i = S.door, d = ROOM.doors[i];
+  st.innerHTML = `<span class="tag">Door ${i + 1} of ${ROOM.doors.length} · ${d.tag}</span><h2>${d.name}</h2>${d.render()}
+    <div class="lockbox">
+      <div class="lbl">🔒 Door ${i + 1} lock</div>
+      <form class="fields" id="lockForm" autocomplete="off">
+        ${d.fields.map((f, k) => `<label class="field">${f.label}<input style="--w:${f.w}px" name="f${k}" inputmode="${f.kind === 'num' ? 'decimal' : 'text'}" required></label>`).join('')}
+        <button class="btn" type="submit">Try code</button>
+      </form>
+      <div class="feedback" id="fb" aria-live="polite"></div>
+      <div class="hints no-print">${d.hints.map((h, k) => `<button class="btn ghost" data-hint="${k}" ${k > (S.hints[i] || 0) ? 'disabled style="opacity:.4"' : ''}>💡 Hint ${k + 1}</button>`).join('')}</div>
+      <div id="hintOut">${d.hints.slice(0, S.hints[i] || 0).map(h => `<div class="hinttext">${h}</div>`).join('')}</div>
+    </div>`;
+  if (d.roles) setupRoles(st, d);
+  $('#lockForm').addEventListener('submit', e => { e.preventDefault(); check(d, i); });
+  st.querySelectorAll('[data-hint]').forEach(b => b.addEventListener('click', () => {
+    const k = +b.dataset.hint; if ((S.hints[i] || 0) <= k) { S.hints[i] = k + 1; save(); render(); }
+  }));
+  const first = st.querySelector('#lockForm input'); if (first && document.activeElement === document.body) first.focus({ preventScroll: true });
+}
+
+function setupRoles(st, d) {
+  const box = $('[data-roles]', st), out = $('[data-rolecard]', st);
+  const keys = Object.keys(d.roleCards);
+  const draw = () => {
+    box.innerHTML = '<span class="note" style="align-self:center;margin-right:4px">I am holding:</span>' + keys.map(k => `<button type="button" class="${k === S.role ? 'on' : ''}" data-r="${k}">Card ${k}</button>`).join('');
+    out.innerHTML = d.roleCards[S.role] || '';
+    box.querySelectorAll('[data-r]').forEach(b => b.addEventListener('click', () => { S.role = b.dataset.r; save(); draw(); }));
+  };
+  draw();
+}
+
+function check(d, i) {
+  const form = $('#lockForm'), fb = $('#fb');
+  const vals = d.fields.map((f, k) => normalize(form.elements['f' + k].value, f));
+  const h = cyrb53(ROOM.salt + 'd' + (i + 1) + '::' + vals.join('|'));
+  if (d.answers.includes(h)) {
+    S.door = i + 1;
+    if (S.door >= ROOM.doors.length) { S.end = Date.now(); S.key = vals.join('|'); }
+    save();
+    fb.className = 'feedback good'; fb.textContent = '✔ ' + d.success;
+    form.querySelector('button').disabled = true;
+    setTimeout(render, 1400);
+  } else {
+    S.wrong++; save(); hud();
+    fb.className = 'feedback bad';
+    fb.textContent = '✖ ' + ROOM.wrongLines[Math.floor(Math.random() * ROOM.wrongLines.length)];
+    form.classList.remove('shake'); void form.offsetWidth; form.classList.add('shake');
+  }
+}
+
+function renderIntro(st) {
+  st.innerHTML = `<div class="center">
+      <span class="tag">Escape Room · Teams of 3–4</span>
+      <h2>${ROOM.title}</h2></div>
+      ${say(ROOM.intro + ' <br><br>The clock starts when you press the button. Hints are free, but I <i>count</i> them. Mwahaha.')}
+      <div class="setup">
+        <div><label for="team">Team name</label><input id="team" maxlength="40" placeholder="e.g., The Hydrogen Bonds" value="${S.team || ''}"></div>
+        <div><label for="names">Team members</label><input id="names" maxlength="120" placeholder="First names" value="${S.names || ''}"></div>
+        <div><label for="size">Players</label><select id="size"><option value="3">3 players</option><option value="4" selected>4 players</option></select></div>
+        <div><label for="tcode">Class timer code <span class="note">(from the board, if your teacher posted one)</span></label><input id="tcode" maxlength="12" placeholder="e.g., 1452-AB" style="font-family:var(--mono);text-transform:uppercase"></div>
+        <div id="tcodeMsg" class="note"></div>
+        <p class="note" style="margin:0">Every player opens this page on their own Chromebook and enters the <b>same</b> team name. Bring paper, a pencil, and a calculator.</p>
+        <button class="btn dark" id="go">Start the clock ▶</button>
+      </div>`;
+  $('#size').value = S.size || 4;
+  $('#go').addEventListener('click', () => {
+    const tc = $('#tcode').value.trim();
+    if (tc && !parseTimerCode(tc)) { $('#tcodeMsg').style.color = '#d1495b'; $('#tcodeMsg').textContent = "That timer code isn't valid. Fix it or leave it blank."; return; }
+    S.team = $('#team').value.trim() || 'Unnamed Team'; S.names = $('#names').value.trim(); S.size = +$('#size').value;
+    if (tc) { const r = parseTimerCode(tc); S.timer = r.type === 'off' ? { off: true, end: null, day: dayKey() } : { off: false, end: r.end, day: dayKey() }; }
+    S.started = true; S.start = Date.now(); save(); render();
+  });
+}
+
+function renderFinale(st) {
+  const t = fmt(S.end - S.start);
+  st.innerHTML = `<div class="center">
+      ${say(`Fine. FINE. You escaped. I'll go back to vacuuming. Show this screen to your teacher.`, 'happy')}
+      <div class="cert">
+        <div class="tag">Certificate of Escape</div>
+        <h2 style="margin:4px 0">${escapeHtml(S.team)}</h2>
+        <div class="note">${escapeHtml(S.names || '')}</div>
+        <div class="stats"><div>Time<b>${t}</b></div><div>Hints<b>${hintsUsed()}</b></div><div>Wrong codes<b>${S.wrong}</b></div></div>
+        <div class="note">Finish code (your teacher types this in)</div>
+        <div class="fcode">${finishCode(S.end, Math.min(99, hintsUsed()))}</div>
+        <div class="note" style="margin-top:8px">Teacher password</div>
+        <div class="pw">${unlockPw()}</div>
+        <div class="note">${new Date(S.end).toLocaleString()} · AP Biology · Unit 1: Chemistry of Life · ${ROOM.title}</div>
+      </div>
+      <p class="no-print"><button class="btn dark" onclick="window.print()">Print certificate</button></p>
+    </div>`;
+}
+function renderTimeUp(st) {
+  const opened = S.door;
+  st.innerHTML = `<div class="timeup">
+      ${say(`Beep boop... <b>TIME'S UP!</b> The lab stays locked. Show this screen to your teacher.`, 'happy')}
+      <h2>⏰ Time's Up</h2>
+      <div class="cert">
+        <h2 style="margin:4px 0;color:var(--ink);font-size:24px">${escapeHtml(S.team)}</h2>
+        <div class="note">${escapeHtml(S.names || '')}</div>
+        <div class="stats"><div>Doors opened<b>${opened} / ${ROOM.doors.length}</b></div><div>Hints<b>${hintsUsed()}</b></div><div>Wrong codes<b>${S.wrong}</b></div></div>
+        <div class="note">Stopped on Door ${Math.min(opened + 1, ROOM.doors.length)}: ${ROOM.doors[Math.min(opened, ROOM.doors.length - 1)].name}</div>
+      </div>
+      <p class="note">Did your teacher give more time? Type the new code from the board:</p>
+      <form id="moreTime" autocomplete="off" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <input id="moreInput" placeholder="1505-AB" style="font-family:var(--mono);font-size:20px;letter-spacing:.1em;width:180px;padding:8px 10px;border-radius:9px;border:2px solid var(--line);text-transform:uppercase">
+        <button class="btn dark" type="submit">Keep going</button></form>
+      <div id="moreMsg" class="note" style="margin-top:6px"></div>
+    </div>`;
+  $('#moreTime').addEventListener('submit', e => { e.preventDefault(); const m = $('#moreMsg'); applyTimerCode($('#moreInput').value, m); if (m.textContent.startsWith('That')) m.style.color = '#d1495b'; });
+}
+function pwKey(s) { return cyrb53(ROOM.salt + 'pw1::' + s) + cyrb53('pw2::' + s + ROOM.salt) + cyrb53(s + '::pw3' + ROOM.salt); }
+function unlockPw() { const k = pwKey(S.key || ''); return ROOM.finaleCipher.map((b, i) => String.fromCharCode(b ^ k.charCodeAt(i % k.length))).join(''); }
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+$('#timerForm').addEventListener('submit', e => { e.preventDefault(); if (applyTimerCode($('#timerInput').value, $('#timerMsg'))) { $('#timerInput').value = ''; setTimeout(() => $('#timerBox').classList.remove('on'), 1600); } });
+$('#timerClose').addEventListener('click', () => $('#timerBox').classList.remove('on'));
+$('#resetBtn').addEventListener('click', () => $('#confirmBox').classList.add('on'));
+$('#resetNo').addEventListener('click', () => $('#confirmBox').classList.remove('on'));
+$('#resetYes').addEventListener('click', () => { store.clear(); S = { started: false, team: '', size: 4, start: 0, end: 0, door: 0, hints: {}, wrong: 0, role: 'A', timer: null }; $('#confirmBox').classList.remove('on'); render(); });
+render();
+</script>
+</body>
+</html>

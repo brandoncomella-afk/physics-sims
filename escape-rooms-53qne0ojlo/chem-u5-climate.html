@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Escape Room · Chemistry in the Earth System · Unit 5: Choices Change Climate · VECTOR's Snack Shack</title>
+<style>
+:root{
+  --ink:#14213d; --ink-2:#3d4a66; --paper:#fbf8f1; --card:#ffffff; --line:#d9d2c3;
+  --teal:#0f8b8d; --teal-d:#0b6b6d; --amber:#f4a259; --red:#d1495b; --green:#3a9d5d;
+  --night:#0d1b2a; --night-2:#1b263b; --glow:#7ee8e0;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  --sans:"Avenir Next","Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:var(--sans);color:var(--ink);background:var(--night);
+  background-image:linear-gradient(rgba(126,232,224,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(126,232,224,.06) 1px,transparent 1px);
+  background-size:28px 28px;min-height:100vh;line-height:1.5}
+.wrap{max-width:980px;margin:0 auto;padding:20px 18px 60px}
+header.top{display:flex;align-items:center;gap:14px;color:#e8f1f2;flex-wrap:wrap}
+header.top .unit{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--glow)}
+header.top h1{margin:0;font-size:26px;letter-spacing:.01em}
+header.top .spacer{flex:1}
+.hud{display:flex;gap:10px;font-family:var(--mono);font-size:13px}
+.hud span{background:var(--night-2);border:1px solid #2f3e5a;color:#e8f1f2;padding:5px 10px;border-radius:8px}
+.hud b{color:var(--glow);font-weight:600}
+
+/* progress hallway */
+.hall{display:flex;gap:8px;margin:18px 0 18px;flex-wrap:wrap}
+.door-pill{flex:1;min-width:120px;background:var(--night-2);border:1px solid #2f3e5a;color:#8fa0b8;border-radius:10px;padding:8px 10px;font-size:13px;display:flex;gap:8px;align-items:center}
+.door-pill .n{font-family:var(--mono);font-size:11px;border:1px solid currentColor;border-radius:5px;padding:0 5px}
+.door-pill.open{color:#bff3ee;border-color:var(--teal)}
+.door-pill.current{color:#fff;border-color:var(--amber);box-shadow:0 0 0 2px rgba(244,162,89,.25)}
+.door-pill.open .lock::before{content:"🔓"} .door-pill .lock::before{content:"🔒"}
+
+.panel{background:var(--paper);border-radius:16px;padding:22px 24px;box-shadow:0 18px 50px rgba(0,0,0,.35);position:relative}
+.panel h2{margin:0 0 4px;font-size:22px}
+.tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;background:#e7f4f4;color:var(--teal-d);border-radius:6px;padding:2px 8px;margin-bottom:10px}
+.vector{text-align:left;display:flex;gap:14px;align-items:flex-start;background:var(--night);color:#e8f1f2;border-radius:12px;padding:12px 14px;margin:10px 0 16px}
+.vector svg{flex:0 0 auto}
+.vector p{margin:0}
+.vector .who{font-family:var(--mono);font-size:11px;color:var(--glow);letter-spacing:.12em;text-transform:uppercase}
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.card h4{margin:0 0 6px;font-size:15px}
+.badge{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;background:var(--ink);color:#fff;font-weight:700;font-family:var(--mono);margin-right:8px}
+.fd{text-align:center}
+.fd .badge{background:var(--teal)}
+table.data{border-collapse:collapse;margin:8px 0;font-family:var(--mono);font-size:14px}
+table.data th,table.data td{border:1px solid var(--line);padding:6px 12px;text-align:center;background:#fff}
+table.data th{background:#eef2f6}
+ol.problems{padding-left:0;list-style:none;margin:0}
+ol.problems li{display:flex;gap:10px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+ol.problems .slot{flex:0 0 auto;font-family:var(--mono);font-weight:700;background:var(--amber);color:var(--ink);border-radius:6px;padding:0 8px;height:26px;line-height:26px}
+.stmt{display:flex;gap:10px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin-bottom:7px}
+.stmt .num{flex:0 0 auto;min-width:34px;text-align:center;font-family:var(--mono);font-weight:700;background:#efe7d6;border-radius:6px;padding:1px 6px}
+
+/* roles */
+.roles{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
+.roles button{font:inherit;font-size:14px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;cursor:pointer}
+.roles button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.rolecard{border-left:5px solid var(--amber)}
+.note{font-size:14px;color:var(--ink-2)}
+
+/* lock */
+.lockbox{margin-top:18px;background:var(--night-2);color:#e8f1f2;border-radius:14px;padding:16px}
+.lockbox .lbl{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--glow);margin-bottom:8px}
+.fields{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:4px;font-size:13px;color:#b9c6d6}
+.field input{font-family:var(--mono);font-size:22px;letter-spacing:.12em;width:var(--w,150px);padding:8px 10px;border-radius:9px;border:2px solid #3b4d6b;background:#0d1b2a;color:#fff;text-transform:uppercase}
+.field input:focus{outline:none;border-color:var(--amber)}
+.btn{font:inherit;font-weight:700;border:0;border-radius:10px;padding:11px 18px;cursor:pointer;background:var(--amber);color:var(--ink)}
+.btn:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent;color:#cfe0ea;border:1px solid #3b4d6b;font-weight:500}
+.btn.dark{background:var(--ink);color:#fff}
+.feedback{margin-top:10px;min-height:24px;font-size:15px}
+.feedback.bad{color:#ffb3bd}.feedback.good{color:#9ff0b8}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.hints{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.hinttext{background:#fff7e8;border:1px dashed var(--amber);border-radius:10px;padding:8px 12px;margin-top:8px;font-size:14px;color:var(--ink)}
+
+/* intro / finale */
+.center{text-align:center}
+.setup{display:grid;gap:12px;max-width:520px;margin:14px auto 0;text-align:left}
+.setup label{font-size:14px;font-weight:600}
+.setup input,.setup select{font:inherit;width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:#fff}
+.cert{border:3px double var(--ink);border-radius:14px;padding:22px;background:#fff;max-width:620px;margin:16px auto 0}
+.cert .pw{font-family:var(--mono);font-size:30px;letter-spacing:.25em;background:var(--ink);color:var(--glow);display:inline-block;padding:6px 16px;border-radius:10px;margin:6px 0}
+.stats{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:10px 0}
+.stats div{background:#f2efe6;border-radius:10px;padding:8px 14px;font-size:14px}
+.stats b{display:block;font-family:var(--mono);font-size:20px}
+.foot{color:#7f90a8;font-size:12px;text-align:center;margin-top:22px}
+.foot a{color:#9fd9d4}
+.reset{background:none;border:0;color:#7f90a8;text-decoration:underline;cursor:pointer;font:inherit;font-size:12px}
+.confirm{display:none;margin-top:8px;color:#e8f1f2;font-size:13px}
+.confirm.on{display:block}
+svg text{font-family:var(--sans)}
+.tchip{cursor:pointer;font:inherit;font-family:var(--mono);font-size:13px;background:var(--night-2);border:1px solid #2f3e5a;color:#e8f1f2;padding:5px 10px;border-radius:8px}
+.tchip b{color:var(--amber)} .tchip.low{border-color:var(--red);animation:pulse 1s infinite} .tchip.low b{color:#ffb3bd}
+@keyframes pulse{50%{box-shadow:0 0 0 3px rgba(209,73,91,.35)}}
+#timerBox{display:none;margin-top:12px;background:var(--night-2);border:1px solid #3b4d6b;border-radius:12px;padding:12px 14px;color:#e8f1f2}
+#timerBox.on{display:block}
+#timerBox form{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#timerBox input{font-family:var(--mono);font-size:18px;letter-spacing:.1em;width:160px;padding:7px 10px;border-radius:8px;border:2px solid #3b4d6b;background:#0d1b2a;color:#fff;text-transform:uppercase}
+#timerMsg{font-size:14px;margin-top:6px;min-height:20px}
+.timeup{text-align:center}
+.timeup h2{font-size:40px;color:var(--red);margin:6px 0}
+.fcode{font-family:var(--mono);font-size:26px;letter-spacing:.12em;background:#fff7e8;border:2px dashed var(--amber);display:inline-block;padding:4px 14px;border-radius:10px;margin:4px 0}
+@media print{body{background:#fff}.hall,.hud,.foot,.no-print{display:none!important}.panel{box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="unit">Chemistry in the Earth System · Unit 5: Choices Change Climate</div>
+      <h1>VECTOR's Snack Shack</h1>
+    </div>
+    <div class="spacer"></div>
+    <div class="hud" id="hud"></div>
+  </header>
+  <div id="timerBox" class="no-print">
+    <form id="timerForm" autocomplete="off"><span>⏲ Class timer code (from the board):</span>
+      <input id="timerInput" placeholder="1452-AB" aria-label="Class timer code">
+      <button class="btn" type="submit" style="padding:8px 14px">Set</button>
+      <button class="btn ghost" type="button" id="timerClose" style="padding:8px 12px">Close</button></form>
+    <div id="timerMsg" aria-live="polite"></div>
+  </div>
+  <nav class="hall" id="hall" aria-label="Door progress"></nav>
+  <main class="panel" id="stage"></main>
+  <div class="foot">
+    Mr. C's Science · <a href="index.html">All escape rooms</a> ·
+    <button class="reset" id="resetBtn">Reset this device</button>
+    <div class="confirm" id="confirmBox">Erase all progress on this device?
+      <button class="btn ghost" id="resetYes" style="padding:4px 10px">Yes, reset</button>
+      <button class="btn ghost" id="resetNo" style="padding:4px 10px">Cancel</button></div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   ESCAPE ROOM ENGINE (reusable). To make a new unit, copy this file and
+   replace the ROOM object below. Answers are stored only as salted
+   hashes (cyrb53); generate them with the helper in the teacher guide.
+   ===================================================================== */
+function cyrb53(str, seed = 0) {
+  let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+  for (let i = 0, ch; i < str.length; i++) { ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507); h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507); h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+
+/* ---------- CLASS TIMER + FINISH CODES (shared with teacher.html; keep identical) ---------- */
+const TALPH = 'ACDEFGHJKMNPQRTUVWXY34679';
+const pad2 = n => String(n).padStart(2, '0');
+function dayKey(d = new Date()) { return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+function tmac(s, day) { const h = parseInt(cyrb53('mrc-class-timer::' + (day || dayKey()) + '::' + s), 36); return TALPH[h % 25] + TALPH[Math.floor(h / 25) % 25]; }
+function timerCode(endMs) { const d = new Date(endMs), t = pad2(d.getHours()) + pad2(d.getMinutes()); return t + '-' + tmac('T' + t); }
+function offCode() { return 'OFF-' + tmac('OFF'); }
+function finishCode(ms, hints) { const d = new Date(ms), t = pad2(d.getHours()) + pad2(d.getMinutes()) + pad2(d.getSeconds()); return t + '-' + hints + '-' + tmac('F' + t + '-' + hints); }
+function cleanCode(raw) { return String(raw || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
+// -> {type:'end', end:ms} | {type:'off'} | null
+function parseTimerCode(raw) {
+  const c = cleanCode(raw); let m;
+  if ((m = c.match(/^OFF([A-Z0-9]{2})$/)) && m[1] === tmac('OFF')) return { type: 'off' };
+  if ((m = c.match(/^(\d{4})([A-Z0-9]{2})$/)) && m[2] === tmac('T' + m[1])) {
+    const hh = +m[1].slice(0, 2), mm = +m[1].slice(2); if (hh > 23 || mm > 59) return null;
+    const d = new Date(); d.setHours(hh, mm, 0, 0); return { type: 'end', end: d.getTime() };
+  }
+  return null;
+}
+// -> {finish:ms, hints:n} | null
+function parseFinishCode(raw) {
+  const c = String(raw || '').toUpperCase().replace(/\s/g, ''); const m = c.match(/^(\d{6})-?(\d{1,2})-?([A-Z0-9]{2})$/);
+  if (!m || m[3] !== tmac('F' + m[1] + '-' + (+m[2]))) return null;
+  const d = new Date(); d.setHours(+m[1].slice(0, 2), +m[1].slice(2, 4), +m[1].slice(4), 0);
+  return { finish: d.getTime(), hints: +m[2] };
+}
+
+/* ---------- drawing helpers ---------- */
+const sub = (main, s) => `${main}<tspan dy="4" font-size="10">${s}</tspan><tspan dy="-4"></tspan>`;
+// Force diagram: dot on a dashed grid, arrows measured in grid units
+function forceDiagram(forces, opts = {}) {
+  const u = 16, size = opts.size || 176, c = size / 2;
+  let g = '';
+  for (let x = c % u; x <= size; x += u) g += `<line x1="${x}" y1="0" x2="${x}" y2="${size}" stroke="#b9c3cf" stroke-dasharray="3 3" stroke-width="1"/>`;
+  for (let y = c % u; y <= size; y += u) g += `<line x1="0" y1="${y}" x2="${size}" y2="${y}" stroke="#b9c3cf" stroke-dasharray="3 3" stroke-width="1"/>`;
+  let a = '';
+  const dirs = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+  forces.forEach(f => {
+    const [dx, dy] = dirs[f.dir], L = f.len * u, x2 = c + dx * L, y2 = c + dy * L;
+    a += `<line x1="${c}" y1="${c}" x2="${x2 - dx * 7}" y2="${y2 - dy * 7}" stroke="#14213d" stroke-width="3"/>`;
+    const p = dx ? `${x2},${y2} ${x2 - dx * 10},${y2 - 6} ${x2 - dx * 10},${y2 + 6}` : `${x2},${y2} ${x2 - 6},${y2 - dy * 10} ${x2 + 6},${y2 - dy * 10}`;
+    a += `<polygon points="${p}" fill="#14213d"/>`;
+    // vertical arrows: label beside the tip; horizontal arrows: label above the tip, pulled inward
+    const out = !!f.mag; // labels with magnitudes go outward past the tip (canvas is padded)
+    const lx = dx ? x2 + (out ? dx * 8 : 0) : c + 8, ly = dy ? y2 + (dy > 0 ? 14 : -4) : (out ? c + 5 : c - 12);
+    const anchor = out ? (dx < 0 ? 'end' : 'start') : (dx > 0 ? 'end' : 'start');
+    a += `<text x="${lx}" y="${ly}" font-size="14" font-style="italic" fill="#0b6b6d" text-anchor="${anchor}">${sub('F', f.lab)}${f.mag ? ` = ${f.mag}` : ''}</text>`;
+  });
+  const px = opts.padX || 0;
+  return `<svg viewBox="${-px} 0 ${size + 2 * px} ${size}" width="${size + 2 * px}" height="${size}" style="max-width:100%;height:auto" role="img" aria-label="force diagram"><rect width="${size}" height="${size}" fill="#fff"/>${g}${a}<circle cx="${c}" cy="${c}" r="5.5" fill="#d1495b"/></svg>`;
+}
+// Line graph on a grid. pts in data units.
+function graph({ pts, xmax, ymax, xstep, ystep, xlab, ylab, w = 420, h = 250, ticks = true }) {
+  const L = 48, B = 36, T = 12, R = 14, W = w - L - R, H = h - T - B;
+  const X = x => L + x / xmax * W, Y = y => T + H - y / ymax * H;
+  let s = `<rect width="${w}" height="${h}" fill="#fff"/>`;
+  for (let x = 0; x <= xmax + 1e-9; x += xstep) s += `<line x1="${X(x)}" y1="${T}" x2="${X(x)}" y2="${T + H}" stroke="#dde3ea"/>` + (ticks ? `<text x="${X(x)}" y="${T + H + 16}" font-size="12" text-anchor="middle" fill="#3d4a66">${+x.toFixed(2)}</text>` : '');
+  for (let y = 0; y <= ymax + 1e-9; y += ystep) s += `<line x1="${L}" y1="${Y(y)}" x2="${L + W}" y2="${Y(y)}" stroke="#dde3ea"/>` + (ticks ? `<text x="${L - 7}" y="${Y(y) + 4}" font-size="12" text-anchor="end" fill="#3d4a66">${+y.toFixed(2)}</text>` : '');
+  s += `<line x1="${L}" y1="${T + H}" x2="${L + W}" y2="${T + H}" stroke="#14213d" stroke-width="2"/><line x1="${L}" y1="${T}" x2="${L}" y2="${T + H}" stroke="#14213d" stroke-width="2"/>`;
+  s += `<polyline points="${pts.map(p => X(p[0]) + ',' + Y(p[1])).join(' ')}" fill="none" stroke="#d1495b" stroke-width="3.5" stroke-linejoin="round"/>`;
+  s += `<text x="${L + W / 2}" y="${h - 3}" font-size="13" text-anchor="middle" fill="#14213d">${xlab}</text>`;
+  s += `<text x="13" y="${T + H / 2}" font-size="13" text-anchor="middle" fill="#14213d" transform="rotate(-90 13 ${T + H / 2})">${ylab}</text>`;
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;height:auto" role="img" aria-label="graph">${s}</svg>`;
+}
+function vectorBot(mood = 'smug') {
+  const eyes = mood === 'mad' ? '<path d="M18 22 l8 3 M42 22 l-8 3" stroke="#0d1b2a" stroke-width="3" stroke-linecap="round"/>' : '';
+  const mouth = mood === 'happy' ? '<path d="M22 36 q8 7 16 0" stroke="#0d1b2a" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    : mood === 'mad' ? '<path d="M22 39 q8 -6 16 0" stroke="#0d1b2a" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    : '<path d="M23 37 h14" stroke="#0d1b2a" stroke-width="3" stroke-linecap="round"/>';
+  return `<svg width="60" height="60" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="32" r="25" fill="#7ee8e0"/><circle cx="30" cy="32" r="25" fill="none" stroke="#0f8b8d" stroke-width="3"/><rect x="14" y="20" width="32" height="12" rx="6" fill="#0d1b2a" opacity=".12"/><circle cx="22" cy="27" r="4" fill="#0d1b2a"/><circle cx="38" cy="27" r="4" fill="#0d1b2a"/>${eyes}${mouth}<line x1="30" y1="7" x2="30" y2="1" stroke="#0f8b8d" stroke-width="3"/><circle cx="30" cy="1.5" r="3" fill="#f4a259"/></svg>`;
+}
+const say = (html, mood) => `<div class="vector">${vectorBot(mood)}<div><div class="who">VECTOR</div><p>${html}</p></div></div>`;
+
+/* =====================================================================
+   ROOM DATA: Chemistry in the Earth System · Unit 5: Choices Change Climate
+   ===================================================================== */
+// Extra drawing helpers for this room
+// Data graph with arbitrary axis ranges; series = [{pts, color, width, dots}]
+function dataGraph({ series, xmin, xmax, ymin, ymax, xstep, ystep, ylabEvery = 1, xlab, ylab, w = 520, h = 290, dec = 0, label = 'graph' }) {
+  const L = 54, B = 38, T = 12, R = 16, W = w - L - R, H = h - T - B;
+  const X = x => L + (x - xmin) / (xmax - xmin) * W, Y = y => T + H - (y - ymin) / (ymax - ymin) * H;
+  let s = `<rect width="${w}" height="${h}" fill="#fff"/>`;
+  for (let x = xmin; x <= xmax + 1e-9; x += xstep) s += `<line x1="${X(x)}" y1="${T}" x2="${X(x)}" y2="${T + H}" stroke="#b9c3cf" stroke-dasharray="3 3"/><text x="${X(x)}" y="${T + H + 16}" font-size="12" text-anchor="middle" fill="#3d4a66">${+x.toFixed(2)}</text>`;
+  let k = 0;
+  for (let y = ymin; y <= ymax + 1e-9; y += ystep, k++) s += `<line x1="${L}" y1="${Y(y)}" x2="${L + W}" y2="${Y(y)}" stroke="#b9c3cf" stroke-dasharray="3 3"/>` + (k % ylabEvery === 0 ? `<text x="${L - 7}" y="${Y(y) + 4}" font-size="12" text-anchor="end" fill="#3d4a66">${y.toFixed(dec)}</text>` : '');
+  s += `<line x1="${L}" y1="${T + H}" x2="${L + W}" y2="${T + H}" stroke="#14213d" stroke-width="2"/><line x1="${L}" y1="${T}" x2="${L}" y2="${T + H}" stroke="#14213d" stroke-width="2"/>`;
+  series.forEach(se => {
+    s += `<polyline points="${se.pts.map(p => X(p[0]).toFixed(1) + ',' + Y(p[1]).toFixed(1)).join(' ')}" fill="none" stroke="${se.color || '#d1495b'}" stroke-width="${se.width || 3}" stroke-linejoin="round"/>`;
+    if (se.dots) se.pts.forEach(p => s += `<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="4.5" fill="${se.color || '#d1495b'}" stroke="#fff" stroke-width="1.5"/>`);
+  });
+  s += `<text x="${L + W / 2}" y="${h - 3}" font-size="13" text-anchor="middle" fill="#14213d">${xlab}</text>`;
+  s += `<text x="13" y="${T + H / 2}" font-size="13" text-anchor="middle" fill="#14213d" transform="rotate(-90 13 ${T + H / 2})">${ylab}</text>`;
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;height:auto" role="img" aria-label="${label}">${s}</svg>`;
+}
+// Feedback loop: boxes around a circle with arrows between them
+function loopDiagram(nodes, center = '') {
+  const w = 520, h = 300, cx = w / 2, cy = h / 2, rx = 175, ry = 102, bw = 150, bh = 46, n = nodes.length;
+  const pos = nodes.map((_, i) => { const a = -Math.PI / 2 + i * 2 * Math.PI / n; return [cx + rx * Math.cos(a), cy + ry * Math.sin(a)]; });
+  let s = `<rect width="${w}" height="${h}" fill="#fff"/><defs><marker id="lh" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="#d1495b"/></marker></defs>`;
+  pos.forEach((p, i) => {
+    const q = pos[(i + 1) % n];
+    // trim the arrow to box edges (approximate with ellipse-shaped boxes)
+    const dx = q[0] - p[0], dy = q[1] - p[1], len = Math.hypot(dx, dy);
+    const trim = t => Math.min(1 / (Math.abs(t[0]) / (bw / 2 + 6) + Math.abs(t[1]) / (bh / 2 + 6)), 200);
+    const u = [dx / len, dy / len], t1 = trim(u);
+    const x1 = p[0] + u[0] * t1, y1 = p[1] + u[1] * t1, x2 = q[0] - u[0] * t1, y2 = q[1] - u[1] * t1;
+    s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#d1495b" stroke-width="3" marker-end="url(#lh)"/>`;
+  });
+  pos.forEach((p, i) => {
+    const lines = nodes[i].split('|');
+    s += `<rect x="${p[0] - bw / 2}" y="${p[1] - bh / 2}" width="${bw}" height="${bh}" rx="10" fill="#e7f4f4" stroke="#0f8b8d" stroke-width="2"/>`;
+    lines.forEach((t, k) => s += `<text x="${p[0]}" y="${p[1] + 5 + (k - (lines.length - 1) / 2) * 16}" font-size="13.5" text-anchor="middle" fill="#14213d">${t}</text>`);
+  });
+  if (center) s += `<text x="${cx}" y="${cy + 6}" font-size="18" font-weight="700" text-anchor="middle" fill="#d1495b">${center}</text>`;
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;height:auto" role="img" aria-label="feedback loop diagram">${s}</svg>`;
+}
+// Sunlight budget sketch for Card A (W/m², global average)
+function sunBudget() {
+  const w = 500, h = 280;
+  const up = (x, y1, y2) => `<line x1="${x}" y1="${y1}" x2="${x}" y2="${y2 + 14}" stroke="#f4a259" stroke-width="8"/><polygon points="${x},${y2} ${x - 11},${y2 + 16} ${x + 11},${y2 + 16}" fill="#f4a259"/>`;
+  const down = (x, y1, y2) => `<line x1="${x}" y1="${y1}" x2="${x}" y2="${y2 - 14}" stroke="#f4a259" stroke-width="8"/><polygon points="${x},${y2} ${x - 11},${y2 - 16} ${x + 11},${y2 - 16}" fill="#f4a259"/>`;
+  let s = `<rect width="${w}" height="${h}" fill="#fff"/>`;
+  s += `<rect x="0" y="80" width="${w}" height="110" fill="#dcecf7"/><text x="${w - 10}" y="72" font-size="12" text-anchor="end" fill="#3d4a66">SPACE</text><text x="95" y="182" font-size="12" fill="#3d4a66">ATMOSPHERE + CLOUDS</text>`;
+  s += `<path d="M168 140 q12 -24 38 -12 q14 -18 34 -2 q24 -4 24 16 q-2 16 -24 14 h-62 q-20 -2 -10 -16z" fill="#fff" stroke="#9fb3c8" stroke-width="2"/>`;
+  s += `<rect x="0" y="222" width="${w}" height="58" fill="#c9b27c"/><rect x="310" y="222" width="90" height="12" fill="#f4fbff" stroke="#9fb3c8"/><text x="12" y="260" font-size="13" fill="#14213d">EARTH'S SURFACE</text><text x="355" y="252" font-size="11" text-anchor="middle" fill="#14213d">ice &amp; snow</text>`;
+  s += `<circle cx="30" cy="28" r="18" fill="#f4a259"/>`;
+  s += down(80, 10, 220) + `<text x="94" y="30" font-size="14" font-weight="700" fill="#14213d">340 in</text>`;
+  s += up(215, 128, 8) + `<text x="230" y="24" font-size="13" font-weight="700" fill="#14213d">77 reflected</text><text x="230" y="40" font-size="13" font-weight="700" fill="#14213d">by clouds &amp; air</text>`;
+  s += up(355, 220, 8) + `<text x="370" y="24" font-size="13" font-weight="700" fill="#14213d">23 reflected</text><text x="370" y="40" font-size="13" font-weight="700" fill="#14213d">by surface</text>`;
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;height:auto" role="img" aria-label="sunlight budget diagram">${s}</svg>`;
+}
+// Keeling curve (simplified): decade annual means + seasonal wiggle (peak in May)
+function keelingPts() {
+  const yrs = [1960, 1970, 1980, 1990, 2000, 2010, 2020], c = [317, 326, 339, 354, 370, 390, 414], pts = [];
+  for (let t = 1960; t <= 2020.001; t += 1 / 12) {
+    const i = Math.min(5, Math.floor((t - 1960) / 10)), f = (t - yrs[i]) / 10;
+    pts.push([t, c[i] + f * (c[i + 1] - c[i]) + 3 * Math.cos(2 * Math.PI * ((t % 1) - 0.37))]);
+  }
+  return pts;
+}
+const choice = (opts) => `<span style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">${opts.map(([L, t]) => `<span style="border:1px solid var(--line);border-radius:8px;padding:2px 9px;background:#f8fafc"><b style="font-family:var(--mono);color:var(--teal-d)">${L}</b> &nbsp;${t}</span>`).join('')}</span>`;
+const CO2 = 'CO<sub>2</sub>';
+
+const ROOM = {
+  id: 'chem-u5-climate',
+  salt: 'chem-u5-climate::',
+  title: "VECTOR's Snack Shack",
+  intro: `The class robot vacuum, <b>VECTOR</b>, has duct-taped a vending machine to its back and declared the chem lab
+    <b>"VECTOR's Snack Shack."</b> It insists that <i>"a chip is just a chip"</i> and that your snack choices have
+    nothing to do with the climate. Then it locked the doors. Tater Todd (a very nervous potato chip) and Glacia
+    (an ice cube who is sweating a lot lately) need your team to prove that <b>your snack choice is changing the climate</b>.
+    Five doors stand between you and the hallway.`,
+  finaleCipher: [115,120,47,54,32,54], // teacher password, XOR-locked with the final door's code
+  wrongLines: [
+    "Wrong code. That answer just raised my carbon footprint.",
+    "Denied! Your logic has a very low albedo: it reflects nothing.",
+    "Nope. Your answer is a negative feedback loop on my door.",
+    "Incorrect. I absorbed your mistake and re-emitted it in all directions.",
+    "That's not it. Check your molar masses before things heat up."
+  ],
+  doors: [
+    /* ---------------- DOOR 1 ---------------- */
+    {
+      name: 'Greenhouse in a Bottle', tag: 'Energy flow · greenhouse effect lab',
+      render: () => `
+        ${say(`Glacia's cousins ran a lab to see if ${CO2} really traps energy. I say it's all hot air. My code is a <b>5-letter word</b>: answer questions 1 → 5 and the letters of your choices spell it.`)}
+        <p>Students placed two identical clear 2-liter bottles <b>30 cm</b> from the same 100-watt lamp. Bottle A held regular air. Bottle B was filled with ${CO2} gas made from baking soda and vinegar. Each bottle was sealed with a thermometer inside, and the temperature was read every 2 minutes with a stopwatch.</p>
+        <table class="data"><tr><th>Time (min)</th><th>0</th><th>2</th><th>4</th><th>6</th><th>8</th><th>10</th></tr>
+          <tr><th>A: air (°C)</th><td>22.0</td><td>24.1</td><td>25.9</td><td>27.4</td><td>28.6</td><td>29.5</td></tr>
+          <tr><th>B: ${CO2} (°C)</th><td>22.0</td><td>24.5</td><td>26.7</td><td>28.5</td><td>29.9</td><td>31.0</td></tr></table>
+        <ol class="problems">
+          <li><span class="slot">1</span><span>What was the <b>temperature change</b> of Bottle B over the 10 minutes?
+            ${choice([['M', '31.0 °C'], ['T', '9.0 °C'], ['R', '2.5 °C']])}</span></li>
+          <li><span class="slot">2</span><span>What was the <b>average warming rate</b> of Bottle A?
+            ${choice([['I', '2.95 °C/min'], ['E', '7.5 °C/min'], ['O', '0.75 °C/min']])}</span></li>
+          <li><span class="slot">3</span><span>Which statement <b>best explains</b> why Bottle B warmed more?
+            ${choice([['U', `${CO2} reflects lamp light onto the thermometer.`], ['A', `${CO2} molecules absorb infrared radiation (from the lamp and from the warmed bottle) and re-emit it, keeping more energy inside.`], ['N', `${CO2} gas started out hotter than air.`]])}</span></li>
+          <li><span class="slot">4</span><span>Which variable was a <b>controlled</b> variable (kept the same)?
+            ${choice([['D', 'the type of gas'], ['S', 'the distance from the lamp'], ['L', 'the temperature reading']])}</span></li>
+          <li><span class="slot">5</span><span>On the real Earth, most of the infrared radiation that greenhouse gases absorb is given off by...
+            ${choice([['K', 'the Sun, directly'], ['B', 'the Moon'], ['T', "Earth's warmed surface"]])}</span></li>
+        </ol>`,
+      fields: [{ label: 'Code word', w: 170, kind: 'word' }],
+      answers: ['1750067s5vo'],
+      hints: [
+        'Change = final − initial. Rate = change ÷ time. Both bottles started at the same temperature, so the gas was not "hotter to begin with."',
+        'The gas type is what the students changed on purpose (independent variable). Sunlight warms the ground; the warm ground glows in infrared, and that is what greenhouse gases soak up.'
+      ],
+      success: "Fine. CO₂ warms the bottle. That's toasty. Door 1 unlocked."
+    },
+    /* ---------------- DOOR 2 ---------------- */
+    {
+      name: 'Feedback Frenzy', tag: "Feedback in Earth's systems",
+      render: () => `
+        ${say(`Glacia keeps yelling about something called <i>ice-albedo feedback</i>. Here's her doodle. I wrote seven more "loops." <b>Add up the numbers of the POSITIVE (reinforcing) feedback loops.</b> That sum is the code.`)}
+        <div class="card" style="text-align:center">${loopDiagram(['Earth warms', 'Sea ice melts', 'Dark ocean exposed|(lower albedo)', 'More sunlight|absorbed'], '↻ +')}</div>
+        <p class="note"><b>Positive feedback</b>: the result makes the original change <b>bigger</b> (it amplifies). <b>Negative feedback</b>: the result <b>pushes back</b> against the original change (it stabilizes). <b>Albedo</b> = the fraction of sunlight a surface reflects.</p>
+        ${[
+          [8, 'Warming melts Arctic sea ice. The darker ocean underneath absorbs more sunlight, which causes more warming and more melting.'],
+          [11, "A warmer Earth's surface gives off more infrared radiation to space, which cools the planet back down."],
+          [13, 'Warmer air causes more evaporation. Water vapor is a greenhouse gas, so the extra water vapor causes more warming.'],
+          [4, `Over thousands of years, a warmer, wetter climate speeds up chemical weathering of rocks, which pulls ${CO2} out of the air and cools the climate.`],
+          [6, `Warming thaws permafrost. Microbes decompose the thawed plant matter and release ${CO2} and CH<sub>4</sub>, which causes more warming and more thawing.`],
+          [9, `Extra ${CO2} helps some plants grow faster, so they take more ${CO2} out of the air by photosynthesis, which slows the rise in ${CO2}.`],
+          [17, `Hotter, drier summers cause more wildfires. The fires release ${CO2}, and dark soot lands on snow and lowers its albedo, causing more warming.`],
+        ].map(([n, t]) => `<div class="stmt"><span class="num">${n}</span><span>${t}</span></div>`).join('')}`,
+      fields: [{ label: 'Sum', w: 120, kind: 'num' }],
+      answers: ['xug1olxrcb'],
+      hints: [
+        'For each loop, follow the chain back to the start. Does the ending make the starting change (warming, or more CO₂) <b>bigger</b> or <b>smaller</b>?',
+        'There are exactly four positive feedback loops. The infrared-cooling loop, the rock-weathering loop, and the plant-growth loop all push back against the change.'
+      ],
+      success: 'Ugh, you followed every loop. Door 2 unlocked. Glacia says thanks (drip).'
+    },
+    /* ---------------- DOOR 3 ---------------- */
+    {
+      name: 'Energy Budget Relay', tag: 'Radiation budget · team relay',
+      roles: true,
+      render: () => `
+        ${say(`This vault needs <b>every</b> player. Each of you picks a card below on your own Chromebook. Answers flow from card to card, so <b>talk to each other</b>. Team of 3? Whoever finishes first takes Card D.`)}
+        <p class="note"><b>The story:</b> Earth runs an energy budget, like a bank account. All values are global averages in <b>watts per square meter (W/m²)</b>, rounded from NASA's Earth energy budget.</p>
+        <div class="roles" data-roles></div>
+        <div data-rolecard></div>`,
+      roleCards: {
+        A: `<div class="card rolecard"><h4>Card A · The Reflection Reader</h4>
+            <p>Here is what happens to the sunlight arriving at the top of Earth's atmosphere:</p>
+            <div class="fd">${sunBudget()}</div>
+            <p><b>Your question:</b> How much sunlight (W/m²) is <b>reflected back to space in total</b>? Tell Cards B and C your answer, and tell them the <b>incoming</b> value too.</p></div>`,
+        B: `<div class="card rolecard"><h4>Card B · The Surface Accountant</h4>
+            <p>Sunlight that is not reflected gets <b>absorbed</b>. Gases, clouds, and dust in the atmosphere absorb <b>78 W/m²</b>. Everything else that isn't reflected is absorbed by Earth's surface (land and ocean).</p>
+            <p>You need the <b>incoming</b> sunlight and the <b>total reflected</b> sunlight from Card A.</p>
+            <p><b>Your question:</b> How much sunlight (W/m²) is absorbed by <b>Earth's surface</b>? Tell Card D your answer <b>and</b> the 78.</p></div>`,
+        C: `<div class="card rolecard"><h4>Card C · The Albedo Analyst</h4>
+            <p><b>Albedo</b> is the percent of incoming sunlight that a planet reflects:</p>
+            <p style="text-align:center;font-family:var(--mono)">albedo (%) = reflected ÷ incoming × 100</p>
+            <p>You need the <b>incoming</b> and <b>total reflected</b> values from Card A.</p>
+            <p><b>Your question:</b> What is Earth's albedo, to the <b>nearest whole percent</b>? (Think: if the Arctic ice melts, does this number go up or down?)</p></div>`,
+        D: `<div class="card rolecard"><h4>Card D · The Balance Keeper</h4>
+            <p>For a <b>stable</b> climate, Earth must send out as much energy as it absorbs. Earth sends energy out to space as <b>infrared radiation</b>.</p>
+            <p>Satellites measure that only <b>239 W/m²</b> of infrared is leaving Earth. You need both "absorbed" numbers from Card B (atmosphere + surface).</p>
+            <p><b>Your question:</b> How many W/m² <b>more</b> energy is Earth absorbing than it sends out? (This extra energy is why Earth keeps warming.)</p></div>`
+      },
+      fields: [
+        { label: 'A · reflected (W/m²)', w: 120, kind: 'num' }, { label: 'B · surface (W/m²)', w: 120, kind: 'num' },
+        { label: 'C · albedo (%)', w: 120, kind: 'num' }, { label: 'D · extra (W/m²)', w: 120, kind: 'num' }
+      ],
+      answers: ['2eqxj0d5gvz'],
+      hints: [
+        'Card A: add the two reflected arrows. Card B: surface = incoming − reflected − absorbed by atmosphere.',
+        'Card C: 100 ÷ 340 × 100, rounded. Card D: total absorbed = 78 + surface value; extra = total absorbed − 239. Every answer is a whole number.'
+      ],
+      success: "Your energy budget balances better than my allowance. Door 3 unlocked."
+    },
+    /* ---------------- DOOR 4 ---------------- */
+    {
+      name: 'Keeling Curve Clues', tag: 'Interpret climate data',
+      render: () => `
+        ${say(`Since 1958, scientists on Mauna Loa, Hawaii, have measured ${CO2} in the air. I think the line is just doing a little dance. Prove me wrong with <b>three numbers</b>.`)}
+        <div class="grid g2" style="align-items:start">
+          <div class="card"><h4>Mauna Loa ${CO2} (the Keeling curve, simplified)</h4>
+            ${dataGraph({ series: [{ pts: keelingPts(), width: 2 }], xmin: 1960, xmax: 2020, ymin: 300, ymax: 430, xstep: 10, ystep: 10, ylabEvery: 2, xlab: 'year', ylab: 'CO₂ (ppm)', w: 440, h: 270, label: 'Keeling curve' })}
+            <table class="data" style="font-size:13px"><tr><th>Year</th><th>1960</th><th>1980</th><th>2000</th><th>2010</th><th>2020</th></tr>
+              <tr><th>Annual avg. ${CO2} (ppm)</th><td>317</td><td>339</td><td>370</td><td>390</td><td>414</td></tr></table>
+            <p class="note" style="margin:0">ppm = parts per million. Data: NOAA, rounded.</p></div>
+          <div class="card"><h4>Global surface temperature</h4>
+            ${dataGraph({ series: [{ pts: [[1960, -0.03], [1970, 0.03], [1980, 0.26], [1990, 0.45], [2000, 0.39], [2010, 0.72], [2020, 1.01]], dots: true }], xmin: 1960, xmax: 2020, ymin: -0.2, ymax: 1.2, xstep: 10, ystep: 0.1, ylabEvery: 2, dec: 1, xlab: 'year', ylab: 'difference from 1951–1980 avg (°C)', w: 440, h: 300, label: 'temperature record' })}
+            <p class="note" style="margin:0">Each dot is one year's global average. Data: NASA, annual values.</p></div>
+        </div>
+        <ol class="problems" style="margin-top:12px">
+          <li><span class="slot">1</span><span>Using the table: what was the average rate of ${CO2} increase from <b>2010 to 2020</b>, in ppm per year? Enter it <b>× 10</b>.</span></li>
+          <li><span class="slot">2</span><span>If ${CO2} keeps rising at that same rate starting from the <b>2020</b> value, in what <b>year</b> will it reach <b>450 ppm</b>?</span></li>
+          <li><span class="slot">3</span><span>Using the graph: how much warmer was <b>2020</b> than <b>1960</b>, in °C? Enter it <b>× 10</b> (nearest whole number).</span></li>
+        </ol>`,
+      fields: [{ label: '1 · rate × 10', w: 120, kind: 'num' }, { label: '2 · year', w: 130, kind: 'num' }, { label: '3 · warming × 10', w: 130, kind: 'num' }],
+      answers: ['1j9vr9sa10y','1g5ovfxnrsa','1f7pge2mu9x','t0cydoluqz','hr3s8qzcuo','25k3ptzgis0','a1isdrbmg3','1ji9r5ikot','28u1glj316u'],
+      hints: [
+        'Rate = change in CO₂ ÷ change in time = (414 − 390) ÷ (2020 − 2010). Multiply your answer by 10 before entering it.',
+        'For #2: you need 450 − 414 more ppm; divide by the yearly rate to get the number of years, then add to 2020. For #3: read each dot\'s height on the y-axis and subtract.'
+      ],
+      success: "Okay, okay. The line isn't dancing. It's climbing. Door 4 unlocked."
+    },
+    /* ---------------- DOOR 5 ---------------- */
+    {
+      name: 'Snack Carbon Tally', tag: 'Carbon cycle · combustion stoichiometry · team relay',
+      roles: true,
+      render: () => `
+        ${say(`Final door! Tater Todd wants to know the carbon cost of <b>one case of his chips</b>. Every card is a step in the chips' life that burns a fossil fuel. Team of 3? Whoever finishes first takes Card D.`, 'mad')}
+        <p class="note">Use whole-number molar masses: <b>C = 12, H = 1, O = 16</b> (g/mol). So ${CO2} = 44 g/mol. Every answer is a whole number.</p>
+        <div class="roles" data-roles></div>
+        <div data-rolecard></div>`,
+      roleCards: {
+        A: `<div class="card rolecard"><h4>Card A · The Fryer</h4>
+            <p>The chip factory's fryer burns natural gas (methane) to heat the oil. Frying one case of chips burns <b>32 g of CH<sub>4</sub></b>.</p>
+            <p style="text-align:center">CH<sub>4</sub> + 2 O<sub>2</sub> → ${CO2} + 2 H<sub>2</sub>O</p>
+            <p><b>Your question:</b> How many <b>grams of ${CO2}</b> does the fryer release? Tell Card D.</p></div>`,
+        B: `<div class="card rolecard"><h4>Card B · The Delivery Truck</h4>
+            <p>The truck that delivers the case burns gasoline. Model gasoline as octane, C<sub>8</sub>H<sub>18</sub> (114 g/mol). Delivering one case burns <b>57 g of octane</b>.</p>
+            <p style="text-align:center">2 C<sub>8</sub>H<sub>18</sub> + 25 O<sub>2</sub> → 16 ${CO2} + 18 H<sub>2</sub>O</p>
+            <p><b>Your question:</b> How many <b>grams of ${CO2}</b> does the truck release? Tell Card D.</p></div>`,
+        C: `<div class="card rolecard"><h4>Card C · The Forklift</h4>
+            <p>At the warehouse, a forklift that runs on propane, C<sub>3</sub>H<sub>8</sub>, moves the case. Moving one case burns <b>22 g of propane</b>.</p>
+            <p style="text-align:center">C<sub>3</sub>H<sub>8</sub> + 5 O<sub>2</sub> → 3 ${CO2} + 4 H<sub>2</sub>O</p>
+            <p><b>Your question:</b> How many <b>grams of ${CO2}</b> does the forklift release? Tell Card D.</p></div>`,
+        D: `<div class="card rolecard"><h4>Card D · The Carbon Sink</h4>
+            <p>Fossil fuels move carbon that was locked underground for millions of years into the atmosphere (a carbon <b>source</b>). Plants pull ${CO2} back out by photosynthesis (a carbon <b>sink</b>).</p>
+            <p>A young tree in the school garden removes about <b>30 g of ${CO2} per day</b>. You need the ${CO2} amounts from Cards A, B, and C.</p>
+            <p><b>Your question:</b> How many <b>days</b> would the tree need to absorb <b>all</b> the ${CO2} released for one case of chips?</p></div>`
+      },
+      fields: [
+        { label: 'A · fryer CO₂ (g)', w: 120, kind: 'num' }, { label: 'B · truck CO₂ (g)', w: 120, kind: 'num' },
+        { label: 'C · forklift CO₂ (g)', w: 120, kind: 'num' }, { label: 'D · tree (days)', w: 120, kind: 'num' }
+      ],
+      answers: ['msh132ryqo'],
+      hints: [
+        'Grams of fuel → moles of fuel (÷ molar mass) → moles of CO₂ (use the coefficients) → grams of CO₂ (× 44). CH<sub>4</sub> = 16 g/mol and C<sub>3</sub>H<sub>8</sub> = 44 g/mol.',
+        'Card B: 57 g ÷ 114 g/mol = 0.5 mol octane, and 2 octane make 16 CO₂ (that is 8 CO₂ per octane). Card D: add A + B + C, then divide by 30 g per day.'
+      ],
+      success: "NOOO! My Snack Shack! Fine... I'll stock local apples."
+    }
+  ]
+};
+
+
+/* =====================================================================
+   ENGINE
+   ===================================================================== */
+const KEY = 'escape:' + ROOM.id;
+const store = {
+  get() { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch (e) { return null; } },
+  set(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} },
+  clear() { try { localStorage.removeItem(KEY); } catch (e) {} }
+};
+let S = store.get() || { started: false, team: '', size: 4, start: 0, end: 0, door: 0, hints: {}, wrong: 0, role: 'A', timer: null };
+const save = () => store.set(S);
+const $ = (q, el = document) => el.querySelector(q);
+const fmt = ms => { const s = Math.max(0, Math.floor(ms / 1000)); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
+const hintsUsed = () => Object.values(S.hints).reduce((a, b) => a + b, 0);
+
+function timerLive() { return S.timer && S.timer.end && S.timer.day === dayKey(); }
+function timeUp() { return timerLive() && Date.now() >= S.timer.end && !S.end; }
+function hud() {
+  const t = S.started ? fmt((S.end || Date.now()) - S.start) : '00:00';
+  let chip;
+  if (timerLive() && !S.end) { const left = S.timer.end - Date.now();
+    chip = `<button class="tchip ${left < 5 * 60000 ? 'low' : ''}" id="tchip" title="Class timer">⏳ Class <b>${left > 0 ? fmt(left) : '0:00'}</b></button>`; }
+  else chip = `<button class="tchip" id="tchip" title="Enter class timer code">⏲ ${S.timer && S.timer.off && S.timer.day === dayKey() ? 'Timer off' : 'Timer code'}</button>`;
+  $('#hud').innerHTML = `${chip}<span title="Your team's time">⏱ <b>${t}</b></span><span title="Hints used">💡 <b>${hintsUsed()}</b></span><span title="Wrong codes">✖ <b>${S.wrong}</b></span>`;
+  $('#tchip').onclick = () => { $('#timerBox').classList.toggle('on'); $('#timerInput').focus(); };
+}
+let shownTimeUp = false;
+setInterval(() => { hud(); const up = timeUp() && S.started; if (up !== shownTimeUp) render(); }, 1000);
+function applyTimerCode(raw, msgEl) {
+  const r = parseTimerCode(raw);
+  if (!r) { if (msgEl) { msgEl.style.color = '#ffb3bd'; msgEl.textContent = "That timer code isn't valid. Check the board and try again."; } return false; }
+  S.timer = r.type === 'off' ? { off: true, end: null, day: dayKey() } : { off: false, end: r.end, day: dayKey() };
+  save();
+  if (msgEl) { msgEl.style.color = '#9ff0b8'; msgEl.textContent = r.type === 'off' ? 'Timer turned off. Keep going!' : `Timer set: ends at ${new Date(r.end).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}.`; }
+  render(); return true;
+}
+
+function hall() {
+  $('#hall').innerHTML = ROOM.doors.map((d, i) => {
+    const cls = i < S.door ? 'open' : (i === S.door && S.started && !S.end ? 'current' : '');
+    return `<div class="door-pill ${cls}"><span class="lock"></span><span class="n">${i + 1}</span>${d.name}</div>`;
+  }).join('');
+}
+
+function normalize(v, f) {
+  v = String(v).trim();
+  if (f.kind === 'word') return v.toUpperCase().replace(/[^A-Z]/g, '');
+  const m = v.replace(/,/g, '').match(/-?\d*\.?\d+/); // first number only, so units like "W/m2" are ignored
+  if (!m) return '';
+  const n = parseFloat(m[0]);
+  const r = f.roundTo || 1;
+  return String(Math.round(Math.abs(n) / r) * r);
+}
+
+function render() {
+  hud(); hall();
+  const st = $('#stage');
+  if (!S.started) return renderIntro(st);
+  if (S.door >= ROOM.doors.length) { shownTimeUp = false; return renderFinale(st); }
+  shownTimeUp = timeUp();
+  if (shownTimeUp) return renderTimeUp(st);
+  const i = S.door, d = ROOM.doors[i];
+  st.innerHTML = `<span class="tag">Door ${i + 1} of ${ROOM.doors.length} · ${d.tag}</span><h2>${d.name}</h2>${d.render()}
+    <div class="lockbox">
+      <div class="lbl">🔒 Door ${i + 1} lock</div>
+      <form class="fields" id="lockForm" autocomplete="off">
+        ${d.fields.map((f, k) => `<label class="field">${f.label}<input style="--w:${f.w}px" name="f${k}" inputmode="${f.kind === 'num' ? 'decimal' : 'text'}" required></label>`).join('')}
+        <button class="btn" type="submit">Try code</button>
+      </form>
+      <div class="feedback" id="fb" aria-live="polite"></div>
+      <div class="hints no-print">${d.hints.map((h, k) => `<button class="btn ghost" data-hint="${k}" ${k > (S.hints[i] || 0) ? 'disabled style="opacity:.4"' : ''}>💡 Hint ${k + 1}</button>`).join('')}</div>
+      <div id="hintOut">${d.hints.slice(0, S.hints[i] || 0).map(h => `<div class="hinttext">${h}</div>`).join('')}</div>
+    </div>`;
+  if (d.roles) setupRoles(st, d);
+  $('#lockForm').addEventListener('submit', e => { e.preventDefault(); check(d, i); });
+  st.querySelectorAll('[data-hint]').forEach(b => b.addEventListener('click', () => {
+    const k = +b.dataset.hint; if ((S.hints[i] || 0) <= k) { S.hints[i] = k + 1; save(); render(); }
+  }));
+  const first = st.querySelector('#lockForm input'); if (first && document.activeElement === document.body) first.focus({ preventScroll: true });
+}
+
+function setupRoles(st, d) {
+  const box = $('[data-roles]', st), out = $('[data-rolecard]', st);
+  const keys = Object.keys(d.roleCards);
+  const draw = () => {
+    box.innerHTML = '<span class="note" style="align-self:center;margin-right:4px">I am holding:</span>' + keys.map(k => `<button type="button" class="${k === S.role ? 'on' : ''}" data-r="${k}">Card ${k}</button>`).join('');
+    out.innerHTML = d.roleCards[S.role] || '';
+    box.querySelectorAll('[data-r]').forEach(b => b.addEventListener('click', () => { S.role = b.dataset.r; save(); draw(); }));
+  };
+  draw();
+}
+
+function check(d, i) {
+  const form = $('#lockForm'), fb = $('#fb');
+  const vals = d.fields.map((f, k) => normalize(form.elements['f' + k].value, f));
+  const h = cyrb53(ROOM.salt + 'd' + (i + 1) + '::' + vals.join('|'));
+  if (d.answers.includes(h)) {
+    S.door = i + 1;
+    if (S.door >= ROOM.doors.length) { S.end = Date.now(); S.key = vals.join('|'); }
+    save();
+    fb.className = 'feedback good'; fb.textContent = '✔ ' + d.success;
+    form.querySelector('button').disabled = true;
+    setTimeout(render, 1400);
+  } else {
+    S.wrong++; save(); hud();
+    fb.className = 'feedback bad';
+    fb.textContent = '✖ ' + ROOM.wrongLines[Math.floor(Math.random() * ROOM.wrongLines.length)];
+    form.classList.remove('shake'); void form.offsetWidth; form.classList.add('shake');
+  }
+}
+
+function renderIntro(st) {
+  st.innerHTML = `<div class="center">
+      <span class="tag">Escape Room · Teams of 3–4</span>
+      <h2>${ROOM.title}</h2></div>
+      ${say(ROOM.intro + ' <br><br>The clock starts when you press the button. Hints are free, but I <i>count</i> them. Mwahaha.')}
+      <div class="setup">
+        <div><label for="team">Team name</label><input id="team" maxlength="40" placeholder="e.g., The Carbon Sinks" value="${S.team || ''}"></div>
+        <div><label for="names">Team members</label><input id="names" maxlength="120" placeholder="First names" value="${S.names || ''}"></div>
+        <div><label for="size">Players</label><select id="size"><option value="3">3 players</option><option value="4" selected>4 players</option></select></div>
+        <div><label for="tcode">Class timer code <span class="note">(from the board, if your teacher posted one)</span></label><input id="tcode" maxlength="12" placeholder="e.g., 1452-AB" style="font-family:var(--mono);text-transform:uppercase"></div>
+        <div id="tcodeMsg" class="note"></div>
+        <p class="note" style="margin:0">Every player opens this page on their own Chromebook and enters the <b>same</b> team name. Bring paper, a pencil, and a calculator.</p>
+        <button class="btn dark" id="go">Start the clock ▶</button>
+      </div>`;
+  $('#size').value = S.size || 4;
+  $('#go').addEventListener('click', () => {
+    const tc = $('#tcode').value.trim();
+    if (tc && !parseTimerCode(tc)) { $('#tcodeMsg').style.color = '#d1495b'; $('#tcodeMsg').textContent = "That timer code isn't valid. Fix it or leave it blank."; return; }
+    S.team = $('#team').value.trim() || 'Unnamed Team'; S.names = $('#names').value.trim(); S.size = +$('#size').value;
+    if (tc) { const r = parseTimerCode(tc); S.timer = r.type === 'off' ? { off: true, end: null, day: dayKey() } : { off: false, end: r.end, day: dayKey() }; }
+    S.started = true; S.start = Date.now(); save(); render();
+  });
+}
+
+function renderFinale(st) {
+  const t = fmt(S.end - S.start);
+  st.innerHTML = `<div class="center">
+      ${say(`Fine. FINE. You escaped. I'll go back to vacuuming. Show this screen to your teacher.`, 'happy')}
+      <div class="cert">
+        <div class="tag">Certificate of Escape</div>
+        <h2 style="margin:4px 0">${escapeHtml(S.team)}</h2>
+        <div class="note">${escapeHtml(S.names || '')}</div>
+        <div class="stats"><div>Time<b>${t}</b></div><div>Hints<b>${hintsUsed()}</b></div><div>Wrong codes<b>${S.wrong}</b></div></div>
+        <div class="note">Finish code (your teacher types this in)</div>
+        <div class="fcode">${finishCode(S.end, Math.min(99, hintsUsed()))}</div>
+        <div class="note" style="margin-top:8px">Teacher password</div>
+        <div class="pw">${unlockPw()}</div>
+        <div class="note">${new Date(S.end).toLocaleString()} · Chemistry in the Earth System · Unit 5: Choices Change Climate · ${ROOM.title}</div>
+      </div>
+      <p class="no-print"><button class="btn dark" onclick="window.print()">Print certificate</button></p>
+    </div>`;
+}
+function renderTimeUp(st) {
+  const opened = S.door;
+  st.innerHTML = `<div class="timeup">
+      ${say(`Beep boop... <b>TIME'S UP!</b> The lab stays locked. Show this screen to your teacher.`, 'happy')}
+      <h2>⏰ Time's Up</h2>
+      <div class="cert">
+        <h2 style="margin:4px 0;color:var(--ink);font-size:24px">${escapeHtml(S.team)}</h2>
+        <div class="note">${escapeHtml(S.names || '')}</div>
+        <div class="stats"><div>Doors opened<b>${opened} / ${ROOM.doors.length}</b></div><div>Hints<b>${hintsUsed()}</b></div><div>Wrong codes<b>${S.wrong}</b></div></div>
+        <div class="note">Stopped on Door ${Math.min(opened + 1, ROOM.doors.length)}: ${ROOM.doors[Math.min(opened, ROOM.doors.length - 1)].name}</div>
+      </div>
+      <p class="note">Did your teacher give more time? Type the new code from the board:</p>
+      <form id="moreTime" autocomplete="off" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <input id="moreInput" placeholder="1505-AB" style="font-family:var(--mono);font-size:20px;letter-spacing:.1em;width:180px;padding:8px 10px;border-radius:9px;border:2px solid var(--line);text-transform:uppercase">
+        <button class="btn dark" type="submit">Keep going</button></form>
+      <div id="moreMsg" class="note" style="margin-top:6px"></div>
+    </div>`;
+  $('#moreTime').addEventListener('submit', e => { e.preventDefault(); const m = $('#moreMsg'); applyTimerCode($('#moreInput').value, m); if (m.textContent.startsWith('That')) m.style.color = '#d1495b'; });
+}
+function pwKey(s) { return cyrb53(ROOM.salt + 'pw1::' + s) + cyrb53('pw2::' + s + ROOM.salt) + cyrb53(s + '::pw3' + ROOM.salt); }
+function unlockPw() { const k = pwKey(S.key || ''); return ROOM.finaleCipher.map((b, i) => String.fromCharCode(b ^ k.charCodeAt(i % k.length))).join(''); }
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+$('#timerForm').addEventListener('submit', e => { e.preventDefault(); if (applyTimerCode($('#timerInput').value, $('#timerMsg'))) { $('#timerInput').value = ''; setTimeout(() => $('#timerBox').classList.remove('on'), 1600); } });
+$('#timerClose').addEventListener('click', () => $('#timerBox').classList.remove('on'));
+$('#resetBtn').addEventListener('click', () => $('#confirmBox').classList.add('on'));
+$('#resetNo').addEventListener('click', () => $('#confirmBox').classList.remove('on'));
+$('#resetYes').addEventListener('click', () => { store.clear(); S = { started: false, team: '', size: 4, start: 0, end: 0, door: 0, hints: {}, wrong: 0, role: 'A', timer: null }; $('#confirmBox').classList.remove('on'); render(); });
+render();
+</script>
+</body>
+</html>

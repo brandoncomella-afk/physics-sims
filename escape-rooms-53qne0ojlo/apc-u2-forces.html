@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Escape Room · AP Physics C: Mechanics · Unit 2: Force and Translational Dynamics · VECTOR's Unbalanced Banquet</title>
+<style>
+:root{
+  --ink:#14213d; --ink-2:#3d4a66; --paper:#fbf8f1; --card:#ffffff; --line:#d9d2c3;
+  --teal:#0f8b8d; --teal-d:#0b6b6d; --amber:#f4a259; --red:#d1495b; --green:#3a9d5d;
+  --night:#0d1b2a; --night-2:#1b263b; --glow:#7ee8e0;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  --sans:"Avenir Next","Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:var(--sans);color:var(--ink);background:var(--night);
+  background-image:linear-gradient(rgba(126,232,224,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(126,232,224,.06) 1px,transparent 1px);
+  background-size:28px 28px;min-height:100vh;line-height:1.5}
+.wrap{max-width:980px;margin:0 auto;padding:20px 18px 60px}
+header.top{display:flex;align-items:center;gap:14px;color:#e8f1f2;flex-wrap:wrap}
+header.top .unit{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--glow)}
+header.top h1{margin:0;font-size:26px;letter-spacing:.01em}
+header.top .spacer{flex:1}
+.hud{display:flex;gap:10px;font-family:var(--mono);font-size:13px}
+.hud span{background:var(--night-2);border:1px solid #2f3e5a;color:#e8f1f2;padding:5px 10px;border-radius:8px}
+.hud b{color:var(--glow);font-weight:600}
+
+/* progress hallway */
+.hall{display:flex;gap:8px;margin:18px 0 18px;flex-wrap:wrap}
+.door-pill{flex:1;min-width:120px;background:var(--night-2);border:1px solid #2f3e5a;color:#8fa0b8;border-radius:10px;padding:8px 10px;font-size:13px;display:flex;gap:8px;align-items:center}
+.door-pill .n{font-family:var(--mono);font-size:11px;border:1px solid currentColor;border-radius:5px;padding:0 5px}
+.door-pill.open{color:#bff3ee;border-color:var(--teal)}
+.door-pill.current{color:#fff;border-color:var(--amber);box-shadow:0 0 0 2px rgba(244,162,89,.25)}
+.door-pill.open .lock::before{content:"🔓"} .door-pill .lock::before{content:"🔒"}
+
+.panel{background:var(--paper);border-radius:16px;padding:22px 24px;box-shadow:0 18px 50px rgba(0,0,0,.35);position:relative}
+.panel h2{margin:0 0 4px;font-size:22px}
+.tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;background:#e7f4f4;color:var(--teal-d);border-radius:6px;padding:2px 8px;margin-bottom:10px}
+.vector{text-align:left;display:flex;gap:14px;align-items:flex-start;background:var(--night);color:#e8f1f2;border-radius:12px;padding:12px 14px;margin:10px 0 16px}
+.vector svg{flex:0 0 auto}
+.vector p{margin:0}
+.vector .who{font-family:var(--mono);font-size:11px;color:var(--glow);letter-spacing:.12em;text-transform:uppercase}
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.card h4{margin:0 0 6px;font-size:15px}
+.badge{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;background:var(--ink);color:#fff;font-weight:700;font-family:var(--mono);margin-right:8px}
+.fd{text-align:center}
+.fd .badge{background:var(--teal)}
+table.data{border-collapse:collapse;margin:8px 0;font-family:var(--mono);font-size:14px}
+table.data th,table.data td{border:1px solid var(--line);padding:6px 12px;text-align:center;background:#fff}
+table.data th{background:#eef2f6}
+ol.problems{padding-left:0;list-style:none;margin:0}
+ol.problems li{display:flex;gap:10px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+ol.problems .slot{flex:0 0 auto;font-family:var(--mono);font-weight:700;background:var(--amber);color:var(--ink);border-radius:6px;padding:0 8px;height:26px;line-height:26px}
+.stmt{display:flex;gap:10px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin-bottom:7px}
+.stmt .num{flex:0 0 auto;min-width:34px;text-align:center;font-family:var(--mono);font-weight:700;background:#efe7d6;border-radius:6px;padding:1px 6px}
+
+/* roles */
+.roles{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
+.roles button{font:inherit;font-size:14px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;cursor:pointer}
+.roles button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.rolecard{border-left:5px solid var(--amber)}
+.note{font-size:14px;color:var(--ink-2)}
+
+/* lock */
+.lockbox{margin-top:18px;background:var(--night-2);color:#e8f1f2;border-radius:14px;padding:16px}
+.lockbox .lbl{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--glow);margin-bottom:8px}
+.fields{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:4px;font-size:13px;color:#b9c6d6}
+.field input{font-family:var(--mono);font-size:22px;letter-spacing:.12em;width:var(--w,150px);padding:8px 10px;border-radius:9px;border:2px solid #3b4d6b;background:#0d1b2a;color:#fff;text-transform:uppercase}
+.field input:focus{outline:none;border-color:var(--amber)}
+.btn{font:inherit;font-weight:700;border:0;border-radius:10px;padding:11px 18px;cursor:pointer;background:var(--amber);color:var(--ink)}
+.btn:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent;color:#cfe0ea;border:1px solid #3b4d6b;font-weight:500}
+.btn.dark{background:var(--ink);color:#fff}
+.feedback{margin-top:10px;min-height:24px;font-size:15px}
+.feedback.bad{color:#ffb3bd}.feedback.good{color:#9ff0b8}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.hints{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.hinttext{background:#fff7e8;border:1px dashed var(--amber);border-radius:10px;padding:8px 12px;margin-top:8px;font-size:14px;color:var(--ink)}
+
+/* intro / finale */
+.center{text-align:center}
+.setup{display:grid;gap:12px;max-width:520px;margin:14px auto 0;text-align:left}
+.setup label{font-size:14px;font-weight:600}
+.setup input,.setup select{font:inherit;width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:#fff}
+.cert{border:3px double var(--ink);border-radius:14px;padding:22px;background:#fff;max-width:620px;margin:16px auto 0}
+.cert .pw{font-family:var(--mono);font-size:30px;letter-spacing:.25em;background:var(--ink);color:var(--glow);display:inline-block;padding:6px 16px;border-radius:10px;margin:6px 0}
+.stats{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:10px 0}
+.stats div{background:#f2efe6;border-radius:10px;padding:8px 14px;font-size:14px}
+.stats b{display:block;font-family:var(--mono);font-size:20px}
+.foot{color:#7f90a8;font-size:12px;text-align:center;margin-top:22px}
+.foot a{color:#9fd9d4}
+.reset{background:none;border:0;color:#7f90a8;text-decoration:underline;cursor:pointer;font:inherit;font-size:12px}
+.confirm{display:none;margin-top:8px;color:#e8f1f2;font-size:13px}
+.confirm.on{display:block}
+svg text{font-family:var(--sans)}
+.tchip{cursor:pointer;font:inherit;font-family:var(--mono);font-size:13px;background:var(--night-2);border:1px solid #2f3e5a;color:#e8f1f2;padding:5px 10px;border-radius:8px}
+.tchip b{color:var(--amber)} .tchip.low{border-color:var(--red);animation:pulse 1s infinite} .tchip.low b{color:#ffb3bd}
+@keyframes pulse{50%{box-shadow:0 0 0 3px rgba(209,73,91,.35)}}
+#timerBox{display:none;margin-top:12px;background:var(--night-2);border:1px solid #3b4d6b;border-radius:12px;padding:12px 14px;color:#e8f1f2}
+#timerBox.on{display:block}
+#timerBox form{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#timerBox input{font-family:var(--mono);font-size:18px;letter-spacing:.1em;width:160px;padding:7px 10px;border-radius:8px;border:2px solid #3b4d6b;background:#0d1b2a;color:#fff;text-transform:uppercase}
+#timerMsg{font-size:14px;margin-top:6px;min-height:20px}
+.timeup{text-align:center}
+.timeup h2{font-size:40px;color:var(--red);margin:6px 0}
+.fcode{font-family:var(--mono);font-size:26px;letter-spacing:.12em;background:#fff7e8;border:2px dashed var(--amber);display:inline-block;padding:4px 14px;border-radius:10px;margin:4px 0}
+@media print{body{background:#fff}.hall,.hud,.foot,.no-print{display:none!important}.panel{box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="unit">AP Physics C: Mechanics · Unit 2: Force and Translational Dynamics</div>
+      <h1>VECTOR's Unbalanced Banquet</h1>
+    </div>
+    <div class="spacer"></div>
+    <div class="hud" id="hud"></div>
+  </header>
+  <div id="timerBox" class="no-print">
+    <form id="timerForm" autocomplete="off"><span>⏲ Class timer code (from the board):</span>
+      <input id="timerInput" placeholder="1452-AB" aria-label="Class timer code">
+      <button class="btn" type="submit" style="padding:8px 14px">Set</button>
+      <button class="btn ghost" type="button" id="timerClose" style="padding:8px 12px">Close</button></form>
+    <div id="timerMsg" aria-live="polite"></div>
+  </div>
+  <nav class="hall" id="hall" aria-label="Door progress"></nav>
+  <main class="panel" id="stage"></main>
+  <div class="foot">
+    Mr. C's Science · <a href="index.html">All escape rooms</a> ·
+    <button class="reset" id="resetBtn">Reset this device</button>
+    <div class="confirm" id="confirmBox">Erase all progress on this device?
+      <button class="btn ghost" id="resetYes" style="padding:4px 10px">Yes, reset</button>
+      <button class="btn ghost" id="resetNo" style="padding:4px 10px">Cancel</button></div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   ESCAPE ROOM ENGINE (reusable). To make a new unit, copy this file and
+   replace the ROOM object below. Answers are stored only as salted
+   hashes (cyrb53); generate them with the helper in the teacher guide.
+   ===================================================================== */
+function cyrb53(str, seed = 0) {
+  let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+  for (let i = 0, ch; i < str.length; i++) { ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507); h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507); h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+
+/* ---------- CLASS TIMER + FINISH CODES (shared with teacher.html; keep identical) ---------- */
+const TALPH = 'ACDEFGHJKMNPQRTUVWXY34679';
+const pad2 = n => String(n).padStart(2, '0');
+function dayKey(d = new Date()) { return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+function tmac(s, day) { const h = parseInt(cyrb53('mrc-class-timer::' + (day || dayKey()) + '::' + s), 36); return TALPH[h % 25] + TALPH[Math.floor(h / 25) % 25]; }
+function timerCode(endMs) { const d = new Date(endMs), t = pad2(d.getHours()) + pad2(d.getMinutes()); return t + '-' + tmac('T' + t); }
+function offCode() { return 'OFF-' + tmac('OFF'); }
+function finishCode(ms, hints) { const d = new Date(ms), t = pad2(d.getHours()) + pad2(d.getMinutes()) + pad2(d.getSeconds()); return t + '-' + hints + '-' + tmac('F' + t + '-' + hints); }
+function cleanCode(raw) { return String(raw || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
+// -> {type:'end', end:ms} | {type:'off'} | null
+function parseTimerCode(raw) {
+  const c = cleanCode(raw); let m;
+  if ((m = c.match(/^OFF([A-Z0-9]{2})$/)) && m[1] === tmac('OFF')) return { type: 'off' };
+  if ((m = c.match(/^(\d{4})([A-Z0-9]{2})$/)) && m[2] === tmac('T' + m[1])) {
+    const hh = +m[1].slice(0, 2), mm = +m[1].slice(2); if (hh > 23 || mm > 59) return null;
+    const d = new Date(); d.setHours(hh, mm, 0, 0); return { type: 'end', end: d.getTime() };
+  }
+  return null;
+}
+// -> {finish:ms, hints:n} | null
+function parseFinishCode(raw) {
+  const c = String(raw || '').toUpperCase().replace(/\s/g, ''); const m = c.match(/^(\d{6})-?(\d{1,2})-?([A-Z0-9]{2})$/);
+  if (!m || m[3] !== tmac('F' + m[1] + '-' + (+m[2]))) return null;
+  const d = new Date(); d.setHours(+m[1].slice(0, 2), +m[1].slice(2, 4), +m[1].slice(4), 0);
+  return { finish: d.getTime(), hints: +m[2] };
+}
+
+/* ---------- drawing helpers ---------- */
+const sub = (main, s) => `${main}<tspan dy="4" font-size="10">${s}</tspan><tspan dy="-4"></tspan>`;
+// Force diagram: dot on a dashed grid, arrows measured in grid units
+function forceDiagram(forces, opts = {}) {
+  const u = 16, size = opts.size || 176, c = size / 2;
+  let g = '';
+  for (let x = c % u; x <= size; x += u) g += `<line x1="${x}" y1="0" x2="${x}" y2="${size}" stroke="#b9c3cf" stroke-dasharray="3 3" stroke-width="1"/>`;
+  for (let y = c % u; y <= size; y += u) g += `<line x1="0" y1="${y}" x2="${size}" y2="${y}" stroke="#b9c3cf" stroke-dasharray="3 3" stroke-width="1"/>`;
+  let a = '';
+  const dirs = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+  forces.forEach(f => {
+    const [dx, dy] = dirs[f.dir], L = f.len * u, x2 = c + dx * L, y2 = c + dy * L;
+    a += `<line x1="${c}" y1="${c}" x2="${x2 - dx * 7}" y2="${y2 - dy * 7}" stroke="#14213d" stroke-width="3"/>`;
+    const p = dx ? `${x2},${y2} ${x2 - dx * 10},${y2 - 6} ${x2 - dx * 10},${y2 + 6}` : `${x2},${y2} ${x2 - 6},${y2 - dy * 10} ${x2 + 6},${y2 - dy * 10}`;
+    a += `<polygon points="${p}" fill="#14213d"/>`;
+    // vertical arrows: label beside the tip; horizontal arrows: label above the tip, pulled inward
+    const out = !!f.mag; // labels with magnitudes go outward past the tip (canvas is padded)
+    const lx = dx ? x2 + (out ? dx * 8 : 0) : c + 8, ly = dy ? y2 + (dy > 0 ? 14 : -4) : (out ? c + 5 : c - 12);
+    const anchor = out ? (dx < 0 ? 'end' : 'start') : (dx > 0 ? 'end' : 'start');
+    a += `<text x="${lx}" y="${ly}" font-size="14" font-style="italic" fill="#0b6b6d" text-anchor="${anchor}">${sub('F', f.lab)}${f.mag ? ` = ${f.mag}` : ''}</text>`;
+  });
+  const px = opts.padX || 0;
+  return `<svg viewBox="${-px} 0 ${size + 2 * px} ${size}" width="${size + 2 * px}" height="${size}" style="max-width:100%;height:auto" role="img" aria-label="force diagram"><rect width="${size}" height="${size}" fill="#fff"/>${g}${a}<circle cx="${c}" cy="${c}" r="5.5" fill="#d1495b"/></svg>`;
+}
+// Line graph on a grid. pts in data units.
+function graph({ pts, xmax, ymax, xstep, ystep, xlab, ylab, w = 420, h = 250, ticks = true }) {
+  const L = 48, B = 36, T = 12, R = 14, W = w - L - R, H = h - T - B;
+  const X = x => L + x / xmax * W, Y = y => T + H - y / ymax * H;
+  let s = `<rect width="${w}" height="${h}" fill="#fff"/>`;
+  for (let x = 0; x <= xmax + 1e-9; x += xstep) s += `<line x1="${X(x)}" y1="${T}" x2="${X(x)}" y2="${T + H}" stroke="#dde3ea"/>` + (ticks ? `<text x="${X(x)}" y="${T + H + 16}" font-size="12" text-anchor="middle" fill="#3d4a66">${+x.toFixed(2)}</text>` : '');
+  for (let y = 0; y <= ymax + 1e-9; y += ystep) s += `<line x1="${L}" y1="${Y(y)}" x2="${L + W}" y2="${Y(y)}" stroke="#dde3ea"/>` + (ticks ? `<text x="${L - 7}" y="${Y(y) + 4}" font-size="12" text-anchor="end" fill="#3d4a66">${+y.toFixed(2)}</text>` : '');
+  s += `<line x1="${L}" y1="${T + H}" x2="${L + W}" y2="${T + H}" stroke="#14213d" stroke-width="2"/><line x1="${L}" y1="${T}" x2="${L}" y2="${T + H}" stroke="#14213d" stroke-width="2"/>`;
+  s += `<polyline points="${pts.map(p => X(p[0]) + ',' + Y(p[1])).join(' ')}" fill="none" stroke="#d1495b" stroke-width="3.5" stroke-linejoin="round"/>`;
+  s += `<text x="${L + W / 2}" y="${h - 3}" font-size="13" text-anchor="middle" fill="#14213d">${xlab}</text>`;
+  s += `<text x="13" y="${T + H / 2}" font-size="13" text-anchor="middle" fill="#14213d" transform="rotate(-90 13 ${T + H / 2})">${ylab}</text>`;
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;height:auto" role="img" aria-label="graph">${s}</svg>`;
+}
+function vectorBot(mood = 'smug') {
+  const eyes = mood === 'mad' ? '<path d="M18 22 l8 3 M42 22 l-8 3" stroke="#0d1b2a" stroke-width="3" stroke-linecap="round"/>' : '';
+  const mouth = mood === 'happy' ? '<path d="M22 36 q8 7 16 0" stroke="#0d1b2a" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    : mood === 'mad' ? '<path d="M22 39 q8 -6 16 0" stroke="#0d1b2a" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    : '<path d="M23 37 h14" stroke="#0d1b2a" stroke-width="3" stroke-linecap="round"/>';
+  return `<svg width="60" height="60" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="32" r="25" fill="#7ee8e0"/><circle cx="30" cy="32" r="25" fill="none" stroke="#0f8b8d" stroke-width="3"/><rect x="14" y="20" width="32" height="12" rx="6" fill="#0d1b2a" opacity=".12"/><circle cx="22" cy="27" r="4" fill="#0d1b2a"/><circle cx="38" cy="27" r="4" fill="#0d1b2a"/>${eyes}${mouth}<line x1="30" y1="7" x2="30" y2="1" stroke="#0f8b8d" stroke-width="3"/><circle cx="30" cy="1.5" r="3" fill="#f4a259"/></svg>`;
+}
+const say = (html, mood) => `<div class="vector">${vectorBot(mood)}<div><div class="who">VECTOR</div><p>${html}</p></div></div>`;
+
+/* =====================================================================
+   ROOM DATA: AP Physics C: Mechanics · Unit 2: Force and Translational Dynamics
+   ===================================================================== */
+// Function graph on a grid with signed axes. f(x) sampled, or pts given.
+function fgraph({ f, pts, xmin = 0, xmax, ymin, ymax, xstep, ystep, xlab, ylab, w = 460, h = 280, n = 240 }) {
+  const L = 52, B = 38, T = 12, R = 16, W = w - L - R, H = h - T - B;
+  const X = x => L + (x - xmin) / (xmax - xmin) * W, Y = y => T + H - (y - ymin) / (ymax - ymin) * H;
+  let s = `<rect width="${w}" height="${h}" fill="#fff"/>`;
+  for (let x = xmin; x <= xmax + 1e-9; x += xstep) s += `<line x1="${X(x)}" y1="${T}" x2="${X(x)}" y2="${T + H}" stroke="#b9c3cf" stroke-dasharray="3 3"/><text x="${X(x)}" y="${T + H + 16}" font-size="12" text-anchor="middle" fill="#3d4a66">${+x.toFixed(2)}</text>`;
+  for (let y = ymin; y <= ymax + 1e-9; y += ystep) s += `<line x1="${L}" y1="${Y(y)}" x2="${L + W}" y2="${Y(y)}" stroke="#b9c3cf" stroke-dasharray="3 3"/><text x="${L - 7}" y="${Y(y) + 4}" font-size="12" text-anchor="end" fill="#3d4a66">${+y.toFixed(2)}</text>`;
+  const y0 = Math.min(Math.max(0, ymin), ymax);
+  s += `<line x1="${L}" y1="${Y(y0)}" x2="${L + W}" y2="${Y(y0)}" stroke="#14213d" stroke-width="2"/><line x1="${X(Math.max(0, xmin))}" y1="${T}" x2="${X(Math.max(0, xmin))}" y2="${T + H}" stroke="#14213d" stroke-width="2"/>`;
+  const P = pts || Array.from({ length: n + 1 }, (_, i) => { const x = xmin + (xmax - xmin) * i / n; return [x, f(x)]; });
+  s += `<polyline points="${P.map(p => X(p[0]).toFixed(1) + ',' + Y(p[1]).toFixed(1)).join(' ')}" fill="none" stroke="#d1495b" stroke-width="3.5" stroke-linejoin="round"/>`;
+  s += `<text x="${L + W / 2}" y="${h - 3}" font-size="13" text-anchor="middle" fill="#14213d">${xlab}</text>`;
+  s += `<text x="14" y="${T + H / 2}" font-size="13" text-anchor="middle" fill="#14213d" transform="rotate(-90 14 ${T + H / 2})">${ylab}</text>`;
+  return `<svg viewBox="0 0 ${w} ${h}" style="display:block;margin:0 auto;width:100%;max-width:${w}px;height:auto" role="img" aria-label="graph">${s}</svg>`;
+}
+const arrowHead = (id, color) => `<marker id="${id}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${color}"/></marker>`;
+// A non-uniform rod drawn with shading that follows lambda(x)
+function rodSketch({ lam, L, label, color = '#f4a259', w = 420 }) {
+  const x0 = 30, x1 = w - 30, n = 40, max = Math.max(...Array.from({ length: n + 1 }, (_, i) => lam(L * i / n)));
+  let cells = '';
+  for (let i = 0; i < n; i++) { const xm = L * (i + 0.5) / n, op = 0.12 + 0.88 * lam(xm) / max, hgt = 10 + 26 * lam(xm) / max;
+    cells += `<rect x="${x0 + (x1 - x0) * i / n}" y="${40 - hgt / 2}" width="${(x1 - x0) / n + 0.6}" height="${hgt}" fill="${color}" opacity="${op.toFixed(2)}"/>`; }
+  let ticks = '';
+  for (let k = 0; k <= L * 2 + 1e-9; k++) { const xv = k / 2, px = x0 + (x1 - x0) * xv / L;
+    ticks += `<line x1="${px}" y1="62" x2="${px}" y2="70" stroke="#14213d"/><text x="${px}" y="84" font-size="12" text-anchor="middle" fill="#3d4a66">${xv.toFixed(1)}</text>`; }
+  return `<svg viewBox="0 0 ${w} 112" style="display:block;margin:0 auto;width:100%;max-width:${w}px;height:auto" role="img" aria-label="${label}">
+    <rect width="${w}" height="112" fill="#fff"/>${cells}
+    <rect x="${x0}" y="22" width="${x1 - x0}" height="36" fill="none" stroke="#14213d" stroke-width="1.5" stroke-dasharray="4 3" rx="6"/>
+    <line x1="${x0}" y1="66" x2="${x1}" y2="66" stroke="#14213d" stroke-width="2"/>${ticks}
+    <text x="${w / 2}" y="104" font-size="12" text-anchor="middle" fill="#14213d">x (m) · ${label}</text></svg>`;
+}
+// Block on an incline (sin θ = 0.60) tied over a pulley to a hanging sack
+function pulleySketch() {
+  return `<svg viewBox="0 0 470 270" style="display:block;margin:0 auto;width:100%;max-width:470px;height:auto" role="img" aria-label="incline and pulley">
+    <rect width="470" height="270" fill="#fff"/>
+    <rect x="0" y="240" width="470" height="30" fill="#c9d3df"/>
+    <polygon points="40,240 320,240 320,30" fill="#e7dcc6" stroke="#14213d" stroke-width="2"/>
+    <rect x="320" y="20" width="10" height="220" fill="#b9c3cf"/>
+    <g transform="translate(160 150) rotate(-36.87)"><rect x="-36" y="-30" width="72" height="30" rx="12" fill="#f4d35e" stroke="#14213d" stroke-width="2"/><text x="0" y="-10" font-size="12" text-anchor="middle" fill="#14213d">Gouda</text></g>
+    <line x1="179.8" y1="116.4" x2="318" y2="12.5" stroke="#14213d" stroke-width="2"/>
+    <circle cx="324" cy="20" r="10" fill="#fff" stroke="#14213d" stroke-width="3"/>
+    <line x1="334" y1="20" x2="334" y2="120" stroke="#14213d" stroke-width="2"/>
+    <path d="M314 120 h40 l-6 50 h-28 z" fill="#c38e5a" stroke="#14213d" stroke-width="2"/><text x="334" y="150" font-size="11" text-anchor="middle" fill="#fff">seeds</text>
+    <path d="M100 240 A60 60 0 0 0 94 213" fill="none" stroke="#14213d" stroke-width="1.5"/><text x="104" y="232" font-size="13" fill="#14213d">θ</text>
+    <text x="235" y="262" font-size="12" text-anchor="middle" fill="#14213d">ideal (massless, frictionless) pulley · light string · not to scale</text>
+  </svg>`;
+}
+function planetCard(r, label) {
+  const R = 14 + 20 * r;
+  return `<svg viewBox="0 0 120 120" width="100" height="100" aria-hidden="true"><rect width="120" height="120" fill="#fff"/><circle cx="60" cy="60" r="${R}" fill="#7ee8e0" stroke="#0f8b8d" stroke-width="3"/><text x="60" y="68" font-size="24" text-anchor="middle" fill="#14213d" font-weight="700">${label}</text></svg>`;
+}
+function trackSketch() {
+  return `<svg viewBox="0 0 470 190" style="display:block;margin:0 auto;width:100%;max-width:520px;height:auto" role="img" aria-label="magnet cart on aluminum track">
+    <defs>${arrowHead('ahm', '#d1495b')}</defs>
+    <rect width="470" height="190" fill="#fff"/>
+    <line x1="30" y1="40" x2="430" y2="165" stroke="#9aa5b1" stroke-width="10"/>
+    <text x="300" y="112" font-size="12" fill="#3d4a66" transform="rotate(17.4 300 112)">aluminum track</text>
+    <g transform="rotate(17.35 120 50)"><rect x="95" y="34" width="56" height="22" rx="5" fill="#f4a259" stroke="#14213d" stroke-width="2"/><rect x="104" y="56" width="12" height="7" fill="#d1495b"/><rect x="130" y="56" width="12" height="7" fill="#14213d"/></g>
+    <rect x="18" y="8" width="38" height="22" rx="4" fill="#14213d"/><text x="37" y="23" font-size="10" text-anchor="middle" fill="#7ee8e0">sensor</text>
+    <line x1="60" y1="20" x2="90" y2="30" stroke="#0f8b8d" stroke-dasharray="3 3" stroke-width="2"/>
+    <line x1="200" y1="70" x2="150" y2="54" stroke="#d1495b" stroke-width="3" marker-end="url(#ahm)"/>
+    <text x="205" y="64" font-size="12" fill="#d1495b">F = −bv</text>
+    <text x="235" y="184" font-size="12" text-anchor="middle" fill="#3d4a66">track tilted θ = 17.8° · magnets ride just above the aluminum (not to scale)</text>
+  </svg>`;
+}
+function turntableSketch() {
+  return `<svg viewBox="0 0 300 260" style="display:block;margin:0 auto;width:100%;max-width:320px;height:auto" role="img" aria-label="turntable top view">
+    <defs>${arrowHead('aht', '#0f8b8d')}</defs>
+    <rect width="300" height="260" fill="#fff"/>
+    <circle cx="150" cy="125" r="112" fill="#eef2f6" stroke="#14213d" stroke-width="2"/>
+    <circle cx="150" cy="125" r="80" fill="none" stroke="#d1495b" stroke-width="2" stroke-dasharray="6 5"/>
+    <circle cx="150" cy="125" r="6" fill="#14213d"/>
+    <path d="M150 125 ${Array.from({ length: 10 }, (_, i) => `l8 ${i % 2 ? 6 : -6}`).join(' ')}" fill="none" stroke="#14213d" stroke-width="2"/>
+    <circle cx="232" cy="125" r="12" fill="#f4a259" stroke="#14213d" stroke-width="2"/>
+    <path d="M244 140 a90 90 0 0 1 -20 40" fill="none" stroke="#0f8b8d" stroke-width="3" marker-end="url(#aht)"/>
+    <text x="150" y="255" font-size="12" text-anchor="middle" fill="#3d4a66">top view · frictionless air-table turntable</text>
+  </svg>`;
+}
+
+const ROOM = {
+  id: 'apc-u2-forces',
+  salt: 'apc-u2::',
+  title: "VECTOR's Unbalanced Banquet",
+  intro: `VECTOR, the class robot vacuum, read Newton's laws over the weekend and has declared itself "the most
+    <b>unbalanced force</b> in the building." To celebrate, it locked the lab and threw a banquet: a lopsided party
+    hoagie, a runaway wheel of Gouda, and a "spin cycle" ride for the guest of honor, <b>Sergeant Nibbles</b> the hamster.
+    Five doors. Five codes. Bring free-body diagrams, Newton's second law, and your integrals.`,
+  finaleCipher: [101,116,100,123,32,60,35,63], // teacher password, XOR-locked with the final door's code
+  wrongLines: [
+    "Wrong! The net force on my locks is still zero.",
+    "Denied. Did you draw a free-body diagram, or a free-body doodle?",
+    "Nope. That answer has no normal force holding it up.",
+    "Incorrect. Even Sergeant Nibbles has more inertia than that guess.",
+    "Access denied. Friction opposes sliding, and so do I."
+  ],
+  doors: [
+    /* ---------------- DOOR 1 ---------------- */
+    {
+      name: 'Hoagie Balance', tag: 'Topic 2.1 · center of mass · λ(x)',
+      render: () => `
+        ${say(`Welcome to my banquet! Every dish here is <b>non-uniform</b>, so you'll need integrals. Answer the four questions below. Turn each answer into a letter with <b>A = 1, B = 2, ... Z = 26</b>. The letters, in order 1 → 4, spell the code (and what you'll be if you escape).`)}
+        <div class="grid g2" style="align-items:start">
+          <div class="card"><h4>The Party Hoagie</h4>
+            ${rodSketch({ lam: x => 3 * x * x, L: 2, label: 'λ(x) = 3x² kg/m, 0 ≤ x ≤ 2.0 m' })}
+            <p class="note" style="margin:6px 0 0">A 2.0-m party hoagie, with fillings piled higher toward the far end: <b>λ(x) = 3x²</b> kg/m, x measured from the left end.</p></div>
+          <div class="card"><h4>The Garlic Breadstick</h4>
+            ${rodSketch({ lam: x => 2 + 6 * x, L: 1, label: 'λ(x) = 2 + 6x kg/m, 0 ≤ x ≤ 1.0 m', color: '#0f8b8d' })}
+            <p class="note" style="margin:6px 0 0">A 1.0-m breadstick (extra garlic butter at one end): <b>λ(x) = 2 + 6x</b> kg/m.</p></div>
+        </div>
+        <ol class="problems" style="margin-top:12px">
+          <li><span class="slot">1</span><span>Total <b>mass of the hoagie</b>, in kg.</span></li>
+          <li><span class="slot">2</span><span>Total <b>mass of the breadstick</b>, in kg.</span></li>
+          <li><span class="slot">3</span><span>VECTOR (4.0 kg, treat as a point mass) parks on the hoagie's x-axis at <b>x = 2.4 m</b>. Find the <b>center of mass of the hoagie + VECTOR system</b>, in <b>decimeters</b> (1 dm = 0.1 m) from the hoagie's left end.</span></li>
+          <li><span class="slot">4</span><span>Center of mass of the <b>hoagie alone</b>, in <b>decimeters</b> from its left end.</span></li>
+        </ol>`,
+      fields: [{ label: 'Code word', w: 170, kind: 'word' }],
+      answers: ['1bg65xgsck5'],
+      hints: [
+        'M = ∫λ dx over the length, and x<sub>cm</sub> = (1/M)∫x·λ dx. For a system, x<sub>cm</sub> = Σm·x / Σm using each part\'s own center of mass.',
+        'Hoagie: M = ∫₀² 3x² dx = 8 kg and ∫₀² 3x³ dx = 12 kg·m, so x<sub>cm</sub> = 1.5 m = 15 dm. System: (8·1.5 + 4·2.4)/12. 8 → H, 15 → O.'
+      ],
+      success: 'Balanced to the decimeter. You really are heroes. Door 1 unlocked.'
+    },
+    /* ---------------- DOOR 2 ---------------- */
+    {
+      name: 'Runaway Gouda Relay', tag: 'Topics 2.2–2.5, 2.7 · FRQ relay · friction',
+      roles: true,
+      render: () => `
+        ${say(`A 25 kg wheel of Gouda sits on my cheese ramp, tied by a string over a pulley to a hanging sack of sunflower seeds. Sergeant Nibbles gives the cheese a tiny nudge, and it starts sliding <b>up</b> the ramp. Each card is one part of the free-response question. Team of 3? Whoever finishes first takes Card D.`)}
+        <div class="card">${pulleySketch()}</div>
+        <p class="note">Use g = 9.8 m/s². Pass full values between cards (they all come out clean if you do). Draw a free-body diagram for each object!</p>
+        <div class="roles" data-roles></div>
+        <div data-rolecard></div>`,
+      roleCards: {
+        A: `<div class="card rolecard"><h4>Card A · Part (a): The Ramp Surveyor</h4>
+            <p><b>Your data:</b> the Gouda's mass is <b>m₁ = 25 kg</b>. The ramp rises 3.0 m for every 5.0 m along its surface, so <b>sin θ = 0.60</b> and <b>cos θ = 0.80</b>.</p>
+            <p><b>(a)</b> What is the <b>normal force</b> the ramp exerts on the Gouda, in newtons? Tell Card B. Also tell Card C the component of the Gouda's weight that points <b>down the ramp</b>.</p></div>`,
+        B: `<div class="card rolecard"><h4>Card B · Part (b): The Friction Tester</h4>
+            <p><b>Your data:</b> a sliding test shows the coefficient of kinetic friction between Gouda and ramp is <b>μₖ = 0.25</b>.</p>
+            <p><b>(b)</b> You need the normal force from Card A. What is the <b>kinetic friction force</b> on the Gouda, in newtons? Which way does it point? Tell Card C.</p></div>`,
+        C: `<div class="card rolecard"><h4>Card C · Part (c): The Pulley Keeper</h4>
+            <p><b>Your data:</b> the hanging sack of sunflower seeds has mass <b>m₂ = 25 kg</b>. The string and pulley are ideal.</p>
+            <p><b>(c)</b> Using the down-ramp weight component from Card A and the friction from Card B, apply Newton's second law to the <b>two-object system</b>. What is the magnitude of the acceleration, in <b>cm/s²</b>? Tell Card D.</p></div>`,
+        D: `<div class="card rolecard"><h4>Card D · Part (d): The Stopwatch</h4>
+            <p><b>Your data:</b> the Gouda starts essentially from rest, and the top of the ramp is <b>1.96 m</b> away along the ramp.</p>
+            <p><b>(d)</b> Using the acceleration from Card C, how many <b>seconds</b> does it take the Gouda to reach the top?</p></div>`
+      },
+      fields: [
+        { label: '(a) normal force (N)', w: 120, kind: 'num' }, { label: '(b) friction (N)', w: 120, kind: 'num' },
+        { label: '(c) accel (cm/s²)', w: 120, kind: 'num' }, { label: '(d) time (s)', w: 120, kind: 'num' }
+      ],
+      answers: ['1ggeqsm305v'],
+      hints: [
+        'F<sub>N</sub> = m₁g cos θ and f<sub>k</sub> = μ<sub>k</sub>F<sub>N</sub>. The Gouda slides up, so friction points down the ramp.',
+        'System: m₂g − m₁g sin θ − f<sub>k</sub> = (m₁ + m₂)a, so a = (245 − 147 − 49)/50 m/s². Then 1.96 = ½at².'
+      ],
+      success: 'The Gouda reaches the summit right on schedule. Door 2 unlocked. (Sergeant Nibbles is eating the seeds.)'
+    },
+    /* ---------------- DOOR 3 ---------------- */
+    {
+      name: 'Gravity Buffet', tag: 'Topic 2.6 · gravitational field · ranking',
+      render: () => `
+        ${say(`Dessert is served on six worlds in my Dust Bunny Galaxy. <b>Rank them by the gravitational field strength g</b> where each guest stands, from <b>greatest to least</b>. Type the six letters in that order. No ties, I checked. Twice.`)}
+        <p class="note">M<sub>E</sub> and R<sub>E</sub> are Earth's mass and radius. Every planet is a uniform sphere. All guests stand on the surface unless the card says otherwise.</p>
+        <div class="grid g3">
+          ${[
+            ['W', 1.25, 'Planet Crouton: same <b>density</b> as Earth, radius <b>1.25 R<sub>E</sub></b>.'],
+            ['V', 1.0, 'An astronaut floating "weightless" in a space station orbiting Earth at an altitude of <b>1 R<sub>E</sub></b> above the surface.'],
+            ['H', 1.0, 'Planet Pretzel: mass <b>2 M<sub>E</sub></b>, radius <b>1 R<sub>E</sub></b>.'],
+            ['D', 0.8, 'Planet Pudding: mass <b>0.5 M<sub>E</sub></b>, radius <b>0.8 R<sub>E</sub></b>.'],
+            ['G', 1.5, 'Planet Pumpernickel: mass <b>4 M<sub>E</sub></b>, radius <b>1.5 R<sub>E</sub></b>.'],
+            ['X', 1.0, 'Sergeant Nibbles at home, on the surface of Earth.'],
+          ].map(([k, r, t]) => `<div class="card fd">${planetCard(r, k)}<p style="margin:4px 0 0;font-size:14px;text-align:left">${t}</p></div>`).join('')}
+        </div>`,
+      fields: [{ label: 'Ranking (6 letters)', w: 220, kind: 'word' }],
+      answers: ['1xre3uq5n2n'],
+      hints: [
+        'g = GM/r² where r is the distance from the planet\'s center. Compute each as a multiple of Earth\'s g: g/g<sub>E</sub> = (M/M<sub>E</sub>)/(r/R<sub>E</sub>)². For the same density, M ∝ R³, so g ∝ R.',
+        'Values (× g<sub>E</sub>): 2.00, 1.78, 1.25, 1.00, 0.78, 0.25. "Weightless" astronauts are in free fall; the field there is still (1/2)² = 1/4 of the surface value.'
+      ],
+      success: 'Ranked to perfection. Door 3 unlocked. (Dessert was gravitationally delicious.)'
+    },
+    /* ---------------- DOOR 4 ---------------- */
+    {
+      name: 'Magnet Brake Lab', tag: 'Topic 2.9 · resistive force · lab data',
+      render: () => `
+        ${say(`My getaway cart has <b>magnetic brakes</b>! Strong magnets riding over an aluminum track create eddy currents that push back with a force proportional to speed: <b>F = −bv</b>. Students released the 0.50 kg cart <b>from rest</b> on the tilted track and recorded v(t) with a motion sensor. Find my secret drag constant.`)}
+        <div class="card">${trackSketch()}</div>
+        <div class="grid g2" style="align-items:start;margin-top:12px">
+          <div>
+            <table class="data"><tr><th>t (s)</th><th>v (m/s)</th><th>t (s)</th><th>v (m/s)</th></tr>
+              <tr><td>0.0</td><td>0.00</td><td>1.2</td><td>1.14</td></tr>
+              <tr><td>0.2</td><td>0.47</td><td>1.6</td><td>1.18</td></tr>
+              <tr><td>0.4</td><td>0.76</td><td>2.0</td><td>1.19</td></tr>
+              <tr><td>0.6</td><td>0.93</td><td>2.5</td><td>1.20</td></tr>
+              <tr><td>0.8</td><td>1.04</td><td>3.0</td><td>1.20</td></tr>
+              <tr><td>1.0</td><td>1.10</td><td></td><td></td></tr></table>
+            <p class="note">Cart mass m = 0.50 kg. Rolling friction is negligible.</p>
+          </div>
+          <div class="card">
+            <h4>Your mission</h4>
+            <ol style="margin:0;padding-left:18px">
+              <li>Newton's second law along the track: m dv/dt = mg sin θ − bv. Show that v(t) = v<sub>T</sub>(1 − e<sup>−t/τ</sup>) with <b>τ = m/b</b>.</li>
+              <li>Read the <b>terminal speed v<sub>T</sub></b> from the data.</li>
+              <li>Find the <b>time constant τ</b>: the time when v = (1 − 1/e)v<sub>T</sub> ≈ 0.63v<sub>T</sub>, or the slope of ln(1 − v/v<sub>T</sub>) vs. t.</li>
+              <li>Find <b>b</b>. Check it: at terminal speed, b·v<sub>T</sub> = mg sin θ.</li>
+            </ol>
+            <p class="note" style="margin-bottom:0">Enter v<sub>T</sub> in <b>cm/s</b>, τ in <b>milliseconds</b> (nearest 10 ms), and <b>b × 100</b> in N·s/m (nearest 5).</p>
+          </div>
+        </div>`,
+      fields: [{ label: 'terminal v (cm/s)', w: 120, kind: 'num' }, { label: 'τ (ms)', w: 120, kind: 'num', roundTo: 10 }, { label: 'b × 100 (N·s/m)', w: 140, kind: 'num', roundTo: 5 }],
+      answers: ['2fyx7kkdxlj',  '1arwic5drcg',  'ryh461x9ce',  '11zrofj1qzp',  '178bp9kcsyn',  '5pwi58cxp7',  '2a1j1phf7d9',  '20oiabwox2s',  '20poqv9u6nu',  'xs8xwbpojt',  'medpr3y2wf',  'z5u8h9mlr9',  '23excpj01sd',  'rdklyct0t4',  '1b4x1epto2e',  'zg380agqos',  '1dr9awzdwuy',  '28cvsvpwejx',  'l2vzxo43g7',  '163mjd59sps',  '1t4djanez69',  '1np6tyul6ot',  'wq64djac3d',  'fnu4ykh5pe',  'wp96f53y4v',  '2n337oi6ig',  '1z67sbqfjp5',  '25wsn4mipwp',  '1zlxhu593wj',  '2ap5rnbclrr',  '23jlm38m8zx',  '1fkyp2g3dyu',  'w08ofma73a',  '1q7jd2i3vn8',  '2732lutve9j',  '1buee4vubba',  '2e6wqsixm9a',  'ixu5kskdaa',  '16cod0bsl26',  '2ac6mw1kcq9',  '1ky406illyn',  'ks474yve2v',  '1g80ahxlnmn',  '1srfziy8tlv',  '1yku28rvalu',  '2ghzoraqt1c',  '1ug9hjnqzsg',  'q4rrgqfkju',  '1hscknl3ki2',  'f7ds5vt381',  '1capmfx44x9',  '1vjtqyb9et2',  '1d5fe16bx5l',  '1gky7byxk9q',  'cb9lsm3erk',  'cmpki0a5vs',  '1nb7cpg57y7',  '1ddxraa2eoj',  '117dehbt33k',  '29fjzsnxsaa',  'meg3uog6rc',  '1to5b8320ql',  '2japvyigui',  '203xxjw60gh',  '3hss9c51of',  '298mwxcbmt',  '12lpty7qp8i',  'dfqhpdybns',  'lmwr9hjnrk',  '1bdjvz08fbd',  '1opi56y5z3m',  '9a2rc0u9kn',  '1topbx9clas',  '1rv6xleouu4',  'j80vvrw05e',  '1fxax61v8zd',  '1tn43y8g7ea',  '1902ue8htz9',  'fii6w0ww0o',  '150g1ufauzx',  't2m21pm4u9',  'uvbkv64r8l',  '1guw9tf85od',  'wwchb1ageb',  '132yl3ctuw8',  'sov62trix9',  'my6b6z85ei',  'vxxlx4twt2',  'zo7vxflzic',  '18k393upq8h',  '2crltp59kx2',  '1pzix48z5dv',  '2cd3utv2i47',  '2ftldkv2cx1',  '1dkxk3tkgy5',  '3zdk3v5p63',  'a4hjiijokk',  '239ze5lzw31',  '16o18e82hh7',  '1vl2n4nmgt3',  '23e8xtn0w17',  '1n4343mptft',  '2a5slhjvtbu',  '1jb74jfab4x',  '1qfq23cq4kt',  '1ylsb28pbbo',  '1mxpusjzt6h',  '1y8i796ner8',  '1tgokpl81w9',  'birvikwqfx',  '1jo1fnlgrdq',  'idjanbmjsm',  '7hbwlghbrd',  '1pdh7ex4q4e',  '2c58vbjffws',  'hsiyb4k9e0',  '21gyotw0bfe',  '10ozb7eptwk',  '16247yidfm2',  '94u72nsuhk',  'ku1va2e6pt',  '1wu73ha6iol',  '1jacixgbpud',  '11rqu3kkmpp',  'zmegycj1vc',  '21n0ijswncc',  '1uxmpqrjmwj',  '24lh4zm646r',  'uxtaxvdbzx',  '12dbue0x2b4',  '1di2e91owb2',  'fdtgs8g66a',  '1hegglhjq2w',  '9qroeg6my7',  '17c4oreagoi',  '26kmkz8iom4',  'e3aoqywp1q',  'ouosqojalv',  'vgtb4latvf',  'pnthq79ss8',  '1mupxx61ih0',  'kjyaiqs6ld',  '1ts8rrn0rlh',  'qgajj5npmz',  '1h2h93n2gjo',  '20jr0x5dne8',  'mgjan7lv03',  'dnr3cctrqn',  'tckga04z64',  'ryg9z8gu3q',  '22g9lf5lyb4',  'y28vqcbaw4',  'wiopoqk926',  '1vohkhkr58r',  'ydp756e3vb',  'cm9yrrcape',  '1kqml6hqdp7',  'owcm0x61cz',  'nm270d5ptb',  '1vqnyo7kt3u',  '5fbhr5orbs',  '28p09x7l9uf',  '69shcpk9xr',  '2ff0l4jwqvu',  '2abubgp3j8e',  '1352v8lt7ad',  '2bk5bqw7uav',  '1htqdjbatd6',  '691zpzbsst',  '25eev1bedjk',  '1dsys2r2ez6',  '97k0oqgfhy',  'f41xwcaiee',  '4vg5zr3hpq',  '20r9urewbz5'],
+      hints: [
+        'The speed levels off at v<sub>T</sub> ≈ 1.20 m/s. 63% of that is about 0.76 m/s. When does the cart reach that speed?',
+        'τ ≈ 0.40 s, so b = m/τ ≈ 0.50/0.40 = 1.25 N·s/m → enter 125. Check: mg sin θ / v<sub>T</sub> = (0.50)(9.8)(sin 17.8°)/1.20 ≈ 1.25.'
+      ],
+      success: 'My magnetic brakes have been exposed. Door 4 unlocked.'
+    },
+    /* ---------------- DOOR 5 ---------------- */
+    {
+      name: 'The Spin Cycle', tag: 'Topics 2.8, 2.10 · springs & circular motion · FRQ relay',
+      roles: true,
+      render: () => `
+        ${say(`Final course: the <b>Spin Cycle</b>! Sergeant Nibbles rides in a hamster puck on my frictionless air-table turntable. A spring connects the puck to the center post, and the puck moves in a <b>horizontal circle at constant speed</b>. Every card holds part of the data. Team of 3? Whoever finishes first takes Card D.`, 'mad')}
+        <div class="card">${turntableSketch()}</div>
+        <div class="roles" data-roles></div>
+        <div data-rolecard></div>`,
+      roleCards: {
+        A: `<div class="card rolecard"><h4>Card A · Part (a): The Spring Lab</h4>
+            <p><b>Your data:</b> before the ride, the spring was calibrated by hanging weights and measuring the stretch:</p>
+            ${fgraph({ pts: [[0, 0], [5, 5]], xmin: 0, xmax: 5, ymin: 0, ymax: 5, xstep: 1, ystep: 1, xlab: 'stretch x (cm)', ylab: 'spring force F (N)', w: 380, h: 250 })}
+            <p><b>(a)</b> What is the spring constant k, in <b>N/m</b>? Tell Card B.</p></div>`,
+        B: `<div class="card rolecard"><h4>Card B · Part (b): The Tape Measure</h4>
+            <p><b>Your data:</b> the spring's relaxed length is <b>40.0 cm</b>. During the ride, the puck circles at a radius of <b>r = 50.0 cm</b> from the center post. Tell Cards C and D the radius.</p>
+            <p><b>(b)</b> Using k from Card A, what is the magnitude of the <b>spring force</b> on the puck, in newtons? Tell Card C.</p></div>`,
+        C: `<div class="card rolecard"><h4>Card C · Part (c): The Hamster Scale</h4>
+            <p><b>Your data:</b> the puck plus Sergeant Nibbles has a mass of <b>m = 0.20 kg</b>.</p>
+            <p><b>(c)</b> The spring force is the only horizontal force. Using the spring force from Card B and the radius, what is the puck's <b>speed</b>, in m/s? Tell Card D.</p></div>`,
+        D: `<div class="card rolecard"><h4>Card D · Part (d): The Stopwatch</h4>
+            <p>You need the radius from Card B and the speed from Card C.</p>
+            <p><b>(d)</b> How long does one revolution take, in <b>milliseconds</b> (nearest whole millisecond)?</p></div>`
+      },
+      fields: [
+        { label: '(a) k (N/m)', w: 120, kind: 'num' }, { label: '(b) spring force (N)', w: 120, kind: 'num' },
+        { label: '(c) speed (m/s)', w: 120, kind: 'num' }, { label: '(d) period (ms)', w: 120, kind: 'num' }
+      ],
+      answers: ['1vnc36jlb5r'],
+      hints: [
+        'k is the slope of F vs. x, but convert centimeters to meters first. The stretch during the ride is r minus the relaxed length.',
+        'k(0.10 m) = m v²/r gives v. Then T = 2πr/v; convert seconds to milliseconds.'
+      ],
+      success: 'NOOO! Sergeant Nibbles is free, and he is not even dizzy!'
+    }
+  ]
+};
+
+
+/* =====================================================================
+   ENGINE
+   ===================================================================== */
+const KEY = 'escape:' + ROOM.id;
+const store = {
+  get() { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch (e) { return null; } },
+  set(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} },
+  clear() { try { localStorage.removeItem(KEY); } catch (e) {} }
+};
+let S = store.get() || { started: false, team: '', size: 4, start: 0, end: 0, door: 0, hints: {}, wrong: 0, role: 'A', timer: null };
+const save = () => store.set(S);
+const $ = (q, el = document) => el.querySelector(q);
+const fmt = ms => { const s = Math.max(0, Math.floor(ms / 1000)); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
+const hintsUsed = () => Object.values(S.hints).reduce((a, b) => a + b, 0);
+
+function timerLive() { return S.timer && S.timer.end && S.timer.day === dayKey(); }
+function timeUp() { return timerLive() && Date.now() >= S.timer.end && !S.end; }
+function hud() {
+  const t = S.started ? fmt((S.end || Date.now()) - S.start) : '00:00';
+  let chip;
+  if (timerLive() && !S.end) { const left = S.timer.end - Date.now();
+    chip = `<button class="tchip ${left < 5 * 60000 ? 'low' : ''}" id="tchip" title="Class timer">⏳ Class <b>${left > 0 ? fmt(left) : '0:00'}</b></button>`; }
+  else chip = `<button class="tchip" id="tchip" title="Enter class timer code">⏲ ${S.timer && S.timer.off && S.timer.day === dayKey() ? 'Timer off' : 'Timer code'}</button>`;
+  $('#hud').innerHTML = `${chip}<span title="Your team's time">⏱ <b>${t}</b></span><span title="Hints used">💡 <b>${hintsUsed()}</b></span><span title="Wrong codes">✖ <b>${S.wrong}</b></span>`;
+  $('#tchip').onclick = () => { $('#timerBox').classList.toggle('on'); $('#timerInput').focus(); };
+}
+let shownTimeUp = false;
+setInterval(() => { hud(); const up = timeUp() && S.started; if (up !== shownTimeUp) render(); }, 1000);
+function applyTimerCode(raw, msgEl) {
+  const r = parseTimerCode(raw);
+  if (!r) { if (msgEl) { msgEl.style.color = '#ffb3bd'; msgEl.textContent = "That timer code isn't valid. Check the board and try again."; } return false; }
+  S.timer = r.type === 'off' ? { off: true, end: null, day: dayKey() } : { off: false, end: r.end, day: dayKey() };
+  save();
+  if (msgEl) { msgEl.style.color = '#9ff0b8'; msgEl.textContent = r.type === 'off' ? 'Timer turned off. Keep going!' : `Timer set: ends at ${new Date(r.end).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}.`; }
+  render(); return true;
+}
+
+function hall() {
+  $('#hall').innerHTML = ROOM.doors.map((d, i) => {
+    const cls = i < S.door ? 'open' : (i === S.door && S.started && !S.end ? 'current' : '');
+    return `<div class="door-pill ${cls}"><span class="lock"></span><span class="n">${i + 1}</span>${d.name}</div>`;
+  }).join('');
+}
+
+function normalize(v, f) {
+  v = String(v).trim();
+  if (f.kind === 'word') return v.toUpperCase().replace(/[^A-Z]/g, '');
+  const m = v.replace(/,/g, '').match(/-?\d*\.?\d+/); // first number only, so units like "W/m2" are ignored
+  if (!m) return '';
+  const n = parseFloat(m[0]);
+  const r = f.roundTo || 1;
+  return String(Math.round(Math.abs(n) / r) * r);
+}
+
+function render() {
+  hud(); hall();
+  const st = $('#stage');
+  if (!S.started) return renderIntro(st);
+  if (S.door >= ROOM.doors.length) { shownTimeUp = false; return renderFinale(st); }
+  shownTimeUp = timeUp();
+  if (shownTimeUp) return renderTimeUp(st);
+  const i = S.door, d = ROOM.doors[i];
+  st.innerHTML = `<span class="tag">Door ${i + 1} of ${ROOM.doors.length} · ${d.tag}</span><h2>${d.name}</h2>${d.render()}
+    <div class="lockbox">
+      <div class="lbl">🔒 Door ${i + 1} lock</div>
+      <form class="fields" id="lockForm" autocomplete="off">
+        ${d.fields.map((f, k) => `<label class="field">${f.label}<input style="--w:${f.w}px" name="f${k}" inputmode="${f.kind === 'num' ? 'decimal' : 'text'}" required></label>`).join('')}
+        <button class="btn" type="submit">Try code</button>
+      </form>
+      <div class="feedback" id="fb" aria-live="polite"></div>
+      <div class="hints no-print">${d.hints.map((h, k) => `<button class="btn ghost" data-hint="${k}" ${k > (S.hints[i] || 0) ? 'disabled style="opacity:.4"' : ''}>💡 Hint ${k + 1}</button>`).join('')}</div>
+      <div id="hintOut">${d.hints.slice(0, S.hints[i] || 0).map(h => `<div class="hinttext">${h}</div>`).join('')}</div>
+    </div>`;
+  if (d.roles) setupRoles(st, d);
+  $('#lockForm').addEventListener('submit', e => { e.preventDefault(); check(d, i); });
+  st.querySelectorAll('[data-hint]').forEach(b => b.addEventListener('click', () => {
+    const k = +b.dataset.hint; if ((S.hints[i] || 0) <= k) { S.hints[i] = k + 1; save(); render(); }
+  }));
+  const first = st.querySelector('#lockForm input'); if (first && document.activeElement === document.body) first.focus({ preventScroll: true });
+}
+
+function setupRoles(st, d) {
+  const box = $('[data-roles]', st), out = $('[data-rolecard]', st);
+  const keys = Object.keys(d.roleCards);
+  const draw = () => {
+    box.innerHTML = '<span class="note" style="align-self:center;margin-right:4px">I am holding:</span>' + keys.map(k => `<button type="button" class="${k === S.role ? 'on' : ''}" data-r="${k}">Card ${k}</button>`).join('');
+    out.innerHTML = d.roleCards[S.role] || '';
+    box.querySelectorAll('[data-r]').forEach(b => b.addEventListener('click', () => { S.role = b.dataset.r; save(); draw(); }));
+  };
+  draw();
+}
+
+function check(d, i) {
+  const form = $('#lockForm'), fb = $('#fb');
+  const vals = d.fields.map((f, k) => normalize(form.elements['f' + k].value, f));
+  const h = cyrb53(ROOM.salt + 'd' + (i + 1) + '::' + vals.join('|'));
+  if (d.answers.includes(h)) {
+    S.door = i + 1;
+    if (S.door >= ROOM.doors.length) { S.end = Date.now(); S.key = vals.join('|'); }
+    save();
+    fb.className = 'feedback good'; fb.textContent = '✔ ' + d.success;
+    form.querySelector('button').disabled = true;
+    setTimeout(render, 1400);
+  } else {
+    S.wrong++; save(); hud();
+    fb.className = 'feedback bad';
+    fb.textContent = '✖ ' + ROOM.wrongLines[Math.floor(Math.random() * ROOM.wrongLines.length)];
+    form.classList.remove('shake'); void form.offsetWidth; form.classList.add('shake');
+  }
+}
+
+function renderIntro(st) {
+  st.innerHTML = `<div class="center">
+      <span class="tag">Escape Room · Teams of 3–4</span>
+      <h2>${ROOM.title}</h2></div>
+      ${say(ROOM.intro + ' <br><br>The clock starts when you press the button. Hints are free, but I <i>count</i> them. Mwahaha.')}
+      <div class="setup">
+        <div><label for="team">Team name</label><input id="team" maxlength="40" placeholder="e.g., The Terminal Velociraptors" value="${S.team || ''}"></div>
+        <div><label for="names">Team members</label><input id="names" maxlength="120" placeholder="First names" value="${S.names || ''}"></div>
+        <div><label for="size">Players</label><select id="size"><option value="3">3 players</option><option value="4" selected>4 players</option></select></div>
+        <div><label for="tcode">Class timer code <span class="note">(from the board, if your teacher posted one)</span></label><input id="tcode" maxlength="12" placeholder="e.g., 1452-AB" style="font-family:var(--mono);text-transform:uppercase"></div>
+        <div id="tcodeMsg" class="note"></div>
+        <p class="note" style="margin:0">Every player opens this page on their own Chromebook and enters the <b>same</b> team name. Bring paper, a pencil, and a calculator.</p>
+        <button class="btn dark" id="go">Start the clock ▶</button>
+      </div>`;
+  $('#size').value = S.size || 4;
+  $('#go').addEventListener('click', () => {
+    const tc = $('#tcode').value.trim();
+    if (tc && !parseTimerCode(tc)) { $('#tcodeMsg').style.color = '#d1495b'; $('#tcodeMsg').textContent = "That timer code isn't valid. Fix it or leave it blank."; return; }
+    S.team = $('#team').value.trim() || 'Unnamed Team'; S.names = $('#names').value.trim(); S.size = +$('#size').value;
+    if (tc) { const r = parseTimerCode(tc); S.timer = r.type === 'off' ? { off: true, end: null, day: dayKey() } : { off: false, end: r.end, day: dayKey() }; }
+    S.started = true; S.start = Date.now(); save(); render();
+  });
+}
+
+function renderFinale(st) {
+  const t = fmt(S.end - S.start);
+  st.innerHTML = `<div class="center">
+      ${say(`Fine. FINE. You escaped, and Sergeant Nibbles ate the hoagie. I'll go back to vacuuming, at terminal velocity. Show this screen to your teacher.`, 'happy')}
+      <div class="cert">
+        <div class="tag">Certificate of Escape</div>
+        <h2 style="margin:4px 0">${escapeHtml(S.team)}</h2>
+        <div class="note">${escapeHtml(S.names || '')}</div>
+        <div class="stats"><div>Time<b>${t}</b></div><div>Hints<b>${hintsUsed()}</b></div><div>Wrong codes<b>${S.wrong}</b></div></div>
+        <div class="note">Finish code (your teacher types this in)</div>
+        <div class="fcode">${finishCode(S.end, Math.min(99, hintsUsed()))}</div>
+        <div class="note" style="margin-top:8px">Teacher password</div>
+        <div class="pw">${unlockPw()}</div>
+        <div class="note">${new Date(S.end).toLocaleString()} · AP Physics C: Mechanics · Unit 2: Force and Translational Dynamics · ${ROOM.title}</div>
+      </div>
+      <p class="no-print"><button class="btn dark" onclick="window.print()">Print certificate</button></p>
+    </div>`;
+}
+function renderTimeUp(st) {
+  const opened = S.door;
+  st.innerHTML = `<div class="timeup">
+      ${say(`Beep boop... <b>TIME'S UP!</b> The lab stays locked. Show this screen to your teacher.`, 'happy')}
+      <h2>⏰ Time's Up</h2>
+      <div class="cert">
+        <h2 style="margin:4px 0;color:var(--ink);font-size:24px">${escapeHtml(S.team)}</h2>
+        <div class="note">${escapeHtml(S.names || '')}</div>
+        <div class="stats"><div>Doors opened<b>${opened} / ${ROOM.doors.length}</b></div><div>Hints<b>${hintsUsed()}</b></div><div>Wrong codes<b>${S.wrong}</b></div></div>
+        <div class="note">Stopped on Door ${Math.min(opened + 1, ROOM.doors.length)}: ${ROOM.doors[Math.min(opened, ROOM.doors.length - 1)].name}</div>
+      </div>
+      <p class="note">Did your teacher give more time? Type the new code from the board:</p>
+      <form id="moreTime" autocomplete="off" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <input id="moreInput" placeholder="1505-AB" style="font-family:var(--mono);font-size:20px;letter-spacing:.1em;width:180px;padding:8px 10px;border-radius:9px;border:2px solid var(--line);text-transform:uppercase">
+        <button class="btn dark" type="submit">Keep going</button></form>
+      <div id="moreMsg" class="note" style="margin-top:6px"></div>
+    </div>`;
+  $('#moreTime').addEventListener('submit', e => { e.preventDefault(); const m = $('#moreMsg'); applyTimerCode($('#moreInput').value, m); if (m.textContent.startsWith('That')) m.style.color = '#d1495b'; });
+}
+function pwKey(s) { return cyrb53(ROOM.salt + 'pw1::' + s) + cyrb53('pw2::' + s + ROOM.salt) + cyrb53(s + '::pw3' + ROOM.salt); }
+function unlockPw() { const k = pwKey(S.key || ''); return ROOM.finaleCipher.map((b, i) => String.fromCharCode(b ^ k.charCodeAt(i % k.length))).join(''); }
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+$('#timerForm').addEventListener('submit', e => { e.preventDefault(); if (applyTimerCode($('#timerInput').value, $('#timerMsg'))) { $('#timerInput').value = ''; setTimeout(() => $('#timerBox').classList.remove('on'), 1600); } });
+$('#timerClose').addEventListener('click', () => $('#timerBox').classList.remove('on'));
+$('#resetBtn').addEventListener('click', () => $('#confirmBox').classList.add('on'));
+$('#resetNo').addEventListener('click', () => $('#confirmBox').classList.remove('on'));
+$('#resetYes').addEventListener('click', () => { store.clear(); S = { started: false, team: '', size: 4, start: 0, end: 0, door: 0, hints: {}, wrong: 0, role: 'A', timer: null }; $('#confirmBox').classList.remove('on'); render(); });
+render();
+</script>
+</body>
+</html>

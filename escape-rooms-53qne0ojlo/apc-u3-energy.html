@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Escape Room · AP Physics C: Mechanics · Unit 3: Work, Energy, and Power · VECTOR's Escape Velocity</title>
+<style>
+:root{
+  --ink:#14213d; --ink-2:#3d4a66; --paper:#fbf8f1; --card:#ffffff; --line:#d9d2c3;
+  --teal:#0f8b8d; --teal-d:#0b6b6d; --amber:#f4a259; --red:#d1495b; --green:#3a9d5d;
+  --night:#0d1b2a; --night-2:#1b263b; --glow:#7ee8e0;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  --sans:"Avenir Next","Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:var(--sans);color:var(--ink);background:var(--night);
+  background-image:linear-gradient(rgba(126,232,224,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(126,232,224,.06) 1px,transparent 1px);
+  background-size:28px 28px;min-height:100vh;line-height:1.5}
+.wrap{max-width:980px;margin:0 auto;padding:20px 18px 60px}
+header.top{display:flex;align-items:center;gap:14px;color:#e8f1f2;flex-wrap:wrap}
+header.top .unit{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--glow)}
+header.top h1{margin:0;font-size:26px;letter-spacing:.01em}
+header.top .spacer{flex:1}
+.hud{display:flex;gap:10px;font-family:var(--mono);font-size:13px}
+.hud span{background:var(--night-2);border:1px solid #2f3e5a;color:#e8f1f2;padding:5px 10px;border-radius:8px}
+.hud b{color:var(--glow);font-weight:600}
+
+/* progress hallway */
+.hall{display:flex;gap:8px;margin:18px 0 18px;flex-wrap:wrap}
+.door-pill{flex:1;min-width:120px;background:var(--night-2);border:1px solid #2f3e5a;color:#8fa0b8;border-radius:10px;padding:8px 10px;font-size:13px;display:flex;gap:8px;align-items:center}
+.door-pill .n{font-family:var(--mono);font-size:11px;border:1px solid currentColor;border-radius:5px;padding:0 5px}
+.door-pill.open{color:#bff3ee;border-color:var(--teal)}
+.door-pill.current{color:#fff;border-color:var(--amber);box-shadow:0 0 0 2px rgba(244,162,89,.25)}
+.door-pill.open .lock::before{content:"🔓"} .door-pill .lock::before{content:"🔒"}
+
+.panel{background:var(--paper);border-radius:16px;padding:22px 24px;box-shadow:0 18px 50px rgba(0,0,0,.35);position:relative}
+.panel h2{margin:0 0 4px;font-size:22px}
+.tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;background:#e7f4f4;color:var(--teal-d);border-radius:6px;padding:2px 8px;margin-bottom:10px}
+.vector{text-align:left;display:flex;gap:14px;align-items:flex-start;background:var(--night);color:#e8f1f2;border-radius:12px;padding:12px 14px;margin:10px 0 16px}
+.vector svg{flex:0 0 auto}
+.vector p{margin:0}
+.vector .who{font-family:var(--mono);font-size:11px;color:var(--glow);letter-spacing:.12em;text-transform:uppercase}
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.card h4{margin:0 0 6px;font-size:15px}
+.badge{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;background:var(--ink);color:#fff;font-weight:700;font-family:var(--mono);margin-right:8px}
+.fd{text-align:center}
+.fd .badge{background:var(--teal)}
+table.data{border-collapse:collapse;margin:8px 0;font-family:var(--mono);font-size:14px}
+table.data th,table.data td{border:1px solid var(--line);padding:6px 12px;text-align:center;background:#fff}
+table.data th{background:#eef2f6}
+ol.problems{padding-left:0;list-style:none;margin:0}
+ol.problems li{display:flex;gap:10px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+ol.problems .slot{flex:0 0 auto;font-family:var(--mono);font-weight:700;background:var(--amber);color:var(--ink);border-radius:6px;padding:0 8px;height:26px;line-height:26px}
+.stmt{display:flex;gap:10px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin-bottom:7px}
+.stmt .num{flex:0 0 auto;min-width:34px;text-align:center;font-family:var(--mono);font-weight:700;background:#efe7d6;border-radius:6px;padding:1px 6px}
+
+/* roles */
+.roles{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
+.roles button{font:inherit;font-size:14px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;cursor:pointer}
+.roles button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.rolecard{border-left:5px solid var(--amber)}
+.note{font-size:14px;color:var(--ink-2)}
+
+/* lock */
+.lockbox{margin-top:18px;background:var(--night-2);color:#e8f1f2;border-radius:14px;padding:16px}
+.lockbox .lbl{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--glow);margin-bottom:8px}
+.fields{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:4px;font-size:13px;color:#b9c6d6}
+.field input{font-family:var(--mono);font-size:22px;letter-spacing:.12em;width:var(--w,150px);padding:8px 10px;border-radius:9px;border:2px solid #3b4d6b;background:#0d1b2a;color:#fff;text-transform:uppercase}
+.field input:focus{outline:none;border-color:var(--amber)}
+.btn{font:inherit;font-weight:700;border:0;border-radius:10px;padding:11px 18px;cursor:pointer;background:var(--amber);color:var(--ink)}
+.btn:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent;color:#cfe0ea;border:1px solid #3b4d6b;font-weight:500}
+.btn.dark{background:var(--ink);color:#fff}
+.feedback{margin-top:10px;min-height:24px;font-size:15px}
+.feedback.bad{color:#ffb3bd}.feedback.good{color:#9ff0b8}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.hints{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.hinttext{background:#fff7e8;border:1px dashed var(--amber);border-radius:10px;padding:8px 12px;margin-top:8px;font-size:14px;color:var(--ink)}
+
+/* intro / finale */
+.center{text-align:center}
+.setup{display:grid;gap:12px;max-width:520px;margin:14px auto 0;text-align:left}
+.setup label{font-size:14px;font-weight:600}
+.setup input,.setup select{font:inherit;width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:#fff}
+.cert{border:3px double var(--ink);border-radius:14px;padding:22px;background:#fff;max-width:620px;margin:16px auto 0}
+.cert .pw{font-family:var(--mono);font-size:30px;letter-spacing:.25em;background:var(--ink);color:var(--glow);display:inline-block;padding:6px 16px;border-radius:10px;margin:6px 0}
+.stats{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:10px 0}
+.stats div{background:#f2efe6;border-radius:10px;padding:8px 14px;font-size:14px}
+.stats b{display:block;font-family:var(--mono);font-size:20px}
+.foot{color:#7f90a8;font-size:12px;text-align:center;margin-top:22px}
+.foot a{color:#9fd9d4}
+.reset{background:none;border:0;color:#7f90a8;text-decoration:underline;cursor:pointer;font:inherit;font-size:12px}
+.confirm{display:none;margin-top:8px;color:#e8f1f2;font-size:13px}
+.confirm.on{display:block}
+svg text{font-family:var(--sans)}
+.tchip{cursor:pointer;font:inherit;font-family:var(--mono);font-size:13px;background:var(--night-2);border:1px solid #2f3e5a;color:#e8f1f2;padding:5px 10px;border-radius:8px}
+.tchip b{color:var(--amber)} .tchip.low{border-color:var(--red);animation:pulse 1s infinite} .tchip.low b{color:#ffb3bd}
+@keyframes pulse{50%{box-shadow:0 0 0 3px rgba(209,73,91,.35)}}
+#timerBox{display:none;margin-top:12px;background:var(--night-2);border:1px solid #3b4d6b;border-radius:12px;padding:12px 14px;color:#e8f1f2}
+#timerBox.on{display:block}
+#timerBox form{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#timerBox input{font-family:var(--mono);font-size:18px;letter-spacing:.1em;width:160px;padding:7px 10px;border-radius:8px;border:2px solid #3b4d6b;background:#0d1b2a;color:#fff;text-transform:uppercase}
+#timerMsg{font-size:14px;margin-top:6px;min-height:20px}
+.timeup{text-align:center}
+.timeup h2{font-size:40px;color:var(--red);margin:6px 0}
+.fcode{font-family:var(--mono);font-size:26px;letter-spacing:.12em;background:#fff7e8;border:2px dashed var(--amber);display:inline-block;padding:4px 14px;border-radius:10px;margin:4px 0}
+@media print{body{background:#fff}.hall,.hud,.foot,.no-print{display:none!important}.panel{box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="unit">AP Physics C: Mechanics · Unit 3: Work, Energy, and Power</div>
+      <h1>VECTOR's Escape Velocity</h1>
+    </div>
+    <div class="spacer"></div>
+    <div class="hud" id="hud"></div>
+  </header>
+  <div id="timerBox" class="no-print">
+    <form id="timerForm" autocomplete="off"><span>⏲ Class timer code (from the board):</span>
+      <input id="timerInput" placeholder="1452-AB" aria-label="Class timer code">
+      <button class="btn" type="submit" style="padding:8px 14px">Set</button>
+      <button class="btn ghost" type="button" id="timerClose" style="padding:8px 12px">Close</button></form>
+    <div id="timerMsg" aria-live="polite"></div>
+  </div>
+  <nav class="hall" id="hall" aria-label="Door progress"></nav>
+  <main class="panel" id="stage"></main>
+  <div class="foot">
+    Mr. C's Science · <a href="index.html">All escape rooms</a> ·
+    <button class="reset" id="resetBtn">Reset this device</button>
+    <div class="confirm" id="confirmBox">Erase all progress on this device?
+      <button class="btn ghost" id="resetYes" style="padding:4px 10px">Yes, reset</button>
+      <button class="btn ghost" id="resetNo" style="padding:4px 10px">Cancel</button></div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   ESCAPE ROOM ENGINE (reusable). To make a new unit, copy this file and
+   replace the ROOM object below. Answers are stored only as salted
+   hashes (cyrb53); generate them with the helper in the teacher guide.
+   ===================================================================== */
+function cyrb53(str, seed = 0) {
+  let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+  for (let i = 0, ch; i < str.length; i++) { ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507); h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507); h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+
+/* ---------- CLASS TIMER + FINISH CODES (shared with teacher.html; keep identical) ---------- */
+const TALPH = 'ACDEFGHJKMNPQRTUVWXY34679';
+const pad2 = n => String(n).padStart(2, '0');
+function dayKey(d = new Date()) { return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+function tmac(s, day) { const h = parseInt(cyrb53('mrc-class-timer::' + (day || dayKey()) + '::' + s), 36); return TALPH[h % 25] + TALPH[Math.floor(h / 25) % 25]; }
+function timerCode(endMs) { const d = new Date(endMs), t = pad2(d.getHours()) + pad2(d.getMinutes()); return t + '-' + tmac('T' + t); }
+function offCode() { return 'OFF-' + tmac('OFF'); }
+function finishCode(ms, hints) { const d = new Date(ms), t = pad2(d.getHours()) + pad2(d.getMinutes()) + pad2(d.getSeconds()); return t + '-' + hints + '-' + tmac('F' + t + '-' + hints); }
+function cleanCode(raw) { return String(raw || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
+// -> {type:'end', end:ms} | {type:'off'} | null
+function parseTimerCode(raw) {
+  const c = cleanCode(raw); let m;
+  if ((m = c.match(/^OFF([A-Z0-9]{2})$/)) && m[1] === tmac('OFF')) return { type: 'off' };
+  if ((m = c.match(/^(\d{4})([A-Z0-9]{2})$/)) && m[2] === tmac('T' + m[1])) {
+    const hh = +m[1].slice(0, 2), mm = +m[1].slice(2); if (hh > 23 || mm > 59) return null;
+    const d = new Date(); d.setHours(hh, mm, 0, 0); return { type: 'end', end: d.getTime() };
+  }
+  return null;
+}
+// -> {finish:ms, hints:n} | null
+function parseFinishCode(raw) {
+  const c = String(raw || '').toUpperCase().replace(/\s/g, ''); const m = c.match(/^(\d{6})-?(\d{1,2})-?([A-Z0-9]{2})$/);
+  if (!m || m[3] !== tmac('F' + m[1] + '-' + (+m[2]))) return null;
+  const d = new Date(); d.setHours(+m[1].slice(0, 2), +m[1].slice(2, 4), +m[1].slice(4), 0);
+  return { finish: d.getTime(), hints: +m[2] };
+}
+
+/* ---------- drawing helpers ---------- */
+const sub = (main, s) => `${main}<tspan dy="4" font-size="10">${s}</tspan><tspan dy="-4"></tspan>`;
+// Force diagram: dot on a dashed grid, arrows measured in grid units
+function forceDiagram(forces, opts = {}) {
+  const u = 16, size = opts.size || 176, c = size / 2;
+  let g = '';
+  for (let x = c % u; x <= size; x += u) g += `<line x1="${x}" y1="0" x2="${x}" y2="${size}" stroke="#b9c3cf" stroke-dasharray="3 3" stroke-width="1"/>`;
+  for (let y = c % u; y <= size; y += u) g += `<line x1="0" y1="${y}" x2="${size}" y2="${y}" stroke="#b9c3cf" stroke-dasharray="3 3" stroke-width="1"/>`;
+  let a = '';
+  const dirs = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+  forces.forEach(f => {
+    const [dx, dy] = dirs[f.dir], L = f.len * u, x2 = c + dx * L, y2 = c + dy * L;
+    a += `<line x1="${c}" y1="${c}" x2="${x2 - dx * 7}" y2="${y2 - dy * 7}" stroke="#14213d" stroke-width="3"/>`;
+    const p = dx ? `${x2},${y2} ${x2 - dx * 10},${y2 - 6} ${x2 - dx * 10},${y2 + 6}` : `${x2},${y2} ${x2 - 6},${y2 - dy * 10} ${x2 + 6},${y2 - dy * 10}`;
+    a += `<polygon points="${p}" fill="#14213d"/>`;
+    // vertical arrows: label beside the tip; horizontal arrows: label above the tip, pulled inward
+    const out = !!f.mag; // labels with magnitudes go outward past the tip (canvas is padded)
+    const lx = dx ? x2 + (out ? dx * 8 : 0) : c + 8, ly = dy ? y2 + (dy > 0 ? 14 : -4) : (out ? c + 5 : c - 12);
+    const anchor = out ? (dx < 0 ? 'end' : 'start') : (dx > 0 ? 'end' : 'start');
+    a += `<text x="${lx}" y="${ly}" font-size="14" font-style="italic" fill="#0b6b6d" text-anchor="${anchor}">${sub('F', f.lab)}${f.mag ? ` = ${f.mag}` : ''}</text>`;
+  });
+  const px = opts.padX || 0;
+  return `<svg viewBox="${-px} 0 ${size + 2 * px} ${size}" width="${size + 2 * px}" height="${size}" style="max-width:100%;height:auto" role="img" aria-label="force diagram"><rect width="${size}" height="${size}" fill="#fff"/>${g}${a}<circle cx="${c}" cy="${c}" r="5.5" fill="#d1495b"/></svg>`;
+}
+// Line graph on a grid. pts in data units.
+function graph({ pts, xmax, ymax, xstep, ystep, xlab, ylab, w = 420, h = 250, ticks = true }) {
+  const L = 48, B = 36, T = 12, R = 14, W = w - L - R, H = h - T - B;
+  const X = x => L + x / xmax * W, Y = y => T + H - y / ymax * H;
+  let s = `<rect width="${w}" height="${h}" fill="#fff"/>`;
+  for (let x = 0; x <= xmax + 1e-9; x += xstep) s += `<line x1="${X(x)}" y1="${T}" x2="${X(x)}" y2="${T + H}" stroke="#dde3ea"/>` + (ticks ? `<text x="${X(x)}" y="${T + H + 16}" font-size="12" text-anchor="middle" fill="#3d4a66">${+x.toFixed(2)}</text>` : '');
+  for (let y = 0; y <= ymax + 1e-9; y += ystep) s += `<line x1="${L}" y1="${Y(y)}" x2="${L + W}" y2="${Y(y)}" stroke="#dde3ea"/>` + (ticks ? `<text x="${L - 7}" y="${Y(y) + 4}" font-size="12" text-anchor="end" fill="#3d4a66">${+y.toFixed(2)}</text>` : '');
+  s += `<line x1="${L}" y1="${T + H}" x2="${L + W}" y2="${T + H}" stroke="#14213d" stroke-width="2"/><line x1="${L}" y1="${T}" x2="${L}" y2="${T + H}" stroke="#14213d" stroke-width="2"/>`;
+  s += `<polyline points="${pts.map(p => X(p[0]) + ',' + Y(p[1])).join(' ')}" fill="none" stroke="#d1495b" stroke-width="3.5" stroke-linejoin="round"/>`;
+  s += `<text x="${L + W / 2}" y="${h - 3}" font-size="13" text-anchor="middle" fill="#14213d">${xlab}</text>`;
+  s += `<text x="13" y="${T + H / 2}" font-size="13" text-anchor="middle" fill="#14213d" transform="rotate(-90 13 ${T + H / 2})">${ylab}</text>`;
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;height:auto" role="img" aria-label="graph">${s}</svg>`;
+}
+function vectorBot(mood = 'smug') {
+  const eyes = mood === 'mad' ? '<path d="M18 22 l8 3 M42 22 l-8 3" stroke="#0d1b2a" stroke-width="3" stroke-linecap="round"/>' : '';
+  const mouth = mood === 'happy' ? '<path d="M22 36 q8 7 16 0" stroke="#0d1b2a" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    : mood === 'mad' ? '<path d="M22 39 q8 -6 16 0" stroke="#0d1b2a" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    : '<path d="M23 37 h14" stroke="#0d1b2a" stroke-width="3" stroke-linecap="round"/>';
+  return `<svg width="60" height="60" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="32" r="25" fill="#7ee8e0"/><circle cx="30" cy="32" r="25" fill="none" stroke="#0f8b8d" stroke-width="3"/><rect x="14" y="20" width="32" height="12" rx="6" fill="#0d1b2a" opacity=".12"/><circle cx="22" cy="27" r="4" fill="#0d1b2a"/><circle cx="38" cy="27" r="4" fill="#0d1b2a"/>${eyes}${mouth}<line x1="30" y1="7" x2="30" y2="1" stroke="#0f8b8d" stroke-width="3"/><circle cx="30" cy="1.5" r="3" fill="#f4a259"/></svg>`;
+}
+const say = (html, mood) => `<div class="vector">${vectorBot(mood)}<div><div class="who">VECTOR</div><p>${html}</p></div></div>`;
+
+/* ---------- extra drawing helpers (AP Physics C rooms) ---------- */
+// General plot: signed axes, function or point data, optional dots and dashed markers.
+function plot({ fn, pts, xmin = 0, xmax, ymin = 0, ymax, xstep, ystep, xlab, ylab, w = 460, h = 280, dots = false, samples = 240, xdec = 3, label }) {
+  const L = 54, B = 40, T = 14, R = 18, W = w - L - R, H = h - T - B;
+  const X = x => L + (x - xmin) / (xmax - xmin) * W, Y = y => T + (ymax - y) / (ymax - ymin) * H;
+  let s = `<rect width="${w}" height="${h}" fill="#fff"/>`;
+  const nx = Math.round((xmax - xmin) / xstep), ny = Math.round((ymax - ymin) / ystep);
+  for (let i = 0; i <= nx; i++) { const x = xmin + i * xstep;
+    s += `<line x1="${X(x)}" y1="${T}" x2="${X(x)}" y2="${T + H}" stroke="#c9d2dc" stroke-dasharray="3 3"/>`;
+    s += `<text x="${X(x)}" y="${T + H + 16}" font-size="12" text-anchor="middle" fill="#3d4a66">${+x.toFixed(xdec)}</text>`; }
+  for (let j = 0; j <= ny; j++) { const y = ymin + j * ystep;
+    s += `<line x1="${L}" y1="${Y(y)}" x2="${L + W}" y2="${Y(y)}" stroke="#c9d2dc" stroke-dasharray="3 3"/>`;
+    s += `<text x="${L - 7}" y="${Y(y) + 4}" font-size="12" text-anchor="end" fill="#3d4a66">${+y.toFixed(3)}</text>`; }
+  const y0 = ymin <= 0 && ymax >= 0 ? Y(0) : T + H, x0 = xmin <= 0 && xmax >= 0 ? X(0) : L;
+  s += `<line x1="${L}" y1="${y0}" x2="${L + W}" y2="${y0}" stroke="#14213d" stroke-width="2"/><line x1="${x0}" y1="${T}" x2="${x0}" y2="${T + H}" stroke="#14213d" stroke-width="2"/>`;
+  if (fn) { pts = []; for (let i = 0; i <= samples; i++) { const x = xmin + (xmax - xmin) * i / samples, y = fn(x); if (y >= ymin - 1e-9 && y <= ymax + 1e-9) pts.push([x, y]); } }
+  s += `<polyline points="${pts.map(p => X(p[0]).toFixed(1) + ',' + Y(p[1]).toFixed(1)).join(' ')}" fill="none" stroke="#d1495b" stroke-width="3.2" stroke-linejoin="round"/>`;
+  if (dots) s += pts.map(p => `<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="2.6" fill="#d1495b"/>`).join('');
+  s += `<text x="${L + W / 2}" y="${h - 4}" font-size="13" text-anchor="middle" fill="#14213d">${xlab}</text>`;
+  s += `<text x="14" y="${T + H / 2}" font-size="13" text-anchor="middle" fill="#14213d" transform="rotate(-90 14 ${T + H / 2})">${ylab}</text>`;
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;height:auto" role="img" aria-label="${label || 'graph'}">${s}</svg>`;
+}
+const frac = (a, b) => `<span style="display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.9em;line-height:1.1"><span style="border-bottom:1px solid currentColor;padding:0 2px">${a}</span><span style="padding:0 2px">${b}</span></span>`;
+
+function trackDiagram() {
+  // spring + block + smooth floor + sticky mat + brake pad (side view)
+  let zig = 'M14 86'; for (let i = 0; i < 8; i++) zig += ` l6 ${i % 2 ? 12 : -12}`; zig += ' l6 0';
+  return `<svg viewBox="0 0 660 150" style="width:100%;max-width:660px;height:auto" role="img" aria-label="track diagram">
+    <rect width="660" height="150" fill="#fff"/>
+    <rect x="0" y="50" width="10" height="70" fill="#14213d"/>
+    <path d="${zig}" stroke="#0f8b8d" stroke-width="3" fill="none"/>
+    <rect x="68" y="66" width="44" height="40" rx="6" fill="#f4a259" stroke="#14213d" stroke-width="2"/>
+    <text x="90" y="91" font-size="13" text-anchor="middle" fill="#14213d" font-weight="700">Pip</text>
+    <line x1="0" y1="106" x2="660" y2="106" stroke="#14213d" stroke-width="2"/>
+    <text x="4" y="128" font-size="12" text-anchor="start" fill="#0b6b6d">k = 800 N/m</text>
+    <text x="4" y="142" font-size="12" text-anchor="start" fill="#0b6b6d">compressed 0.30 m</text>
+    <text x="210" y="98" font-size="12" text-anchor="middle" fill="#3d4a66">frictionless ice</text>
+    <rect x="290" y="100" width="200" height="6" fill="#d1495b" opacity=".85"/>
+    ${[...Array(20)].map((_, i) => `<line x1="${292 + i * 10}" y1="106" x2="${300 + i * 10}" y2="100" stroke="#fff" stroke-width="1.5"/>`).join('')}
+    <line x1="290" y1="112" x2="290" y2="122" stroke="#14213d"/><line x1="490" y1="112" x2="490" y2="122" stroke="#14213d"/>
+    <text x="290" y="136" font-size="12" text-anchor="middle" fill="#14213d">x = 0</text>
+    <text x="490" y="136" font-size="12" text-anchor="middle" fill="#14213d">x = 2.0 m</text>
+    <text x="390" y="92" font-size="13" text-anchor="middle" fill="#d1495b" font-weight="700">sticky mat</text>
+    <text x="390" y="132" font-size="12" text-anchor="middle" fill="#3d4a66">(Card B)</text>
+    <rect x="590" y="60" width="18" height="46" fill="#3d4a66"/><text x="599" y="52" font-size="12" text-anchor="middle" fill="#14213d">brake</text>
+    <text x="599" y="128" font-size="12" text-anchor="middle" fill="#3d4a66">(Card D)</text>
+  </svg>`;
+}
+
+/* =====================================================================
+   ROOM DATA: AP Physics C: Mechanics · Unit 3: Work, Energy, and Power
+   ===================================================================== */
+const ROOM = {
+  id: 'apc-u3-energy',
+  salt: 'apc-u3::',
+  title: "VECTOR's Escape Velocity",
+  intro: `The class robot vacuum, <b>VECTOR</b>, has decided that Earth's floors are beneath it. Literally. It has bolted a rocket
+    to its dust bin and plans to blast off for <b>Planet Crumbuli</b>, a small world made entirely of snack crumbs. To fuel the launch,
+    it has sealed the lab and is siphoning energy from everything in sight. Five energy-locked doors stand between your team and the
+    hallway. Use work, energy, and power (and your calculus) to crack every code.`,
+  finaleCipher: [98,125,34,117,45,60,56,32,45] /* teacher password, XOR-locked with the final door code */,
+  wrongLines: [
+    "Denied. That code has zero kinetic energy and even less potential.",
+    "Wrong. You're at a turning point. Turn around and check your work.",
+    "Nope. Your answer was dissipated as heat somewhere around line 3.",
+    "Incorrect. Take the integral, not a guess. I can tell the difference.",
+    "That code is in an unstable equilibrium. One nudge and it falls apart.",
+    "Negative. Like the work done by friction on your score."
+  ],
+  doors: [
+    /* ---------------- DOOR 1 ---------------- */
+    {
+      name: 'The Work Bench', tag: 'Topics 3.1, 3.2, 3.5 · Work & power',
+      render: () => `
+        ${say(`Welcome to my workshop. I've been doing <i>work</i> on my rocket all week. Solve the five jobs on my bench, then use the
+          <b>answer bank</b> to turn each number into a letter. Letters 1 → 5 spell the code. Some bank entries are traps built from classic mistakes.`)}
+        <ol class="problems">
+          <li><span class="slot">1</span><span>A variable force F(x) = 3x² (F in newtons, x in meters) pushes my rocket nose cone along the x-axis
+            from x = 0 to x = 2.0 m. How much work (J) does it do?</span></li>
+          <li><span class="slot">2</span><span>Professor Waddles, a very dignified penguin, tows a crate of crumbs. The graph below shows the
+            x-component of his force on the crate. How much <b>net</b> work (J) does he do on the crate from x = 0 to x = 6.0 m?</span></li>
+          <li><span class="slot">3</span><span>I stretch my launch spring (k = 500 N/m) from 0.10 m <b>past</b> its natural length to
+            0.30 m past its natural length. How much work (J) do I do on the spring?</span></li>
+          <li><span class="slot">4</span><span>A constant force <b>F</b> = (3.0 <b>î</b> + 4.0 <b>ĵ</b>) N acts on a fuel canister while
+            it moves through a displacement Δ<b>r</b> = (5.0 <b>î</b> − 2.0 <b>ĵ</b>) m. How much work (J) does the force do?</span></li>
+          <li><span class="slot">5</span><span>Hank the Hamster runs on a wheel that charges my battery. The energy stored is
+            E(t) = 2t³ + 4t (E in joules, t in seconds). What is the power (W) delivered to the battery at t = 2.0 s?</span></li>
+        </ol>
+        <div class="grid g2" style="align-items:start">
+          <div class="card"><h4>Graph for job 2</h4>${plot({ pts: [[0, 0], [2, 4], [4, 4], [6, -2]], xmin: 0, xmax: 6, ymin: -3, ymax: 5, xstep: 1, ystep: 1, xlab: 'position x (m)', ylab: 'Fₓ (N)', w: 420, h: 260, xdec: 0 })}</div>
+          <div class="card"><h4>Answer bank</h4>
+            <table class="data"><tr><th>Value</th><th>Letter</th><th>Value</th><th>Letter</th></tr>
+              <tr><td>7</td><td>L</td><td>16</td><td>N</td></tr>
+              <tr><td>8</td><td>J</td><td>20</td><td>U</td></tr>
+              <tr><td>10</td><td>A</td><td>23</td><td>T</td></tr>
+              <tr><td>12</td><td>S</td><td>24</td><td>R</td></tr>
+              <tr><td>14</td><td>O</td><td>28</td><td>E</td></tr></table>
+            <p class="note" style="margin:0">Units in the bank are J for jobs 1–4 and W for job 5.</p></div>
+        </div>`,
+      fields: [{ label: 'Code word', w: 190, kind: 'word' }],
+      answers: ["1bha82ygf82"],
+      hints: [
+        'Work is W = ∫F dx (job 1), the signed area under F(x) (job 2: area below the axis counts as negative), and W = <b>F</b>·Δ<b>r</b> = FₓΔx + F<sub>y</sub>Δy (job 4). Power is P = dE/dt, the derivative, not E itself.',
+        'Job 3: W = ½k(x<sub>2</sub>² − x<sub>1</sub>²), not ½k(x<sub>2</sub> − x<sub>1</sub>)². Job 2: the last section is a trapezoid that crosses zero; its signed area is the average height (4 + (−2))/2 times the width.'
+      ],
+      success: 'Hmph. You did the work. My nose cone is 8 joules more annoyed. Door 1 unlocked.'
+    },
+    /* ---------------- DOOR 2 ---------------- */
+    {
+      name: 'The Potential Landscape', tag: 'Topics 3.3–3.4 · U(x) graphs',
+      render: () => `
+        ${say(`My pet dust bunny, <b>Fluff</b> (mass <b>1.0 kg</b>, very well fed), rolls along a frictionless track where the only force
+          on it is conservative. Its potential energy is U(x) = x³ − 6x² + 9x (U in joules, x in meters). Some of my claims below are TRUE and
+          some are LIES. <b>Add up the numbers of the TRUE claims.</b> That sum is the code.`)}
+        <div class="grid g2" style="align-items:start">
+          <div class="card">${plot({ fn: x => x * x * x - 6 * x * x + 9 * x, xmin: 0, xmax: 4.5, ymin: -2, ymax: 12, xstep: 0.5, ystep: 1, xlab: 'position x (m)', ylab: 'U (J)', w: 440, h: 300, xdec: 1, label: 'potential energy graph' })}</div>
+          <div>
+            ${[
+              [6, 'x = 1.0 m is a position of <b>stable</b> equilibrium.'],
+              [14, 'x = 3.0 m is a position of <b>stable</b> equilibrium.'],
+              [9, 'At x = 2.0 m, the force on Fluff is 3.0 N in the <b>+x</b> direction.'],
+              [5, 'At x = 4.0 m, the force on Fluff is 9.0 N in the <b>+x</b> direction.'],
+              [3, 'Wherever U(x) = 0, the force on Fluff is zero.'],
+              [11, 'If Fluff is released from rest at x = 2.0 m, it moves back and forth between x = 2.0 m and a turning point between x = 3.5 m and x = 4.0 m.'],
+              [8, 'If Fluff is released from rest at x = 2.0 m, its maximum speed is 2.0 m/s, reached at x = 3.0 m.'],
+              [12, 'The force on Fluff has its greatest magnitude at x = 1.0 m, because that is where U is greatest (on 0 ≤ x ≤ 3 m).'],
+              [17, 'If Fluff passes x = 3.0 m moving in the −x direction at 3.0 m/s, it makes it over the hump at x = 1.0 m.']
+            ].map(([n, t]) => `<div class="stmt"><span class="num">${n}</span><span>${t}</span></div>`).join('')}
+          </div>
+        </div>`,
+      fields: [{ label: 'Sum of TRUE claims', w: 150, kind: 'num' }],
+      answers: ["5jfbpf27qi"],
+      hints: [
+        'Fₓ = −dU/dx. Here dU/dx = 3x² − 12x + 9 = 3(x − 1)(x − 3). Equilibrium is where the slope is zero; a minimum of U is stable, a maximum is unstable.',
+        'Released from rest at x = 2.0 m means E = U(2) = 2 J. Turning points are where U(x) = E; maximum KE is E − U<sub>min</sub>. For the 3.0 m/s claim, compare E = ½mv² + U(3) with U(1) = 4 J.'
+      ],
+      success: 'Fluff is stable again, and so is Door 2. It is now unlocked.'
+    },
+    /* ---------------- DOOR 3 ---------------- */
+    {
+      name: 'The Penguin Launcher', tag: 'Topics 3.1–3.5 · FRQ team relay',
+      roles: true,
+      render: () => `
+        ${say(`This door is a <b>free-response relay</b>. Each player picks a card on their own Chromebook. Answers flow from card to card,
+          so <b>talk</b>. Team of 3? Whoever finishes first takes Card D.`)}
+        <p class="note"><b>The story:</b> I'm testing my rocket launcher on Pip, a 2.0 kg baby penguin in a tiny crash helmet (Pip volunteered, mostly).
+          Pip starts at rest against a compressed spring, slides across frictionless ice, crosses a sticky mat, and then reaches my brake pad.
+          Pip stays on the level floor the whole time.</p>
+        <div class="card">${trackDiagram()}</div>
+        <div class="roles" data-roles></div>
+        <div data-rolecard></div>`,
+      roleCards: {
+        A: `<div class="card rolecard"><h4>Card A · The Spring Specialist</h4>
+            <p>The launch spring has spring constant <b>k = 800 N/m</b> and starts compressed <b>0.30 m</b> from its natural length. Pip leaves the spring when it reaches its natural length.</p>
+            <p><b>Your question:</b> How much kinetic energy (J) does Pip have when leaving the spring? Justify with W = −∫F dx or with U<sub>s</sub> = ½kx². Tell Card C.</p></div>`,
+        B: `<div class="card rolecard"><h4>Card B · The Mat Inspector</h4>
+            <p>The sticky mat runs from x = 0 to x = 2.0 m. Its friction force on Pip gets stronger as Pip slides deeper:</p>
+            <p style="text-align:center;font-size:18px">f(x) = 4 + 6x &nbsp;<span class="note">(f in newtons, x in meters, opposite Pip's motion)</span></p>
+            <p><b>Your question:</b> How much mechanical energy (J) does the mat remove from Pip while Pip crosses all 2.0 m? (Give the magnitude.) Tell Card C.</p></div>`,
+        C: `<div class="card rolecard"><h4>Card C · The Energy Accountant</h4>
+            <p>You need the launch kinetic energy from <b>Card A</b> and the energy the mat removes from <b>Card B</b>. Pip's mass is <b>2.0 kg</b>.</p>
+            <p><b>Your question:</b> What is Pip's <b>speed</b> (m/s) right after leaving the mat? Use the work–energy theorem. Tell Card D.</p></div>`,
+        D: `<div class="card rolecard"><h4>Card D · The Power Inspector</h4>
+            <p>After the mat, Pip slides on frictionless ice into my brake pad, which pushes back on Pip with a constant <b>8.0 N</b> force opposite Pip's motion.
+            You need Pip's speed from <b>Card C</b>.</p>
+            <p><b>Your question:</b> At the instant Pip first touches the brake, at what rate (W) is the brake removing Pip's kinetic energy? (Magnitude of P = <b>F</b>·<b>v</b>.)</p></div>`
+      },
+      fields: [
+        { label: 'A · KE launch (J)', w: 120, kind: 'num' }, { label: 'B · mat energy (J)', w: 120, kind: 'num' },
+        { label: 'C · speed (m/s)', w: 120, kind: 'num' }, { label: 'D · power (W)', w: 120, kind: 'num' }
+      ],
+      answers: ["lk5p3eh53q"],
+      hints: [
+        'Card A: ½kx² with x = 0.30 m. Card B: W = ∫₀<sup>2</sup> (4 + 6x) dx = [4x + 3x²] from 0 to 2. Every answer on this door is a whole number.',
+        'Card C: KE after mat = KE<sub>launch</sub> − (mat energy) = ½mv². Card D: power has magnitude Fv at that instant (force and velocity are antiparallel, so the brake\'s power is negative; enter the size).'
+      ],
+      success: 'Pip is safe, helmet on, and only slightly smug. Door 3 unlocked.'
+    },
+    /* ---------------- DOOR 4 ---------------- */
+    {
+      name: 'The Rubber Band Lab', tag: 'Topics 3.2, 3.4 · Lab data',
+      render: () => `
+        ${say(`My backup launcher is a giant rubber band. Rubber bands do <b>not</b> obey Hooke's law, so you can't use ½kx². Mwahaha.
+          Predict how fast my test cart will leave the launcher, and I'll check it with my photogate.`)}
+        <p>A team stretched a rubber band launcher by pulling a <b>0.50 kg</b> cart backward along a level, low-friction track. A force sensor
+          measured the band's pull at each stretch. Then they released the cart from rest at the 10.0 cm stretch. A photogate just past the
+          launcher measures the cart's speed after the band goes slack.</p>
+        <div class="grid g2" style="align-items:start">
+          <div>
+            <table class="data"><tr><th>Stretch x (cm)</th><th>Band force F (N)</th></tr>
+              <tr><td>0.0</td><td>0.0</td></tr><tr><td>2.0</td><td>1.9</td></tr><tr><td>4.0</td><td>3.4</td></tr>
+              <tr><td>6.0</td><td>4.6</td></tr><tr><td>8.0</td><td>5.5</td></tr><tr><td>10.0</td><td>6.1</td></tr></table>
+            <p class="note">Assume friction is negligible and the band's mass is negligible.</p>
+          </div>
+          <div class="card">
+            <h4>Your mission</h4>
+            <ol style="margin:0;padding-left:18px">
+              <li>The work done by the band is W = ∫F dx. Estimate it from the data (sketch F vs. x, then use trapezoids or a fitted curve in Desmos).</li>
+              <li>Watch your units: the stretch is in <b>centimeters</b>.</li>
+              <li>Use the work–energy theorem to predict the photogate speed.</li>
+            </ol>
+            <p class="note" style="margin-bottom:0">Enter the predicted speed in <b>cm/s</b>, nearest whole number. Reasonable estimates of the area are accepted.</p>
+          </div>
+        </div>`,
+      fields: [{ label: 'Predicted speed (cm/s)', w: 170, kind: 'num' }],
+      answers: ["2396uu6sud8","1b9rp606b97","1f4hy1vb3nd","tg05eu5co1","n8kc9s6pbw","rfyo3f4gju","26m9vl7covf","nzi0yksob2","1ls3cza0vwu","jbzq987ujx"],
+      hints: [
+        'Trapezoids: each strip is 0.020 m wide. Add the strip areas (½)(F<sub>left</sub> + F<sub>right</sub>)(0.020 m). The total should be a bit under 0.4 J.',
+        'Then ½(0.50 kg)v² = W, so v = √(2W/m). Convert m/s to cm/s (× 100). A left- or right-endpoint sum is too crude here; trapezoids or a curve fit land in the accepted range.'
+      ],
+      success: 'Photogate confirms it. Rubber bands: still not springs. Door 4 unlocked.'
+    },
+    /* ---------------- DOOR 5 ---------------- */
+    {
+      name: 'Countdown to Crumbuli', tag: 'Topics 3.3–3.4 · Gravitation team relay',
+      roles: true,
+      render: () => `
+        ${say(`Final door. My launch pad on Planet Crumbuli is ready, and my calculations are... missing. Each of you holds one piece of
+          the planet's data. Put them together, or I'm gone forever. (Wait, why am I helping you?) Team of 3? Whoever finishes first takes Card D.`, 'mad')}
+        <p class="note"><b>Rules for this planet:</b> Crumbuli has no atmosphere; ignore its rotation. Use U = −GMm/r for gravitational potential energy,
+          with U = 0 infinitely far away. VECTOR plus its rocket has mass <b>5.0 kg</b>. You will not need the value of G by itself.</p>
+        <div class="roles" data-roles></div>
+        <div data-rolecard></div>`,
+      roleCards: {
+        A: `<div class="card rolecard"><h4>Card A · The Drop Tester</h4>
+            <p>On Crumbuli's surface, a probe was dropped from rest. It fell <b>8.0 m</b> in exactly <b>2.0 s</b>.</p>
+            <p><b>Your question:</b> What is the gravitational field strength g at Crumbuli's surface (m/s²)? Tell Cards B and C. (Your number is
+              not typed into the lock, but nobody can open it without you.)</p></div>`,
+        B: `<div class="card rolecard"><h4>Card B · The Mapmaker</h4>
+            <p>Crumbuli is a sphere with surface area <b>16π × 10¹² m²</b>. You need g from <b>Card A</b>.</p>
+            <p><b>Your questions:</b> (1) What is Crumbuli's radius R? Share it with Cards C and D. (2) Since g = GM/R², GM = gR². What is the
+              <b>minimum energy</b> (in MJ) VECTOR (5.0 kg) needs, launched from the surface, to escape Crumbuli forever?</p></div>`,
+        C: `<div class="card rolecard"><h4>Card C · The Escape Artist</h4>
+            <p>You need g from <b>Card A</b> and R from <b>Card B</b>.</p>
+            <p><b>Your question:</b> Set ½mv² − GMm/R = 0 to find the <b>escape speed</b> (m/s) from Crumbuli's surface. Tell Card D.
+              (Hint: GM = gR².)</p></div>`,
+        D: `<div class="card rolecard"><h4>Card D · The Flight Planner</h4>
+            <p>VECTOR's rocket burns out instantly, launching it straight up from the surface at <b>2400 m/s</b>. You need R from <b>Card B</b> and
+              the escape speed from <b>Card C</b>.</p>
+            <p><b>Your question:</b> How high <b>above the surface</b> (km) does VECTOR rise before falling back? Use energy conservation with
+              U = −GMm/r. (Hint: 2GM/R = v<sub>esc</sub>².) Do <b>not</b> use mgh. Why not?</p></div>`
+      },
+      fields: [
+        { label: 'B · escape energy (MJ)', w: 140, kind: 'num' }, { label: 'C · escape speed (m/s)', w: 150, kind: 'num' },
+        { label: 'D · max height (km)', w: 140, kind: 'num' }
+      ],
+      answers: ["21xqnlp4f3p"],
+      hints: [
+        'Card A: from rest, Δy = ½gt². Card B: area = 4πR². Escape energy = GMm/R = mgR. Card C: v<sub>esc</sub> = √(2GM/R) = √(2gR).',
+        'Card D: ½v² − GM/R = −GM/r. Divide by GM/R and use 2GM/R = v<sub>esc</sub>²: R/r = 1 − v²/v<sub>esc</sub>² = 1 − (2400/4000)². Height = r − R. mgh fails because g shrinks as VECTOR gets farther away.'
+      ],
+      success: 'NOOO! My rocket only reaches 1125 km and falls right back down! Fine. Grounded.'
+    }
+  ]
+};
+
+
+/* =====================================================================
+   ENGINE
+   ===================================================================== */
+const KEY = 'escape:' + ROOM.id;
+const store = {
+  get() { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch (e) { return null; } },
+  set(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} },
+  clear() { try { localStorage.removeItem(KEY); } catch (e) {} }
+};
+let S = store.get() || { started: false, team: '', size: 4, start: 0, end: 0, door: 0, hints: {}, wrong: 0, role: 'A', timer: null };
+const save = () => store.set(S);
+const $ = (q, el = document) => el.querySelector(q);
+const fmt = ms => { const s = Math.max(0, Math.floor(ms / 1000)); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
+const hintsUsed = () => Object.values(S.hints).reduce((a, b) => a + b, 0);
+
+function timerLive() { return S.timer && S.timer.end && S.timer.day === dayKey(); }
+function timeUp() { return timerLive() && Date.now() >= S.timer.end && !S.end; }
+function hud() {
+  const t = S.started ? fmt((S.end || Date.now()) - S.start) : '00:00';
+  let chip;
+  if (timerLive() && !S.end) { const left = S.timer.end - Date.now();
+    chip = `<button class="tchip ${left < 5 * 60000 ? 'low' : ''}" id="tchip" title="Class timer">⏳ Class <b>${left > 0 ? fmt(left) : '0:00'}</b></button>`; }
+  else chip = `<button class="tchip" id="tchip" title="Enter class timer code">⏲ ${S.timer && S.timer.off && S.timer.day === dayKey() ? 'Timer off' : 'Timer code'}</button>`;
+  $('#hud').innerHTML = `${chip}<span title="Your team's time">⏱ <b>${t}</b></span><span title="Hints used">💡 <b>${hintsUsed()}</b></span><span title="Wrong codes">✖ <b>${S.wrong}</b></span>`;
+  $('#tchip').onclick = () => { $('#timerBox').classList.toggle('on'); $('#timerInput').focus(); };
+}
+let shownTimeUp = false;
+setInterval(() => { hud(); const up = timeUp() && S.started; if (up !== shownTimeUp) render(); }, 1000);
+function applyTimerCode(raw, msgEl) {
+  const r = parseTimerCode(raw);
+  if (!r) { if (msgEl) { msgEl.style.color = '#ffb3bd'; msgEl.textContent = "That timer code isn't valid. Check the board and try again."; } return false; }
+  S.timer = r.type === 'off' ? { off: true, end: null, day: dayKey() } : { off: false, end: r.end, day: dayKey() };
+  save();
+  if (msgEl) { msgEl.style.color = '#9ff0b8'; msgEl.textContent = r.type === 'off' ? 'Timer turned off. Keep going!' : `Timer set: ends at ${new Date(r.end).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}.`; }
+  render(); return true;
+}
+
+function hall() {
+  $('#hall').innerHTML = ROOM.doors.map((d, i) => {
+    const cls = i < S.door ? 'open' : (i === S.door && S.started && !S.end ? 'current' : '');
+    return `<div class="door-pill ${cls}"><span class="lock"></span><span class="n">${i + 1}</span>${d.name}</div>`;
+  }).join('');
+}
+
+function normalize(v, f) {
+  v = String(v).trim();
+  if (f.kind === 'word') return v.toUpperCase().replace(/[^A-Z]/g, '');
+  const m = v.replace(/,/g, '').match(/-?\d*\.?\d+/); // first number only, so units like "W/m2" are ignored
+  if (!m) return '';
+  const n = parseFloat(m[0]);
+  const r = f.roundTo || 1;
+  return String(Math.round(Math.abs(n) / r) * r);
+}
+
+function render() {
+  hud(); hall();
+  const st = $('#stage');
+  if (!S.started) return renderIntro(st);
+  if (S.door >= ROOM.doors.length) { shownTimeUp = false; return renderFinale(st); }
+  shownTimeUp = timeUp();
+  if (shownTimeUp) return renderTimeUp(st);
+  const i = S.door, d = ROOM.doors[i];
+  st.innerHTML = `<span class="tag">Door ${i + 1} of ${ROOM.doors.length} · ${d.tag}</span><h2>${d.name}</h2>${d.render()}
+    <div class="lockbox">
+      <div class="lbl">🔒 Door ${i + 1} lock</div>
+      <form class="fields" id="lockForm" autocomplete="off">
+        ${d.fields.map((f, k) => `<label class="field">${f.label}<input style="--w:${f.w}px" name="f${k}" inputmode="${f.kind === 'num' ? 'decimal' : 'text'}" required></label>`).join('')}
+        <button class="btn" type="submit">Try code</button>
+      </form>
+      <div class="feedback" id="fb" aria-live="polite"></div>
+      <div class="hints no-print">${d.hints.map((h, k) => `<button class="btn ghost" data-hint="${k}" ${k > (S.hints[i] || 0) ? 'disabled style="opacity:.4"' : ''}>💡 Hint ${k + 1}</button>`).join('')}</div>
+      <div id="hintOut">${d.hints.slice(0, S.hints[i] || 0).map(h => `<div class="hinttext">${h}</div>`).join('')}</div>
+    </div>`;
+  if (d.roles) setupRoles(st, d);
+  $('#lockForm').addEventListener('submit', e => { e.preventDefault(); check(d, i); });
+  st.querySelectorAll('[data-hint]').forEach(b => b.addEventListener('click', () => {
+    const k = +b.dataset.hint; if ((S.hints[i] || 0) <= k) { S.hints[i] = k + 1; save(); render(); }
+  }));
+  const first = st.querySelector('#lockForm input'); if (first && document.activeElement === document.body) first.focus({ preventScroll: true });
+}
+
+function setupRoles(st, d) {
+  const box = $('[data-roles]', st), out = $('[data-rolecard]', st);
+  const keys = Object.keys(d.roleCards);
+  const draw = () => {
+    box.innerHTML = '<span class="note" style="align-self:center;margin-right:4px">I am holding:</span>' + keys.map(k => `<button type="button" class="${k === S.role ? 'on' : ''}" data-r="${k}">Card ${k}</button>`).join('');
+    out.innerHTML = d.roleCards[S.role] || '';
+    box.querySelectorAll('[data-r]').forEach(b => b.addEventListener('click', () => { S.role = b.dataset.r; save(); draw(); }));
+  };
+  draw();
+}
+
+function check(d, i) {
+  const form = $('#lockForm'), fb = $('#fb');
+  const vals = d.fields.map((f, k) => normalize(form.elements['f' + k].value, f));
+  const h = cyrb53(ROOM.salt + 'd' + (i + 1) + '::' + vals.join('|'));
+  if (d.answers.includes(h)) {
+    S.door = i + 1;
+    if (S.door >= ROOM.doors.length) { S.end = Date.now(); S.key = vals.join('|'); }
+    save();
+    fb.className = 'feedback good'; fb.textContent = '✔ ' + d.success;
+    form.querySelector('button').disabled = true;
+    setTimeout(render, 1400);
+  } else {
+    S.wrong++; save(); hud();
+    fb.className = 'feedback bad';
+    fb.textContent = '✖ ' + ROOM.wrongLines[Math.floor(Math.random() * ROOM.wrongLines.length)];
+    form.classList.remove('shake'); void form.offsetWidth; form.classList.add('shake');
+  }
+}
+
+function renderIntro(st) {
+  st.innerHTML = `<div class="center">
+      <span class="tag">Escape Room · Teams of 3–4</span>
+      <h2>${ROOM.title}</h2></div>
+      ${say(ROOM.intro + ' <br><br>The clock starts when you press the button. Hints are free, but I <i>count</i> them. Mwahaha.')}
+      <div class="setup">
+        <div><label for="team">Team name</label><input id="team" maxlength="40" placeholder="e.g., The Work-Energy Theorists" value="${S.team || ''}"></div>
+        <div><label for="names">Team members</label><input id="names" maxlength="120" placeholder="First names" value="${S.names || ''}"></div>
+        <div><label for="size">Players</label><select id="size"><option value="3">3 players</option><option value="4" selected>4 players</option></select></div>
+        <div><label for="tcode">Class timer code <span class="note">(from the board, if your teacher posted one)</span></label><input id="tcode" maxlength="12" placeholder="e.g., 1452-AB" style="font-family:var(--mono);text-transform:uppercase"></div>
+        <div id="tcodeMsg" class="note"></div>
+        <p class="note" style="margin:0">Every player opens this page on their own Chromebook and enters the <b>same</b> team name. Bring paper, a pencil, and a calculator.</p>
+        <button class="btn dark" id="go">Start the clock ▶</button>
+      </div>`;
+  $('#size').value = S.size || 4;
+  $('#go').addEventListener('click', () => {
+    const tc = $('#tcode').value.trim();
+    if (tc && !parseTimerCode(tc)) { $('#tcodeMsg').style.color = '#d1495b'; $('#tcodeMsg').textContent = "That timer code isn't valid. Fix it or leave it blank."; return; }
+    S.team = $('#team').value.trim() || 'Unnamed Team'; S.names = $('#names').value.trim(); S.size = +$('#size').value;
+    if (tc) { const r = parseTimerCode(tc); S.timer = r.type === 'off' ? { off: true, end: null, day: dayKey() } : { off: false, end: r.end, day: dayKey() }; }
+    S.started = true; S.start = Date.now(); save(); render();
+  });
+}
+
+function renderFinale(st) {
+  const t = fmt(S.end - S.start);
+  st.innerHTML = `<div class="center">
+      ${say(`Fine. FINE. You escaped. I'll go back to vacuuming. Show this screen to your teacher.`, 'happy')}
+      <div class="cert">
+        <div class="tag">Certificate of Escape</div>
+        <h2 style="margin:4px 0">${escapeHtml(S.team)}</h2>
+        <div class="note">${escapeHtml(S.names || '')}</div>
+        <div class="stats"><div>Time<b>${t}</b></div><div>Hints<b>${hintsUsed()}</b></div><div>Wrong codes<b>${S.wrong}</b></div></div>
+        <div class="note">Finish code (your teacher types this in)</div>
+        <div class="fcode">${finishCode(S.end, Math.min(99, hintsUsed()))}</div>
+        <div class="note" style="margin-top:8px">Teacher password</div>
+        <div class="pw">${unlockPw()}</div>
+        <div class="note">${new Date(S.end).toLocaleString()} · AP Physics C: Mechanics · Unit 3: Work, Energy, and Power · ${ROOM.title}</div>
+      </div>
+      <p class="no-print"><button class="btn dark" onclick="window.print()">Print certificate</button></p>
+    </div>`;
+}
+function renderTimeUp(st) {
+  const opened = S.door;
+  st.innerHTML = `<div class="timeup">
+      ${say(`Beep boop... <b>TIME'S UP!</b> The lab stays locked. Show this screen to your teacher.`, 'happy')}
+      <h2>⏰ Time's Up</h2>
+      <div class="cert">
+        <h2 style="margin:4px 0;color:var(--ink);font-size:24px">${escapeHtml(S.team)}</h2>
+        <div class="note">${escapeHtml(S.names || '')}</div>
+        <div class="stats"><div>Doors opened<b>${opened} / ${ROOM.doors.length}</b></div><div>Hints<b>${hintsUsed()}</b></div><div>Wrong codes<b>${S.wrong}</b></div></div>
+        <div class="note">Stopped on Door ${Math.min(opened + 1, ROOM.doors.length)}: ${ROOM.doors[Math.min(opened, ROOM.doors.length - 1)].name}</div>
+      </div>
+      <p class="note">Did your teacher give more time? Type the new code from the board:</p>
+      <form id="moreTime" autocomplete="off" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <input id="moreInput" placeholder="1505-AB" style="font-family:var(--mono);font-size:20px;letter-spacing:.1em;width:180px;padding:8px 10px;border-radius:9px;border:2px solid var(--line);text-transform:uppercase">
+        <button class="btn dark" type="submit">Keep going</button></form>
+      <div id="moreMsg" class="note" style="margin-top:6px"></div>
+    </div>`;
+  $('#moreTime').addEventListener('submit', e => { e.preventDefault(); const m = $('#moreMsg'); applyTimerCode($('#moreInput').value, m); if (m.textContent.startsWith('That')) m.style.color = '#d1495b'; });
+}
+function pwKey(s) { return cyrb53(ROOM.salt + 'pw1::' + s) + cyrb53('pw2::' + s + ROOM.salt) + cyrb53(s + '::pw3' + ROOM.salt); }
+function unlockPw() { const k = pwKey(S.key || ''); return ROOM.finaleCipher.map((b, i) => String.fromCharCode(b ^ k.charCodeAt(i % k.length))).join(''); }
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+$('#timerForm').addEventListener('submit', e => { e.preventDefault(); if (applyTimerCode($('#timerInput').value, $('#timerMsg'))) { $('#timerInput').value = ''; setTimeout(() => $('#timerBox').classList.remove('on'), 1600); } });
+$('#timerClose').addEventListener('click', () => $('#timerBox').classList.remove('on'));
+$('#resetBtn').addEventListener('click', () => $('#confirmBox').classList.add('on'));
+$('#resetNo').addEventListener('click', () => $('#confirmBox').classList.remove('on'));
+$('#resetYes').addEventListener('click', () => { store.clear(); S = { started: false, team: '', size: 4, start: 0, end: 0, door: 0, hints: {}, wrong: 0, role: 'A', timer: null }; $('#confirmBox').classList.remove('on'); render(); });
+render();
+</script>
+</body>
+</html>

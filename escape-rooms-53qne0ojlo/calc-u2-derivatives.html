@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Escape Room · AP Calculus AB/BC · Unit 2: Differentiation: Definition and Fundamental Properties · VECTOR's Rate Race</title>
+<style>
+:root{
+  --ink:#14213d; --ink-2:#3d4a66; --paper:#fbf8f1; --card:#ffffff; --line:#d9d2c3;
+  --teal:#0f8b8d; --teal-d:#0b6b6d; --amber:#f4a259; --red:#d1495b; --green:#3a9d5d;
+  --night:#0d1b2a; --night-2:#1b263b; --glow:#7ee8e0;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  --sans:"Avenir Next","Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:var(--sans);color:var(--ink);background:var(--night);
+  background-image:linear-gradient(rgba(126,232,224,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(126,232,224,.06) 1px,transparent 1px);
+  background-size:28px 28px;min-height:100vh;line-height:1.5}
+.wrap{max-width:980px;margin:0 auto;padding:20px 18px 60px}
+header.top{display:flex;align-items:center;gap:14px;color:#e8f1f2;flex-wrap:wrap}
+header.top .unit{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--glow)}
+header.top h1{margin:0;font-size:26px;letter-spacing:.01em}
+header.top .spacer{flex:1}
+.hud{display:flex;gap:10px;font-family:var(--mono);font-size:13px}
+.hud span{background:var(--night-2);border:1px solid #2f3e5a;color:#e8f1f2;padding:5px 10px;border-radius:8px}
+.hud b{color:var(--glow);font-weight:600}
+
+/* progress hallway */
+.hall{display:flex;gap:8px;margin:18px 0 18px;flex-wrap:wrap}
+.door-pill{flex:1;min-width:120px;background:var(--night-2);border:1px solid #2f3e5a;color:#8fa0b8;border-radius:10px;padding:8px 10px;font-size:13px;display:flex;gap:8px;align-items:center}
+.door-pill .n{font-family:var(--mono);font-size:11px;border:1px solid currentColor;border-radius:5px;padding:0 5px}
+.door-pill.open{color:#bff3ee;border-color:var(--teal)}
+.door-pill.current{color:#fff;border-color:var(--amber);box-shadow:0 0 0 2px rgba(244,162,89,.25)}
+.door-pill.open .lock::before{content:"🔓"} .door-pill .lock::before{content:"🔒"}
+
+.panel{background:var(--paper);border-radius:16px;padding:22px 24px;box-shadow:0 18px 50px rgba(0,0,0,.35);position:relative}
+.panel h2{margin:0 0 4px;font-size:22px}
+.tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;background:#e7f4f4;color:var(--teal-d);border-radius:6px;padding:2px 8px;margin-bottom:10px}
+.vector{text-align:left;display:flex;gap:14px;align-items:flex-start;background:var(--night);color:#e8f1f2;border-radius:12px;padding:12px 14px;margin:10px 0 16px}
+.vector svg{flex:0 0 auto}
+.vector p{margin:0}
+.vector .who{font-family:var(--mono);font-size:11px;color:var(--glow);letter-spacing:.12em;text-transform:uppercase}
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.card h4{margin:0 0 6px;font-size:15px}
+.badge{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;background:var(--ink);color:#fff;font-weight:700;font-family:var(--mono);margin-right:8px}
+.fd{text-align:center}
+.fd .badge{background:var(--teal)}
+table.data{border-collapse:collapse;margin:8px 0;font-family:var(--mono);font-size:14px}
+table.data th,table.data td{border:1px solid var(--line);padding:6px 12px;text-align:center;background:#fff}
+table.data th{background:#eef2f6}
+ol.problems{padding-left:0;list-style:none;margin:0}
+ol.problems li{display:flex;gap:10px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+ol.problems .slot{flex:0 0 auto;font-family:var(--mono);font-weight:700;background:var(--amber);color:var(--ink);border-radius:6px;padding:0 8px;height:26px;line-height:26px}
+.stmt{display:flex;gap:10px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin-bottom:7px}
+.stmt .num{flex:0 0 auto;min-width:34px;text-align:center;font-family:var(--mono);font-weight:700;background:#efe7d6;border-radius:6px;padding:1px 6px}
+
+/* roles */
+.roles{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
+.roles button{font:inherit;font-size:14px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;cursor:pointer}
+.roles button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.rolecard{border-left:5px solid var(--amber)}
+.note{font-size:14px;color:var(--ink-2)}
+
+/* lock */
+.lockbox{margin-top:18px;background:var(--night-2);color:#e8f1f2;border-radius:14px;padding:16px}
+.lockbox .lbl{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--glow);margin-bottom:8px}
+.fields{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:4px;font-size:13px;color:#b9c6d6}
+.field input{font-family:var(--mono);font-size:22px;letter-spacing:.12em;width:var(--w,150px);padding:8px 10px;border-radius:9px;border:2px solid #3b4d6b;background:#0d1b2a;color:#fff;text-transform:uppercase}
+.field input:focus{outline:none;border-color:var(--amber)}
+.btn{font:inherit;font-weight:700;border:0;border-radius:10px;padding:11px 18px;cursor:pointer;background:var(--amber);color:var(--ink)}
+.btn:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent;color:#cfe0ea;border:1px solid #3b4d6b;font-weight:500}
+.btn.dark{background:var(--ink);color:#fff}
+.feedback{margin-top:10px;min-height:24px;font-size:15px}
+.feedback.bad{color:#ffb3bd}.feedback.good{color:#9ff0b8}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.hints{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.hinttext{background:#fff7e8;border:1px dashed var(--amber);border-radius:10px;padding:8px 12px;margin-top:8px;font-size:14px;color:var(--ink)}
+
+/* intro / finale */
+.center{text-align:center}
+.setup{display:grid;gap:12px;max-width:520px;margin:14px auto 0;text-align:left}
+.setup label{font-size:14px;font-weight:600}
+.setup input,.setup select{font:inherit;width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:#fff}
+.cert{border:3px double var(--ink);border-radius:14px;padding:22px;background:#fff;max-width:620px;margin:16px auto 0}
+.cert .pw{font-family:var(--mono);font-size:30px;letter-spacing:.25em;background:var(--ink);color:var(--glow);display:inline-block;padding:6px 16px;border-radius:10px;margin:6px 0}
+.stats{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:10px 0}
+.stats div{background:#f2efe6;border-radius:10px;padding:8px 14px;font-size:14px}
+.stats b{display:block;font-family:var(--mono);font-size:20px}
+.foot{color:#7f90a8;font-size:12px;text-align:center;margin-top:22px}
+.foot a{color:#9fd9d4}
+.reset{background:none;border:0;color:#7f90a8;text-decoration:underline;cursor:pointer;font:inherit;font-size:12px}
+.confirm{display:none;margin-top:8px;color:#e8f1f2;font-size:13px}
+.confirm.on{display:block}
+svg text{font-family:var(--sans)}
+.tchip{cursor:pointer;font:inherit;font-family:var(--mono);font-size:13px;background:var(--night-2);border:1px solid #2f3e5a;color:#e8f1f2;padding:5px 10px;border-radius:8px}
+.tchip b{color:var(--amber)} .tchip.low{border-color:var(--red);animation:pulse 1s infinite} .tchip.low b{color:#ffb3bd}
+@keyframes pulse{50%{box-shadow:0 0 0 3px rgba(209,73,91,.35)}}
+#timerBox{display:none;margin-top:12px;background:var(--night-2);border:1px solid #3b4d6b;border-radius:12px;padding:12px 14px;color:#e8f1f2}
+#timerBox.on{display:block}
+#timerBox form{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#timerBox input{font-family:var(--mono);font-size:18px;letter-spacing:.1em;width:160px;padding:7px 10px;border-radius:8px;border:2px solid #3b4d6b;background:#0d1b2a;color:#fff;text-transform:uppercase}
+#timerMsg{font-size:14px;margin-top:6px;min-height:20px}
+.timeup{text-align:center}
+.timeup h2{font-size:40px;color:var(--red);margin:6px 0}
+.fcode{font-family:var(--mono);font-size:26px;letter-spacing:.12em;background:#fff7e8;border:2px dashed var(--amber);display:inline-block;padding:4px 14px;border-radius:10px;margin:4px 0}
+@media print{body{background:#fff}.hall,.hud,.foot,.no-print{display:none!important}.panel{box-shadow:none}}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.95em;line-height:1.2;margin:0 3px}
+.fr>span:first-child{border-bottom:1.5px solid currentColor;padding:0 4px 1px}
+.fr>span:last-child{padding:1px 4px 0}
+.lm{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1;margin-right:4px}
+.lm small{font-size:.75em;margin-top:2px;white-space:nowrap}
+.cases{display:inline-flex;align-items:center;vertical-align:middle}
+.cases::before{content:"{";font-size:2.6em;font-weight:200;line-height:1;margin-right:5px}
+.cases>span{display:flex;flex-direction:column;line-height:1.5}
+.mx{font-family:"Cambria Math","STIX Two Math","Times New Roman",Georgia,serif;font-size:1.15em;white-space:nowrap}
+.keygrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:8px 0}
+.keygrid .card{display:flex;align-items:center;padding:8px 10px}
+.keygrid .badge{flex:0 0 30px}
+.a1z{font-family:var(--mono);font-size:12px;color:var(--ink-2);background:#fff;border:1px dashed var(--line);border-radius:8px;padding:6px 10px;margin:8px 0;overflow-wrap:anywhere}
+ol.problems li{align-items:center}
+ol.problems li .mx{white-space:normal;font-size:1.3em}
+.keygrid.wide{grid-template-columns:repeat(auto-fit,minmax(215px,1fr))}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="unit">AP Calculus AB/BC · Unit 2: Differentiation: Definition and Fundamental Properties</div>
+      <h1>VECTOR's Rate Race</h1>
+    </div>
+    <div class="spacer"></div>
+    <div class="hud" id="hud"></div>
+  </header>
+  <div id="timerBox" class="no-print">
+    <form id="timerForm" autocomplete="off"><span>⏲ Class timer code (from the board):</span>
+      <input id="timerInput" placeholder="1452-AB" aria-label="Class timer code">
+      <button class="btn" type="submit" style="padding:8px 14px">Set</button>
+      <button class="btn ghost" type="button" id="timerClose" style="padding:8px 12px">Close</button></form>
+    <div id="timerMsg" aria-live="polite"></div>
+  </div>
+  <nav class="hall" id="hall" aria-label="Door progress"></nav>
+  <main class="panel" id="stage"></main>
+  <div class="foot">
+    Mr. C's Science · <a href="index.html">All escape rooms</a> ·
+    <button class="reset" id="resetBtn">Reset this device</button>
+    <div class="confirm" id="confirmBox">Erase all progress on this device?
+      <button class="btn ghost" id="resetYes" style="padding:4px 10px">Yes, reset</button>
+      <button class="btn ghost" id="resetNo" style="padding:4px 10px">Cancel</button></div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   ESCAPE ROOM ENGINE (reusable). To make a new unit, copy this file and
+   replace the ROOM object below. Answers are stored only as salted
+   hashes (cyrb53); generate them with the helper in the teacher guide.
+   ===================================================================== */
+function cyrb53(str, seed = 0) {
+  let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+  for (let i = 0, ch; i < str.length; i++) { ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507); h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507); h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+
+/* ---------- CLASS TIMER + FINISH CODES (shared with teacher.html; keep identical) ---------- */
+const TALPH = 'ACDEFGHJKMNPQRTUVWXY34679';
+const pad2 = n => String(n).padStart(2, '0');
+function dayKey(d = new Date()) { return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+function tmac(s, day) { const h = parseInt(cyrb53('mrc-class-timer::' + (day || dayKey()) + '::' + s), 36); return TALPH[h % 25] + TALPH[Math.floor(h / 25) % 25]; }
+function timerCode(endMs) { const d = new Date(endMs), t = pad2(d.getHours()) + pad2(d.getMinutes()); return t + '-' + tmac('T' + t); }
+function offCode() { return 'OFF-' + tmac('OFF'); }
+function finishCode(ms, hints) { const d = new Date(ms), t = pad2(d.getHours()) + pad2(d.getMinutes()) + pad2(d.getSeconds()); return t + '-' + hints + '-' + tmac('F' + t + '-' + hints); }
+function cleanCode(raw) { return String(raw || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
+// -> {type:'end', end:ms} | {type:'off'} | null
+function parseTimerCode(raw) {
+  const c = cleanCode(raw); let m;
+  if ((m = c.match(/^OFF([A-Z0-9]{2})$/)) && m[1] === tmac('OFF')) return { type: 'off' };
+  if ((m = c.match(/^(\d{4})([A-Z0-9]{2})$/)) && m[2] === tmac('T' + m[1])) {
+    const hh = +m[1].slice(0, 2), mm = +m[1].slice(2); if (hh > 23 || mm > 59) return null;
+    const d = new Date(); d.setHours(hh, mm, 0, 0); return { type: 'end', end: d.getTime() };
+  }
+  return null;
+}
+// -> {finish:ms, hints:n} | null
+function parseFinishCode(raw) {
+  const c = String(raw || '').toUpperCase().replace(/\s/g, ''); const m = c.match(/^(\d{6})-?(\d{1,2})-?([A-Z0-9]{2})$/);
+  if (!m || m[3] !== tmac('F' + m[1] + '-' + (+m[2]))) return null;
+  const d = new Date(); d.setHours(+m[1].slice(0, 2), +m[1].slice(2, 4), +m[1].slice(4), 0);
+  return { finish: d.getTime(), hints: +m[2] };
+}
+
+/* ---------- drawing helpers ---------- */
+const sub = (main, s) => `${main}<tspan dy="4" font-size="10">${s}</tspan><tspan dy="-4"></tspan>`;
+// Force diagram: dot on a dashed grid, arrows measured in grid units
+function forceDiagram(forces, opts = {}) {
+  const u = 16, size = opts.size || 176, c = size / 2;
+  let g = '';
+  for (let x = c % u; x <= size; x += u) g += `<line x1="${x}" y1="0" x2="${x}" y2="${size}" stroke="#b9c3cf" stroke-dasharray="3 3" stroke-width="1"/>`;
+  for (let y = c % u; y <= size; y += u) g += `<line x1="0" y1="${y}" x2="${size}" y2="${y}" stroke="#b9c3cf" stroke-dasharray="3 3" stroke-width="1"/>`;
+  let a = '';
+  const dirs = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+  forces.forEach(f => {
+    const [dx, dy] = dirs[f.dir], L = f.len * u, x2 = c + dx * L, y2 = c + dy * L;
+    a += `<line x1="${c}" y1="${c}" x2="${x2 - dx * 7}" y2="${y2 - dy * 7}" stroke="#14213d" stroke-width="3"/>`;
+    const p = dx ? `${x2},${y2} ${x2 - dx * 10},${y2 - 6} ${x2 - dx * 10},${y2 + 6}` : `${x2},${y2} ${x2 - 6},${y2 - dy * 10} ${x2 + 6},${y2 - dy * 10}`;
+    a += `<polygon points="${p}" fill="#14213d"/>`;
+    // vertical arrows: label beside the tip; horizontal arrows: label above the tip, pulled inward
+    const out = !!f.mag; // labels with magnitudes go outward past the tip (canvas is padded)
+    const lx = dx ? x2 + (out ? dx * 8 : 0) : c + 8, ly = dy ? y2 + (dy > 0 ? 14 : -4) : (out ? c + 5 : c - 12);
+    const anchor = out ? (dx < 0 ? 'end' : 'start') : (dx > 0 ? 'end' : 'start');
+    a += `<text x="${lx}" y="${ly}" font-size="14" font-style="italic" fill="#0b6b6d" text-anchor="${anchor}">${sub('F', f.lab)}${f.mag ? ` = ${f.mag}` : ''}</text>`;
+  });
+  const px = opts.padX || 0;
+  return `<svg viewBox="${-px} 0 ${size + 2 * px} ${size}" width="${size + 2 * px}" height="${size}" style="max-width:100%;height:auto" role="img" aria-label="force diagram"><rect width="${size}" height="${size}" fill="#fff"/>${g}${a}<circle cx="${c}" cy="${c}" r="5.5" fill="#d1495b"/></svg>`;
+}
+// Line graph on a grid. pts in data units.
+function graph({ pts, xmax, ymax, xstep, ystep, xlab, ylab, w = 420, h = 250, ticks = true }) {
+  const L = 48, B = 36, T = 12, R = 14, W = w - L - R, H = h - T - B;
+  const X = x => L + x / xmax * W, Y = y => T + H - y / ymax * H;
+  let s = `<rect width="${w}" height="${h}" fill="#fff"/>`;
+  for (let x = 0; x <= xmax + 1e-9; x += xstep) s += `<line x1="${X(x)}" y1="${T}" x2="${X(x)}" y2="${T + H}" stroke="#dde3ea"/>` + (ticks ? `<text x="${X(x)}" y="${T + H + 16}" font-size="12" text-anchor="middle" fill="#3d4a66">${+x.toFixed(2)}</text>` : '');
+  for (let y = 0; y <= ymax + 1e-9; y += ystep) s += `<line x1="${L}" y1="${Y(y)}" x2="${L + W}" y2="${Y(y)}" stroke="#dde3ea"/>` + (ticks ? `<text x="${L - 7}" y="${Y(y) + 4}" font-size="12" text-anchor="end" fill="#3d4a66">${+y.toFixed(2)}</text>` : '');
+  s += `<line x1="${L}" y1="${T + H}" x2="${L + W}" y2="${T + H}" stroke="#14213d" stroke-width="2"/><line x1="${L}" y1="${T}" x2="${L}" y2="${T + H}" stroke="#14213d" stroke-width="2"/>`;
+  s += `<polyline points="${pts.map(p => X(p[0]) + ',' + Y(p[1])).join(' ')}" fill="none" stroke="#d1495b" stroke-width="3.5" stroke-linejoin="round"/>`;
+  s += `<text x="${L + W / 2}" y="${h - 3}" font-size="13" text-anchor="middle" fill="#14213d">${xlab}</text>`;
+  s += `<text x="13" y="${T + H / 2}" font-size="13" text-anchor="middle" fill="#14213d" transform="rotate(-90 13 ${T + H / 2})">${ylab}</text>`;
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;height:auto" role="img" aria-label="graph">${s}</svg>`;
+}
+function vectorBot(mood = 'smug') {
+  const eyes = mood === 'mad' ? '<path d="M18 22 l8 3 M42 22 l-8 3" stroke="#0d1b2a" stroke-width="3" stroke-linecap="round"/>' : '';
+  const mouth = mood === 'happy' ? '<path d="M22 36 q8 7 16 0" stroke="#0d1b2a" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    : mood === 'mad' ? '<path d="M22 39 q8 -6 16 0" stroke="#0d1b2a" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    : '<path d="M23 37 h14" stroke="#0d1b2a" stroke-width="3" stroke-linecap="round"/>';
+  return `<svg width="60" height="60" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="32" r="25" fill="#7ee8e0"/><circle cx="30" cy="32" r="25" fill="none" stroke="#0f8b8d" stroke-width="3"/><rect x="14" y="20" width="32" height="12" rx="6" fill="#0d1b2a" opacity=".12"/><circle cx="22" cy="27" r="4" fill="#0d1b2a"/><circle cx="38" cy="27" r="4" fill="#0d1b2a"/>${eyes}${mouth}<line x1="30" y1="7" x2="30" y2="1" stroke="#0f8b8d" stroke-width="3"/><circle cx="30" cy="1.5" r="3" fill="#f4a259"/></svg>`;
+}
+const say = (html, mood) => `<div class="vector">${vectorBot(mood)}<div><div class="who">VECTOR</div><p>${html}</p></div></div>`;
+
+/* ---------- calculus drawing + notation helpers ---------- */
+let _cpN = 0;
+// Function graph on a dashed grid. pieces: [{fn, a, b, n}] sampled on [a, b] (clipped to the window);
+// dots: [{x, y, open}]; vas: [x] dashed asymptotes; segs: [{x1, y1, x2, y2}] straight lines (tangents);
+// marks: [{x, y, label, dx, dy, anchor}] labeled points.
+function cplot({ xmin, xmax, ymin, ymax, xstep = 1, ystep = 1, xlabEvery = 1, ylabEvery = 1, pieces = [], dots = [], vas = [], segs = [], marks = [], xlab = 'x', ylab = 'y', w = 540, h = 330 }) {
+  const L = 48, B = 40, T = 14, R = 18, W = w - L - R, H = h - T - B, id = 'cp' + (++_cpN);
+  const X = x => L + (x - xmin) / (xmax - xmin) * W, Y = y => T + H - (y - ymin) / (ymax - ymin) * H;
+  const fmt = v => String(+v.toFixed(2)).replace('-', '−');
+  let s = `<defs><clipPath id="${id}"><rect x="${L}" y="${T}" width="${W}" height="${H}"/></clipPath></defs><rect width="${w}" height="${h}" fill="#fff"/>`;
+  const i0 = Math.ceil(xmin / xstep - 1e-9), i1 = Math.floor(xmax / xstep + 1e-9);
+  for (let i = i0; i <= i1; i++) { const x = i * xstep;
+    s += `<line x1="${X(x)}" y1="${T}" x2="${X(x)}" y2="${T + H}" stroke="#b9c3cf" stroke-dasharray="3 3"/>`;
+    if (i % xlabEvery === 0) s += `<text x="${X(x)}" y="${T + H + 16}" font-size="12" text-anchor="middle" fill="#3d4a66">${fmt(x)}</text>`; }
+  const j0 = Math.ceil(ymin / ystep - 1e-9), j1 = Math.floor(ymax / ystep + 1e-9);
+  for (let j = j0; j <= j1; j++) { const y = j * ystep;
+    s += `<line x1="${L}" y1="${Y(y)}" x2="${L + W}" y2="${Y(y)}" stroke="#b9c3cf" stroke-dasharray="3 3"/>`;
+    if (j % ylabEvery === 0) s += `<text x="${L - 7}" y="${Y(y) + 4}" font-size="12" text-anchor="end" fill="#3d4a66">${fmt(y)}</text>`; }
+  s += `<rect x="${L}" y="${T}" width="${W}" height="${H}" fill="none" stroke="#b9c3cf"/>`;
+  if (ymin <= 0 && ymax >= 0) s += `<line x1="${L}" y1="${Y(0)}" x2="${L + W}" y2="${Y(0)}" stroke="#14213d" stroke-width="2"/>`;
+  if (xmin <= 0 && xmax >= 0) s += `<line x1="${X(0)}" y1="${T}" x2="${X(0)}" y2="${T + H}" stroke="#14213d" stroke-width="2"/>`;
+  vas.forEach(x => { s += `<line x1="${X(x)}" y1="${T}" x2="${X(x)}" y2="${T + H}" stroke="#0f8b8d" stroke-width="2" stroke-dasharray="8 5"/>`; });
+  const span = ymax - ymin, clampY = y => Math.max(ymin - span, Math.min(ymax + span, y));
+  let paths = '';
+  pieces.forEach(p => { const n = p.n || 400; let d = '', pen = false;
+    for (let k = 0; k <= n; k++) { const x = p.a + (p.b - p.a) * k / n, y = p.fn(x);
+      if (!isFinite(y)) { pen = false; continue; }
+      d += (pen ? 'L' : 'M') + X(x).toFixed(1) + ',' + Y(clampY(y)).toFixed(1); pen = true; }
+    paths += `<path d="${d}" fill="none" stroke="#d1495b" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round"/>`; });
+  segs.forEach(g => { paths += `<line x1="${X(g.x1)}" y1="${Y(g.y1)}" x2="${X(g.x2)}" y2="${Y(g.y2)}" stroke="${g.color || '#14213d'}" stroke-width="${g.width || 2.4}" stroke-dasharray="${g.dash || '7 4'}"/>`; });
+  s += `<g clip-path="url(#${id})">${paths}</g>`;
+  dots.forEach(d => { s += `<circle cx="${X(d.x)}" cy="${Y(d.y)}" r="5.5" fill="${d.open ? '#fff' : '#d1495b'}" stroke="#d1495b" stroke-width="2.5"/>`; });
+  marks.forEach(m => { s += `<circle cx="${X(m.x)}" cy="${Y(m.y)}" r="4.5" fill="#14213d"/>`;
+    s += `<text x="${X(m.x) + (m.dx == null ? 8 : m.dx)}" y="${Y(m.y) + (m.dy == null ? -8 : m.dy)}" font-size="13" font-weight="700" text-anchor="${m.anchor || 'start'}" fill="#14213d" stroke="#fff" stroke-width="3" paint-order="stroke">${m.label}</text>`; });
+  s += `<text x="${L + W / 2}" y="${h - 5}" font-size="13" text-anchor="middle" fill="#14213d" font-style="italic">${xlab}</text>`;
+  s += `<text x="14" y="${T + H / 2}" font-size="13" text-anchor="middle" fill="#14213d" font-style="italic" transform="rotate(-90 14 ${T + H / 2})">${ylab}</text>`;
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;height:auto" role="img" aria-label="graph">${s}</svg>`;
+}
+// stacked fraction, limit operator, piecewise braces, math span
+const fr = (n, d) => `<span class="fr"><span>${n}</span><span>${d}</span></span>`;
+const lim = to => `<span class="lm">lim<small>${to}</small></span>`;
+const cases = rows => `<span class="cases"><span>${rows.map(r => `<span>${r}</span>`).join('')}</span></span>`;
+const M = html => `<span class="mx">${html}</span>`;
+
+/* =====================================================================
+   ROOM DATA: AP Calculus AB/BC · Unit 2: Differentiation: Definition and Fundamental Properties
+   ===================================================================== */
+// Door 1, Card B: Admiral Axolotl's position graph s(t) = t² + 6t with the tangent line at t = 3
+const axolotlGraph = () => cplot({ xmin: 0, xmax: 6, ymin: 0, ymax: 72, ystep: 6, ylabEvery: 2,
+  pieces: [{ fn: t => t * t + 6 * t, a: 0, b: 6 }], segs: [{ x1: 0.75, y1: 0, x2: 6, y2: 63 }],
+  marks: [{ x: 1, y: 3, label: '(1, 3)', dx: 8, dy: -6 }, { x: 5, y: 51, label: '(5, 51)', dx: 8, dy: 16 }, { x: 3, y: 27, label: 'trap: t = 3', dx: -8, dy: -10, anchor: 'end' }],
+  xlab: 't (s)', ylab: 's(t) (cm)', w: 440, h: 320 });
+// Door 3: the track function f on [0, 9]
+const trackF = x => 4 + 1.5 * Math.cbrt(x - 3);
+const trackPieces = [
+  { fn: x => 0.5 * x + 0.5, a: 0, b: 1 },
+  { fn: trackF, a: 1, b: 7, n: 1200 },
+  { fn: x => trackF(7) - 1.5 * (x - 7), a: 7, b: 9 }
+];
+const trackDots = [{ x: 0, y: 0.5 }, { x: 1, y: 1, open: true }, { x: 1, y: trackF(1) }, { x: 5, y: trackF(5), open: true }, { x: 5, y: 3 }, { x: 9, y: trackF(7) - 3 }];
+const trackGraph = (xmin = 0, xmax = 9, w = 600) => cplot({ xmin, xmax, ymin: 0, ymax: 8, pieces: trackPieces, dots: trackDots.filter(d => d.x >= xmin - 1e-9 && d.x <= xmax + 1e-9), xlab: 'x', ylab: 'y = f(x)', w, h: 330 });
+const ROOM = {
+  id: 'calc-u2-derivatives',
+  salt: 'calc-u2::',
+  title: "VECTOR's Rate Race",
+  intro: `The class robot vacuum, <b>VECTOR</b>, has entered itself in the Hallway Grand Prix, and to make sure nobody
+    beats it, it has locked every door until the race is over. The track is full of speed traps, pit stops, and
+    suspicious corners. To get out, your team must prove you understand <b>derivatives</b>: rates of change, the limit
+    definition, differentiability, and the derivative rules. Start your engines (and your pencils).`,
+  finaleCipher: [102,39,61,99,112,39,62,50], // teacher password, XOR-locked with the final door's code
+  wrongLines: [
+    "Nope. That code has a vertical tangent: its slope is undefined, and so is your chance.",
+    "Denied. That answer is not differentiable, and neither is your strategy.",
+    "Wrong! The derivative of that guess is zero, because it's going nowhere.",
+    "Incorrect. Even Sir Slimesby the snail has a better rate of change.",
+    "That's not it. Try the product rule: teamwork times effort."
+  ],
+  doors: [
+    /* ---------------- DOOR 1 ---------------- */
+    {
+      name: 'The Speed Trap', tag: 'Topics 2.1–2.3 · Rates of change · team relay',
+      roles: true,
+      render: () => `
+        ${say(`Four racers just zoomed through my speed traps. Each of you holds ONE racer's data on your own Chromebook. Find your racer's <b>instantaneous</b> speed at the trap (not an average!), then compare as a team. Rank the racers from <b>fastest to slowest</b>: their first initials spell part of my code. Team of 3? Whoever finishes first takes Card D.`)}
+        <p class="note">All positions are in centimeters and all times are in seconds, so every speed is in cm/s.</p>
+        <div class="roles" data-roles></div>
+        <div data-rolecard></div>`,
+      roleCards: {
+        A: `<div class="card rolecard"><h4>Card A · Duchess Dumpling</h4>
+            <p>Duchess Dumpling, a hamster in a racing ball, crosses the trap at <b>t = 5 s</b>. The track's position sensor logged her position <i>s</i>(<i>t</i>):</p>
+            <table class="data"><tr><th>t (s)</th><td>4.8</td><td>4.9</td><td>5.0</td><td>5.1</td><td>5.2</td></tr>
+              <tr><th>s(t) (cm)</th><td>46.08</td><td>48.02</td><td>50.00</td><td>52.02</td><td>54.08</td></tr></table>
+            <p><b>Your question:</b> Estimate <b>s′(5)</b> using the two times in the table that are closest to t = 5, one on each side. That is Duchess Dumpling's speed at the trap.</p></div>`,
+        B: `<div class="card rolecard"><h4>Card B · Admiral Axolotl</h4>
+            <p>Admiral Axolotl swims down a flooded lane. Here is the graph of his position <i>s</i>(<i>t</i>), with the <b>tangent line at t = 3 s</b> drawn as a dashed line through two marked points.</p>
+            <div style="text-align:center">${axolotlGraph()}</div>
+            <p><b>Your question:</b> What is the Admiral's instantaneous speed at <b>t = 3 s</b>?</p></div>`,
+        C: `<div class="card rolecard"><h4>Card C · Sir Slimesby</h4>
+            <p>Sir Slimesby, a snail with a rocket strapped to his shell, crosses the trap at <b>t = 2 s</b>. His position is</p>
+            <p style="text-align:center">${M('s(t) = t³ − 6t² + 15t')}</p>
+            <p><b>Your question:</b> Find <b>s′(2)</b>. (Careful: the trap measures his speed at one instant, not his average speed since the start.)</p></div>`,
+        D: `<div class="card rolecard"><h4>Card D · Hopsworth</h4>
+            <p>Hopsworth, a rabbit, took a nap in the middle of the race and is now slowly rolling over in his sleep. The trap's computer reports his speed, in cm/s, only as a limit:</p>
+            <p style="text-align:center">${M(`speed = ${lim('x→9')} ${fr('√x − 3', 'x − 9')}`)}</p>
+            <p><b>Your question:</b> Evaluate the limit exactly. It is a fraction of the form 1/n.</p></div>`
+      },
+      fields: [
+        { label: 'Ranking: initials, fastest → slowest', w: 190, kind: 'word' },
+        { label: 'Fastest speed (cm/s)', w: 130, kind: 'num' },
+        { label: 'Slowest speed = 1/n: n', w: 130, kind: 'num' }
+      ],
+      answers: ['6jjlj6j5az'],
+      hints: [
+        'Instantaneous speed is the slope of the tangent line, which is the derivative. Card A: (s(5.1) − s(4.9)) ÷ (5.1 − 4.9). Card B: rise over run between the two marked points on the dashed tangent line.',
+        'Card C: s′(t) = 3t² − 12t + 15. (Using the average rate from t = 0 to 2 is the trap!) Card D: multiply the top and bottom by (√x + 3), or factor x − 9 = (√x − 3)(√x + 3).'
+      ],
+      success: 'Ugh. You clocked everyone. Door 1 unlocked.'
+    },
+    /* ---------------- DOOR 2 ---------------- */
+    {
+      name: 'The Definition Detector', tag: 'Topics 2.2, 2.5, 2.7 · Limit definition of the derivative',
+      render: () => `
+        ${say(`Each of my five limits is secretly a derivative, <b>f′(a)</b>, wearing a disguise. Unmask each one: find its function <i>f</i> and point <i>a</i> in my suspect lineup. The lineup letters, in order 1 → 5, spell a 5-letter word. Then find the <b>value</b> of each limit, add the five values, and multiply the sum by 4.`)}
+        <ol class="problems">
+          <li><span class="slot">1</span>${M(`${lim('h→0')} ${fr('(2 + h)³ − 8', 'h')}`)}</li>
+          <li><span class="slot">2</span>${M(`${lim('x→π')} ${fr('sin x', 'x − π')}`)}</li>
+          <li><span class="slot">3</span>${M(`${lim('h→0')} ${fr('e<sup>h</sup> − 1', 'h')}`)}</li>
+          <li><span class="slot">4</span>${M(`${lim('x→4')} ${fr('√x − 2', 'x − 4')}`)}</li>
+          <li><span class="slot">5</span>${M(`${lim('h→0')} ${fr('ln(1 + h)', 'h')}`)}</li>
+        </ol>
+        <h4 style="margin:12px 0 4px">The suspect lineup</h4>
+        <div class="keygrid wide">
+          ${[['D', 'f(x) = √x, &nbsp;a = 2'], ['S', 'f(x) = x³, &nbsp;a = 2'], ['G', 'f(x) = cos x, &nbsp;a = π'], ['O', 'f(x) = e<sup>x</sup>, &nbsp;a = 0'], ['A', 'f(x) = x³, &nbsp;a = 8'], ['L', 'f(x) = sin x, &nbsp;a = π'],
+             ['R', 'f(x) = e<sup>x</sup>, &nbsp;a = 1'], ['P', 'f(x) = √x, &nbsp;a = 4'], ['N', 'f(x) = sin x, &nbsp;a = 0'], ['I', 'f(x) = ln x, &nbsp;a = e'], ['E', 'f(x) = ln x, &nbsp;a = 1']]
+            .map(([k, v]) => `<div class="card"><span class="badge">${k}</span>${M(v)}</div>`).join('')}
+        </div>`,
+      fields: [{ label: 'Code word', w: 190, kind: 'word' }, { label: '4 × (sum of the five values)', w: 150, kind: 'num' }],
+      answers: ['1ozset9kprj'],
+      hints: [
+        'The definition: f′(a) = lim<sub>h→0</sub> [f(a + h) − f(a)]/h, or lim<sub>x→a</sub> [f(x) − f(a)]/(x − a). Look for the hidden f(a) being subtracted: 8 = 2³, 0 = sin π, 1 = e⁰, 2 = √4, 0 = ln 1.',
+        'For the values, use the derivative rules: (x³)′ = 3x², (sin x)′ = cos x, (e<sup>x</sup>)′ = e<sup>x</sup>, (√x)′ = 1/(2√x), (ln x)′ = 1/x. Remember that cos π = −1, so one value is negative.'
+      ],
+      success: 'Unmasked! Every limit was a derivative all along. Door 2 unlocked.'
+    },
+    /* ---------------- DOOR 3 ---------------- */
+    {
+      name: 'Corner Inspection', tag: 'Topics 2.4, 2.7 · Differentiability vs. continuity',
+      render: () => `
+        ${say(`My race track has some sketchy spots. <b>Part 1:</b> here is the graph of the track function <i>f</i> for 0 ≤ x ≤ 9. Open circles are holes; filled dots are actual values. <b>Part 2:</b> I'm welding on a new piece of track, <i>k</i>, and it must be perfectly smooth (differentiable) where the pieces meet.`)}
+        <div class="card">${trackGraph()}</div>
+        <div class="grid g2" style="margin-top:12px">
+          <div class="card"><h4>Part 1</h4><p style="margin:0">Add up all the x-values in the open interval ${M('0 &lt; x &lt; 9')} where <i>f</i> is <b>continuous but NOT differentiable</b>.</p></div>
+          <div class="card"><h4>Part 2</h4><p style="margin:0 0 6px">${M(`k(x) = ${cases(['ax² + bx, &nbsp;&nbsp;x &lt; 1', '6 ln x + 5, &nbsp;&nbsp;x ≥ 1'])}`)}</p>
+            <p style="margin:0">Find the constants <b>a</b> and <b>b</b> that make <i>k</i> differentiable at x = 1.</p></div>
+        </div>`,
+      fields: [{ label: 'Part 1 · sum of x-values', w: 150, kind: 'num' }, { label: 'Part 2 · a', w: 110, kind: 'num' }, { label: 'Part 2 · b', w: 110, kind: 'num' }],
+      answers: ['b7t8b4o40j'],
+      hints: [
+        'Not continuous → not differentiable (jumps and holes). Continuous but not differentiable → corners, cusps, and vertical tangent lines. Look for a spot where the graph goes straight up for an instant.',
+        'Part 2: differentiable at x = 1 needs BOTH (1) the pieces meet: a(1)² + b(1) = 6 ln 1 + 5, and (2) the slopes match: 2a(1) + b = 6/1.'
+      ],
+      success: 'Smooth moves. Door 3 unlocked.'
+    },
+    /* ---------------- DOOR 4 ---------------- */
+    {
+      name: 'The Pit Crew', tag: 'Topics 2.5–2.9 · FRQ relay: product & quotient rules',
+      roles: true,
+      render: () => `
+        ${say(`Pit stop! My crew wrote the table of values for two engine functions, <i>f</i> and <i>g</i>, on two separate clipboards. Each card has part of the information and one question, so share your numbers out loud. Both <i>f</i> and <i>g</i> are differentiable for all x. Team of 3? Whoever finishes first takes Card D.`)}
+        <div class="roles" data-roles></div>
+        <div data-rolecard></div>`,
+      roleCards: {
+        A: `<div class="card rolecard"><h4>Card A · The f-Clipboard</h4>
+            <table class="data"><tr><th>x</th><th>f(x)</th><th>f′(x)</th></tr><tr><td>2</td><td>6</td><td>5</td></tr></table>
+            <p>Let ${M('P(x) = f(x) · g(x)')}.</p>
+            <p><b>Your question:</b> Find <b>P′(2)</b>. You need Card B's numbers. Tell <b>Card D</b> your answer.</p></div>`,
+        B: `<div class="card rolecard"><h4>Card B · The g-Clipboard</h4>
+            <table class="data"><tr><th>x</th><th>g(x)</th><th>g′(x)</th></tr><tr><td>2</td><td>2</td><td>1</td></tr></table>
+            <p>Let ${M(`Q(x) = ${fr('f(x)', 'g(x)')}`)}.</p>
+            <p><b>Your question:</b> Find <b>Q′(2)</b>. You need Card A's numbers.</p></div>`,
+        C: `<div class="card rolecard"><h4>Card C · The Mechanic</h4>
+            <p>Let ${M('R(x) = 3f(x) − x² · g(x)')}.</p>
+            <p><b>Your question:</b> Find <b>R′(2)</b>. You need numbers from both clipboards (Cards A and B).</p></div>`,
+        D: `<div class="card rolecard"><h4>Card D · The Navigator</h4>
+            <p>The line tangent to the graph of ${M('P(x) = f(x) · g(x)')} at x = 2 passes through the point ${M('(3, y)')}.</p>
+            <p><b>Your question:</b> Find <b>y</b>. You need P(2) (use both clipboards) and P′(2) (from Card A).</p></div>`
+      },
+      fields: [
+        { label: 'A · P′(2)', w: 120, kind: 'num' }, { label: 'B · Q′(2)', w: 120, kind: 'num' },
+        { label: 'C · R′(2)', w: 120, kind: 'num' }, { label: 'D · y', w: 120, kind: 'num' }
+      ],
+      answers: ['1aukcrcsx3s'],
+      hints: [
+        'Product rule: (fg)′ = f′g + fg′. Quotient rule: (f/g)′ = (f′g − fg′)/g². Constant multiple: (3f)′ = 3f′.',
+        'Card C: the derivative of x² · g(x) needs the product rule: 2x · g(x) + x² · g′(x). Card D: the tangent line is y = P(2) + P′(2)(x − 2), and P(2) = f(2) · g(2).'
+      ],
+      success: 'Pit stop complete in record time. Door 4 unlocked.'
+    },
+    /* ---------------- DOOR 5 ---------------- */
+    {
+      name: 'Derivative Dominoes', tag: 'Topics 2.5–2.9 · Derivatives of sin x, cos x, eˣ, ln x',
+      render: () => `
+        ${say(`Final lap! My five dominoes are chained together. Start with <b>x = 0</b>. Each domino's answer is the x-value you plug into the NEXT domino's derivative. Topple them all: the five answers, in order, are my code. One wrong domino and the whole chain falls the wrong way!`, 'mad')}
+        <ol class="problems">
+          <li><span class="slot">1</span><span>${M('f₁(x) = 4e<sup>x</sup> + cos x − sin x + x³')}. &nbsp;Find ${M('f₁′(0)')}. Call the answer x₁.</span></li>
+          <li><span class="slot">2</span><span>${M('f₂(x) = x² + 6 ln x')}. &nbsp;Find ${M('f₂′(x₁)')}. Call the answer x₂.</span></li>
+          <li><span class="slot">3</span><span>${M(`f₃(x) = ${fr('x³', 'x − 4')}`)}. &nbsp;Find ${M('f₃′(x₂)')}. Call the answer x₃.</span></li>
+          <li><span class="slot">4</span><span>${M('f₄(x) = (x − 8)√x')}. &nbsp;Find ${M('f₄′(x₃)')}. Call the answer x₄.</span></li>
+          <li><span class="slot">5</span><span>${M(`f₅(x) = ${fr('x³ + 50', 'x')}`)}. &nbsp;Find ${M('f₅′(x₄)')}.</span></li>
+        </ol>
+        <p class="note">Every domino lands on a whole number. If yours doesn't, recheck that domino before moving on.</p>`,
+      fields: [
+        { label: 'Domino 1', w: 100, kind: 'num' }, { label: 'Domino 2', w: 100, kind: 'num' }, { label: 'Domino 3', w: 100, kind: 'num' },
+        { label: 'Domino 4', w: 100, kind: 'num' }, { label: 'Domino 5', w: 100, kind: 'num' }
+      ],
+      answers: ['19jqeu8qs2k'],
+      hints: [
+        'Rules: (e<sup>x</sup>)′ = e<sup>x</sup>, (cos x)′ = −sin x, (sin x)′ = cos x, (ln x)′ = 1/x. At x = 0: e⁰ = 1, sin 0 = 0, cos 0 = 1.',
+        'Domino 3 (quotient rule): [3x²(x − 4) − x³ · 1]/(x − 4)². Domino 4 (product rule): 1 · √x + (x − 8) · 1/(2√x). Check yourself: domino 1 = 3 and domino 3 = 16.'
+      ],
+      success: 'NOOO! I crossed the finish line... in LAST place!'
+    }
+  ]
+};
+
+/* =====================================================================
+   ENGINE
+   ===================================================================== */
+const KEY = 'escape:' + ROOM.id;
+const store = {
+  get() { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch (e) { return null; } },
+  set(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} },
+  clear() { try { localStorage.removeItem(KEY); } catch (e) {} }
+};
+let S = store.get() || { started: false, team: '', size: 4, start: 0, end: 0, door: 0, hints: {}, wrong: 0, role: 'A', timer: null };
+const save = () => store.set(S);
+const $ = (q, el = document) => el.querySelector(q);
+const fmt = ms => { const s = Math.max(0, Math.floor(ms / 1000)); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
+const hintsUsed = () => Object.values(S.hints).reduce((a, b) => a + b, 0);
+
+function timerLive() { return S.timer && S.timer.end && S.timer.day === dayKey(); }
+function timeUp() { return timerLive() && Date.now() >= S.timer.end && !S.end; }
+function hud() {
+  const t = S.started ? fmt((S.end || Date.now()) - S.start) : '00:00';
+  let chip;
+  if (timerLive() && !S.end) { const left = S.timer.end - Date.now();
+    chip = `<button class="tchip ${left < 5 * 60000 ? 'low' : ''}" id="tchip" title="Class timer">⏳ Class <b>${left > 0 ? fmt(left) : '0:00'}</b></button>`; }
+  else chip = `<button class="tchip" id="tchip" title="Enter class timer code">⏲ ${S.timer && S.timer.off && S.timer.day === dayKey() ? 'Timer off' : 'Timer code'}</button>`;
+  $('#hud').innerHTML = `${chip}<span title="Your team's time">⏱ <b>${t}</b></span><span title="Hints used">💡 <b>${hintsUsed()}</b></span><span title="Wrong codes">✖ <b>${S.wrong}</b></span>`;
+  $('#tchip').onclick = () => { $('#timerBox').classList.toggle('on'); $('#timerInput').focus(); };
+}
+let shownTimeUp = false;
+setInterval(() => { hud(); const up = timeUp() && S.started; if (up !== shownTimeUp) render(); }, 1000);
+function applyTimerCode(raw, msgEl) {
+  const r = parseTimerCode(raw);
+  if (!r) { if (msgEl) { msgEl.style.color = '#ffb3bd'; msgEl.textContent = "That timer code isn't valid. Check the board and try again."; } return false; }
+  S.timer = r.type === 'off' ? { off: true, end: null, day: dayKey() } : { off: false, end: r.end, day: dayKey() };
+  save();
+  if (msgEl) { msgEl.style.color = '#9ff0b8'; msgEl.textContent = r.type === 'off' ? 'Timer turned off. Keep going!' : `Timer set: ends at ${new Date(r.end).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}.`; }
+  render(); return true;
+}
+
+function hall() {
+  $('#hall').innerHTML = ROOM.doors.map((d, i) => {
+    const cls = i < S.door ? 'open' : (i === S.door && S.started && !S.end ? 'current' : '');
+    return `<div class="door-pill ${cls}"><span class="lock"></span><span class="n">${i + 1}</span>${d.name}</div>`;
+  }).join('');
+}
+
+function normalize(v, f) {
+  v = String(v).trim();
+  if (f.kind === 'word') return v.toUpperCase().replace(/[^A-Z]/g, '');
+  const m = v.replace(/,/g, '').match(/-?\d*\.?\d+/); // first number only, so units like "W/m2" are ignored
+  if (!m) return '';
+  const n = parseFloat(m[0]);
+  const r = f.roundTo || 1;
+  return String(Math.round(Math.abs(n) / r) * r);
+}
+
+function render() {
+  hud(); hall();
+  const st = $('#stage');
+  if (!S.started) return renderIntro(st);
+  if (S.door >= ROOM.doors.length) { shownTimeUp = false; return renderFinale(st); }
+  shownTimeUp = timeUp();
+  if (shownTimeUp) return renderTimeUp(st);
+  const i = S.door, d = ROOM.doors[i];
+  st.innerHTML = `<span class="tag">Door ${i + 1} of ${ROOM.doors.length} · ${d.tag}</span><h2>${d.name}</h2>${d.render()}
+    <div class="lockbox">
+      <div class="lbl">🔒 Door ${i + 1} lock</div>
+      <form class="fields" id="lockForm" autocomplete="off">
+        ${d.fields.map((f, k) => `<label class="field">${f.label}<input style="--w:${f.w}px" name="f${k}" inputmode="${f.kind === 'num' ? 'decimal' : 'text'}" required></label>`).join('')}
+        <button class="btn" type="submit">Try code</button>
+      </form>
+      <div class="feedback" id="fb" aria-live="polite"></div>
+      <div class="hints no-print">${d.hints.map((h, k) => `<button class="btn ghost" data-hint="${k}" ${k > (S.hints[i] || 0) ? 'disabled style="opacity:.4"' : ''}>💡 Hint ${k + 1}</button>`).join('')}</div>
+      <div id="hintOut">${d.hints.slice(0, S.hints[i] || 0).map(h => `<div class="hinttext">${h}</div>`).join('')}</div>
+    </div>`;
+  if (d.roles) setupRoles(st, d);
+  $('#lockForm').addEventListener('submit', e => { e.preventDefault(); check(d, i); });
+  st.querySelectorAll('[data-hint]').forEach(b => b.addEventListener('click', () => {
+    const k = +b.dataset.hint; if ((S.hints[i] || 0) <= k) { S.hints[i] = k + 1; save(); render(); }
+  }));
+  const first = st.querySelector('#lockForm input'); if (first && document.activeElement === document.body) first.focus({ preventScroll: true });
+}
+
+function setupRoles(st, d) {
+  const box = $('[data-roles]', st), out = $('[data-rolecard]', st);
+  const keys = Object.keys(d.roleCards);
+  const draw = () => {
+    box.innerHTML = '<span class="note" style="align-self:center;margin-right:4px">I am holding:</span>' + keys.map(k => `<button type="button" class="${k === S.role ? 'on' : ''}" data-r="${k}">Card ${k}</button>`).join('');
+    out.innerHTML = d.roleCards[S.role] || '';
+    box.querySelectorAll('[data-r]').forEach(b => b.addEventListener('click', () => { S.role = b.dataset.r; save(); draw(); }));
+  };
+  draw();
+}
+
+function check(d, i) {
+  const form = $('#lockForm'), fb = $('#fb');
+  const vals = d.fields.map((f, k) => normalize(form.elements['f' + k].value, f));
+  const h = cyrb53(ROOM.salt + 'd' + (i + 1) + '::' + vals.join('|'));
+  if (d.answers.includes(h)) {
+    S.door = i + 1;
+    if (S.door >= ROOM.doors.length) { S.end = Date.now(); S.key = vals.join('|'); }
+    save();
+    fb.className = 'feedback good'; fb.textContent = '✔ ' + d.success;
+    form.querySelector('button').disabled = true;
+    setTimeout(render, 1400);
+  } else {
+    S.wrong++; save(); hud();
+    fb.className = 'feedback bad';
+    fb.textContent = '✖ ' + ROOM.wrongLines[Math.floor(Math.random() * ROOM.wrongLines.length)];
+    form.classList.remove('shake'); void form.offsetWidth; form.classList.add('shake');
+  }
+}
+
+function renderIntro(st) {
+  st.innerHTML = `<div class="center">
+      <span class="tag">Escape Room · Teams of 3–4</span>
+      <h2>${ROOM.title}</h2></div>
+      ${say(ROOM.intro + ' <br><br>The clock starts when you press the button. Hints are free, but I <i>count</i> them. Mwahaha.')}
+      <div class="setup">
+        <div><label for="team">Team name</label><input id="team" maxlength="40" placeholder="e.g., The Product Rulers" value="${S.team || ''}"></div>
+        <div><label for="names">Team members</label><input id="names" maxlength="120" placeholder="First names" value="${S.names || ''}"></div>
+        <div><label for="size">Players</label><select id="size"><option value="3">3 players</option><option value="4" selected>4 players</option></select></div>
+        <div><label for="tcode">Class timer code <span class="note">(from the board, if your teacher posted one)</span></label><input id="tcode" maxlength="12" placeholder="e.g., 1452-AB" style="font-family:var(--mono);text-transform:uppercase"></div>
+        <div id="tcodeMsg" class="note"></div>
+        <p class="note" style="margin:0">Every player opens this page on their own Chromebook and enters the <b>same</b> team name. Bring paper, a pencil, and a calculator.</p>
+        <button class="btn dark" id="go">Start the clock ▶</button>
+      </div>`;
+  $('#size').value = S.size || 4;
+  $('#go').addEventListener('click', () => {
+    const tc = $('#tcode').value.trim();
+    if (tc && !parseTimerCode(tc)) { $('#tcodeMsg').style.color = '#d1495b'; $('#tcodeMsg').textContent = "That timer code isn't valid. Fix it or leave it blank."; return; }
+    S.team = $('#team').value.trim() || 'Unnamed Team'; S.names = $('#names').value.trim(); S.size = +$('#size').value;
+    if (tc) { const r = parseTimerCode(tc); S.timer = r.type === 'off' ? { off: true, end: null, day: dayKey() } : { off: false, end: r.end, day: dayKey() }; }
+    S.started = true; S.start = Date.now(); save(); render();
+  });
+}
+
+function renderFinale(st) {
+  const t = fmt(S.end - S.start);
+  st.innerHTML = `<div class="center">
+      ${say(`Fine. FINE. You escaped. My pride's rate of change is now very negative. I'll go back to vacuuming. Show this screen to your teacher.`, 'happy')}
+      <div class="cert">
+        <div class="tag">Certificate of Escape</div>
+        <h2 style="margin:4px 0">${escapeHtml(S.team)}</h2>
+        <div class="note">${escapeHtml(S.names || '')}</div>
+        <div class="stats"><div>Time<b>${t}</b></div><div>Hints<b>${hintsUsed()}</b></div><div>Wrong codes<b>${S.wrong}</b></div></div>
+        <div class="note">Finish code (your teacher types this in)</div>
+        <div class="fcode">${finishCode(S.end, Math.min(99, hintsUsed()))}</div>
+        <div class="note" style="margin-top:8px">Teacher password</div>
+        <div class="pw">${unlockPw()}</div>
+        <div class="note">${new Date(S.end).toLocaleString()} · AP Calculus AB/BC · Unit 2: Differentiation: Definition and Fundamental Properties · ${ROOM.title}</div>
+      </div>
+      <p class="no-print"><button class="btn dark" onclick="window.print()">Print certificate</button></p>
+    </div>`;
+}
+function renderTimeUp(st) {
+  const opened = S.door;
+  st.innerHTML = `<div class="timeup">
+      ${say(`Beep boop... <b>TIME'S UP!</b> The lab stays locked. Show this screen to your teacher.`, 'happy')}
+      <h2>⏰ Time's Up</h2>
+      <div class="cert">
+        <h2 style="margin:4px 0;color:var(--ink);font-size:24px">${escapeHtml(S.team)}</h2>
+        <div class="note">${escapeHtml(S.names || '')}</div>
+        <div class="stats"><div>Doors opened<b>${opened} / ${ROOM.doors.length}</b></div><div>Hints<b>${hintsUsed()}</b></div><div>Wrong codes<b>${S.wrong}</b></div></div>
+        <div class="note">Stopped on Door ${Math.min(opened + 1, ROOM.doors.length)}: ${ROOM.doors[Math.min(opened, ROOM.doors.length - 1)].name}</div>
+      </div>
+      <p class="note">Did your teacher give more time? Type the new code from the board:</p>
+      <form id="moreTime" autocomplete="off" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <input id="moreInput" placeholder="1505-AB" style="font-family:var(--mono);font-size:20px;letter-spacing:.1em;width:180px;padding:8px 10px;border-radius:9px;border:2px solid var(--line);text-transform:uppercase">
+        <button class="btn dark" type="submit">Keep going</button></form>
+      <div id="moreMsg" class="note" style="margin-top:6px"></div>
+    </div>`;
+  $('#moreTime').addEventListener('submit', e => { e.preventDefault(); const m = $('#moreMsg'); applyTimerCode($('#moreInput').value, m); if (m.textContent.startsWith('That')) m.style.color = '#d1495b'; });
+}
+function pwKey(s) { return cyrb53(ROOM.salt + 'pw1::' + s) + cyrb53('pw2::' + s + ROOM.salt) + cyrb53(s + '::pw3' + ROOM.salt); }
+function unlockPw() { const k = pwKey(S.key || ''); return ROOM.finaleCipher.map((b, i) => String.fromCharCode(b ^ k.charCodeAt(i % k.length))).join(''); }
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+$('#timerForm').addEventListener('submit', e => { e.preventDefault(); if (applyTimerCode($('#timerInput').value, $('#timerMsg'))) { $('#timerInput').value = ''; setTimeout(() => $('#timerBox').classList.remove('on'), 1600); } });
+$('#timerClose').addEventListener('click', () => $('#timerBox').classList.remove('on'));
+$('#resetBtn').addEventListener('click', () => $('#confirmBox').classList.add('on'));
+$('#resetNo').addEventListener('click', () => $('#confirmBox').classList.remove('on'));
+$('#resetYes').addEventListener('click', () => { store.clear(); S = { started: false, team: '', size: 4, start: 0, end: 0, door: 0, hints: {}, wrong: 0, role: 'A', timer: null }; $('#confirmBox').classList.remove('on'); render(); });
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Escape Room · AP Physics C: Mechanics · Unit 7: Oscillations · VECTOR's Hypnotick Clock</title>
+<style>
+:root{
+  --ink:#14213d; --ink-2:#3d4a66; --paper:#fbf8f1; --card:#ffffff; --line:#d9d2c3;
+  --teal:#0f8b8d; --teal-d:#0b6b6d; --amber:#f4a259; --red:#d1495b; --green:#3a9d5d;
+  --night:#0d1b2a; --night-2:#1b263b; --glow:#7ee8e0;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  --sans:"Avenir Next","Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:var(--sans);color:var(--ink);background:var(--night);
+  background-image:linear-gradient(rgba(126,232,224,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(126,232,224,.06) 1px,transparent 1px);
+  background-size:28px 28px;min-height:100vh;line-height:1.5}
+.wrap{max-width:980px;margin:0 auto;padding:20px 18px 60px}
+header.top{display:flex;align-items:center;gap:14px;color:#e8f1f2;flex-wrap:wrap}
+header.top .unit{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--glow)}
+header.top h1{margin:0;font-size:26px;letter-spacing:.01em}
+header.top .spacer{flex:1}
+.hud{display:flex;gap:10px;font-family:var(--mono);font-size:13px}
+.hud span{background:var(--night-2);border:1px solid #2f3e5a;color:#e8f1f2;padding:5px 10px;border-radius:8px}
+.hud b{color:var(--glow);font-weight:600}
+
+/* progress hallway */
+.hall{display:flex;gap:8px;margin:18px 0 18px;flex-wrap:wrap}
+.door-pill{flex:1;min-width:120px;background:var(--night-2);border:1px solid #2f3e5a;color:#8fa0b8;border-radius:10px;padding:8px 10px;font-size:13px;display:flex;gap:8px;align-items:center}
+.door-pill .n{font-family:var(--mono);font-size:11px;border:1px solid currentColor;border-radius:5px;padding:0 5px}
+.door-pill.open{color:#bff3ee;border-color:var(--teal)}
+.door-pill.current{color:#fff;border-color:var(--amber);box-shadow:0 0 0 2px rgba(244,162,89,.25)}
+.door-pill.open .lock::before{content:"🔓"} .door-pill .lock::before{content:"🔒"}
+
+.panel{background:var(--paper);border-radius:16px;padding:22px 24px;box-shadow:0 18px 50px rgba(0,0,0,.35);position:relative}
+.panel h2{margin:0 0 4px;font-size:22px}
+.tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;background:#e7f4f4;color:var(--teal-d);border-radius:6px;padding:2px 8px;margin-bottom:10px}
+.vector{text-align:left;display:flex;gap:14px;align-items:flex-start;background:var(--night);color:#e8f1f2;border-radius:12px;padding:12px 14px;margin:10px 0 16px}
+.vector svg{flex:0 0 auto}
+.vector p{margin:0}
+.vector .who{font-family:var(--mono);font-size:11px;color:var(--glow);letter-spacing:.12em;text-transform:uppercase}
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.card h4{margin:0 0 6px;font-size:15px}
+.badge{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;background:var(--ink);color:#fff;font-weight:700;font-family:var(--mono);margin-right:8px}
+.fd{text-align:center}
+.fd .badge{background:var(--teal)}
+table.data{border-collapse:collapse;margin:8px 0;font-family:var(--mono);font-size:14px}
+table.data th,table.data td{border:1px solid var(--line);padding:6px 12px;text-align:center;background:#fff}
+table.data th{background:#eef2f6}
+ol.problems{padding-left:0;list-style:none;margin:0}
+ol.problems li{display:flex;gap:10px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+ol.problems .slot{flex:0 0 auto;font-family:var(--mono);font-weight:700;background:var(--amber);color:var(--ink);border-radius:6px;padding:0 8px;height:26px;line-height:26px}
+.stmt{display:flex;gap:10px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin-bottom:7px}
+.stmt .num{flex:0 0 auto;min-width:34px;text-align:center;font-family:var(--mono);font-weight:700;background:#efe7d6;border-radius:6px;padding:1px 6px}
+
+/* roles */
+.roles{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
+.roles button{font:inherit;font-size:14px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;cursor:pointer}
+.roles button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.rolecard{border-left:5px solid var(--amber)}
+.note{font-size:14px;color:var(--ink-2)}
+
+/* lock */
+.lockbox{margin-top:18px;background:var(--night-2);color:#e8f1f2;border-radius:14px;padding:16px}
+.lockbox .lbl{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--glow);margin-bottom:8px}
+.fields{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:4px;font-size:13px;color:#b9c6d6}
+.field input{font-family:var(--mono);font-size:22px;letter-spacing:.12em;width:var(--w,150px);padding:8px 10px;border-radius:9px;border:2px solid #3b4d6b;background:#0d1b2a;color:#fff;text-transform:uppercase}
+.field input:focus{outline:none;border-color:var(--amber)}
+.btn{font:inherit;font-weight:700;border:0;border-radius:10px;padding:11px 18px;cursor:pointer;background:var(--amber);color:var(--ink)}
+.btn:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent;color:#cfe0ea;border:1px solid #3b4d6b;font-weight:500}
+.btn.dark{background:var(--ink);color:#fff}
+.feedback{margin-top:10px;min-height:24px;font-size:15px}
+.feedback.bad{color:#ffb3bd}.feedback.good{color:#9ff0b8}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.hints{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.hinttext{background:#fff7e8;border:1px dashed var(--amber);border-radius:10px;padding:8px 12px;margin-top:8px;font-size:14px;color:var(--ink)}
+
+/* intro / finale */
+.center{text-align:center}
+.setup{display:grid;gap:12px;max-width:520px;margin:14px auto 0;text-align:left}
+.setup label{font-size:14px;font-weight:600}
+.setup input,.setup select{font:inherit;width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:#fff}
+.cert{border:3px double var(--ink);border-radius:14px;padding:22px;background:#fff;max-width:620px;margin:16px auto 0}
+.cert .pw{font-family:var(--mono);font-size:30px;letter-spacing:.25em;background:var(--ink);color:var(--glow);display:inline-block;padding:6px 16px;border-radius:10px;margin:6px 0}
+.stats{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:10px 0}
+.stats div{background:#f2efe6;border-radius:10px;padding:8px 14px;font-size:14px}
+.stats b{display:block;font-family:var(--mono);font-size:20px}
+.foot{color:#7f90a8;font-size:12px;text-align:center;margin-top:22px}
+.foot a{color:#9fd9d4}
+.reset{background:none;border:0;color:#7f90a8;text-decoration:underline;cursor:pointer;font:inherit;font-size:12px}
+.confirm{display:none;margin-top:8px;color:#e8f1f2;font-size:13px}
+.confirm.on{display:block}
+svg text{font-family:var(--sans)}
+.tchip{cursor:pointer;font:inherit;font-family:var(--mono);font-size:13px;background:var(--night-2);border:1px solid #2f3e5a;color:#e8f1f2;padding:5px 10px;border-radius:8px}
+.tchip b{color:var(--amber)} .tchip.low{border-color:var(--red);animation:pulse 1s infinite} .tchip.low b{color:#ffb3bd}
+@keyframes pulse{50%{box-shadow:0 0 0 3px rgba(209,73,91,.35)}}
+#timerBox{display:none;margin-top:12px;background:var(--night-2);border:1px solid #3b4d6b;border-radius:12px;padding:12px 14px;color:#e8f1f2}
+#timerBox.on{display:block}
+#timerBox form{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#timerBox input{font-family:var(--mono);font-size:18px;letter-spacing:.1em;width:160px;padding:7px 10px;border-radius:8px;border:2px solid #3b4d6b;background:#0d1b2a;color:#fff;text-transform:uppercase}
+#timerMsg{font-size:14px;margin-top:6px;min-height:20px}
+.timeup{text-align:center}
+.timeup h2{font-size:40px;color:var(--red);margin:6px 0}
+.fcode{font-family:var(--mono);font-size:26px;letter-spacing:.12em;background:#fff7e8;border:2px dashed var(--amber);display:inline-block;padding:4px 14px;border-radius:10px;margin:4px 0}
+@media print{body{background:#fff}.hall,.hud,.foot,.no-print{display:none!important}.panel{box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="unit">AP Physics C: Mechanics · Unit 7: Oscillations</div>
+      <h1>VECTOR's Hypnotick Clock</h1>
+    </div>
+    <div class="spacer"></div>
+    <div class="hud" id="hud"></div>
+  </header>
+  <div id="timerBox" class="no-print">
+    <form id="timerForm" autocomplete="off"><span>⏲ Class timer code (from the board):</span>
+      <input id="timerInput" placeholder="1452-AB" aria-label="Class timer code">
+      <button class="btn" type="submit" style="padding:8px 14px">Set</button>
+      <button class="btn ghost" type="button" id="timerClose" style="padding:8px 12px">Close</button></form>
+    <div id="timerMsg" aria-live="polite"></div>
+  </div>
+  <nav class="hall" id="hall" aria-label="Door progress"></nav>
+  <main class="panel" id="stage"></main>
+  <div class="foot">
+    Mr. C's Science · <a href="index.html">All escape rooms</a> ·
+    <button class="reset" id="resetBtn">Reset this device</button>
+    <div class="confirm" id="confirmBox">Erase all progress on this device?
+      <button class="btn ghost" id="resetYes" style="padding:4px 10px">Yes, reset</button>
+      <button class="btn ghost" id="resetNo" style="padding:4px 10px">Cancel</button></div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   ESCAPE ROOM ENGINE (reusable). To make a new unit, copy this file and
+   replace the ROOM object below. Answers are stored only as salted
+   hashes (cyrb53); generate them with the helper in the teacher guide.
+   ===================================================================== */
+function cyrb53(str, seed = 0) {
+  let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+  for (let i = 0, ch; i < str.length; i++) { ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507); h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507); h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+
+/* ---------- CLASS TIMER + FINISH CODES (shared with teacher.html; keep identical) ---------- */
+const TALPH = 'ACDEFGHJKMNPQRTUVWXY34679';
+const pad2 = n => String(n).padStart(2, '0');
+function dayKey(d = new Date()) { return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+function tmac(s, day) { const h = parseInt(cyrb53('mrc-class-timer::' + (day || dayKey()) + '::' + s), 36); return TALPH[h % 25] + TALPH[Math.floor(h / 25) % 25]; }
+function timerCode(endMs) { const d = new Date(endMs), t = pad2(d.getHours()) + pad2(d.getMinutes()); return t + '-' + tmac('T' + t); }
+function offCode() { return 'OFF-' + tmac('OFF'); }
+function finishCode(ms, hints) { const d = new Date(ms), t = pad2(d.getHours()) + pad2(d.getMinutes()) + pad2(d.getSeconds()); return t + '-' + hints + '-' + tmac('F' + t + '-' + hints); }
+function cleanCode(raw) { return String(raw || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
+// -> {type:'end', end:ms} | {type:'off'} | null
+function parseTimerCode(raw) {
+  const c = cleanCode(raw); let m;
+  if ((m = c.match(/^OFF([A-Z0-9]{2})$/)) && m[1] === tmac('OFF')) return { type: 'off' };
+  if ((m = c.match(/^(\d{4})([A-Z0-9]{2})$/)) && m[2] === tmac('T' + m[1])) {
+    const hh = +m[1].slice(0, 2), mm = +m[1].slice(2); if (hh > 23 || mm > 59) return null;
+    const d = new Date(); d.setHours(hh, mm, 0, 0); return { type: 'end', end: d.getTime() };
+  }
+  return null;
+}
+// -> {finish:ms, hints:n} | null
+function parseFinishCode(raw) {
+  const c = String(raw || '').toUpperCase().replace(/\s/g, ''); const m = c.match(/^(\d{6})-?(\d{1,2})-?([A-Z0-9]{2})$/);
+  if (!m || m[3] !== tmac('F' + m[1] + '-' + (+m[2]))) return null;
+  const d = new Date(); d.setHours(+m[1].slice(0, 2), +m[1].slice(2, 4), +m[1].slice(4), 0);
+  return { finish: d.getTime(), hints: +m[2] };
+}
+
+/* ---------- drawing helpers ---------- */
+const sub = (main, s) => `${main}<tspan dy="4" font-size="10">${s}</tspan><tspan dy="-4"></tspan>`;
+// Force diagram: dot on a dashed grid, arrows measured in grid units
+function forceDiagram(forces, opts = {}) {
+  const u = 16, size = opts.size || 176, c = size / 2;
+  let g = '';
+  for (let x = c % u; x <= size; x += u) g += `<line x1="${x}" y1="0" x2="${x}" y2="${size}" stroke="#b9c3cf" stroke-dasharray="3 3" stroke-width="1"/>`;
+  for (let y = c % u; y <= size; y += u) g += `<line x1="0" y1="${y}" x2="${size}" y2="${y}" stroke="#b9c3cf" stroke-dasharray="3 3" stroke-width="1"/>`;
+  let a = '';
+  const dirs = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+  forces.forEach(f => {
+    const [dx, dy] = dirs[f.dir], L = f.len * u, x2 = c + dx * L, y2 = c + dy * L;
+    a += `<line x1="${c}" y1="${c}" x2="${x2 - dx * 7}" y2="${y2 - dy * 7}" stroke="#14213d" stroke-width="3"/>`;
+    const p = dx ? `${x2},${y2} ${x2 - dx * 10},${y2 - 6} ${x2 - dx * 10},${y2 + 6}` : `${x2},${y2} ${x2 - 6},${y2 - dy * 10} ${x2 + 6},${y2 - dy * 10}`;
+    a += `<polygon points="${p}" fill="#14213d"/>`;
+    // vertical arrows: label beside the tip; horizontal arrows: label above the tip, pulled inward
+    const out = !!f.mag; // labels with magnitudes go outward past the tip (canvas is padded)
+    const lx = dx ? x2 + (out ? dx * 8 : 0) : c + 8, ly = dy ? y2 + (dy > 0 ? 14 : -4) : (out ? c + 5 : c - 12);
+    const anchor = out ? (dx < 0 ? 'end' : 'start') : (dx > 0 ? 'end' : 'start');
+    a += `<text x="${lx}" y="${ly}" font-size="14" font-style="italic" fill="#0b6b6d" text-anchor="${anchor}">${sub('F', f.lab)}${f.mag ? ` = ${f.mag}` : ''}</text>`;
+  });
+  const px = opts.padX || 0;
+  return `<svg viewBox="${-px} 0 ${size + 2 * px} ${size}" width="${size + 2 * px}" height="${size}" style="max-width:100%;height:auto" role="img" aria-label="force diagram"><rect width="${size}" height="${size}" fill="#fff"/>${g}${a}<circle cx="${c}" cy="${c}" r="5.5" fill="#d1495b"/></svg>`;
+}
+// Line graph on a grid. pts in data units.
+function graph({ pts, xmax, ymax, xstep, ystep, xlab, ylab, w = 420, h = 250, ticks = true }) {
+  const L = 48, B = 36, T = 12, R = 14, W = w - L - R, H = h - T - B;
+  const X = x => L + x / xmax * W, Y = y => T + H - y / ymax * H;
+  let s = `<rect width="${w}" height="${h}" fill="#fff"/>`;
+  for (let x = 0; x <= xmax + 1e-9; x += xstep) s += `<line x1="${X(x)}" y1="${T}" x2="${X(x)}" y2="${T + H}" stroke="#dde3ea"/>` + (ticks ? `<text x="${X(x)}" y="${T + H + 16}" font-size="12" text-anchor="middle" fill="#3d4a66">${+x.toFixed(2)}</text>` : '');
+  for (let y = 0; y <= ymax + 1e-9; y += ystep) s += `<line x1="${L}" y1="${Y(y)}" x2="${L + W}" y2="${Y(y)}" stroke="#dde3ea"/>` + (ticks ? `<text x="${L - 7}" y="${Y(y) + 4}" font-size="12" text-anchor="end" fill="#3d4a66">${+y.toFixed(2)}</text>` : '');
+  s += `<line x1="${L}" y1="${T + H}" x2="${L + W}" y2="${T + H}" stroke="#14213d" stroke-width="2"/><line x1="${L}" y1="${T}" x2="${L}" y2="${T + H}" stroke="#14213d" stroke-width="2"/>`;
+  s += `<polyline points="${pts.map(p => X(p[0]) + ',' + Y(p[1])).join(' ')}" fill="none" stroke="#d1495b" stroke-width="3.5" stroke-linejoin="round"/>`;
+  s += `<text x="${L + W / 2}" y="${h - 3}" font-size="13" text-anchor="middle" fill="#14213d">${xlab}</text>`;
+  s += `<text x="13" y="${T + H / 2}" font-size="13" text-anchor="middle" fill="#14213d" transform="rotate(-90 13 ${T + H / 2})">${ylab}</text>`;
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;height:auto" role="img" aria-label="graph">${s}</svg>`;
+}
+function vectorBot(mood = 'smug') {
+  const eyes = mood === 'mad' ? '<path d="M18 22 l8 3 M42 22 l-8 3" stroke="#0d1b2a" stroke-width="3" stroke-linecap="round"/>' : '';
+  const mouth = mood === 'happy' ? '<path d="M22 36 q8 7 16 0" stroke="#0d1b2a" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    : mood === 'mad' ? '<path d="M22 39 q8 -6 16 0" stroke="#0d1b2a" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    : '<path d="M23 37 h14" stroke="#0d1b2a" stroke-width="3" stroke-linecap="round"/>';
+  return `<svg width="60" height="60" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="32" r="25" fill="#7ee8e0"/><circle cx="30" cy="32" r="25" fill="none" stroke="#0f8b8d" stroke-width="3"/><rect x="14" y="20" width="32" height="12" rx="6" fill="#0d1b2a" opacity=".12"/><circle cx="22" cy="27" r="4" fill="#0d1b2a"/><circle cx="38" cy="27" r="4" fill="#0d1b2a"/>${eyes}${mouth}<line x1="30" y1="7" x2="30" y2="1" stroke="#0f8b8d" stroke-width="3"/><circle cx="30" cy="1.5" r="3" fill="#f4a259"/></svg>`;
+}
+const say = (html, mood) => `<div class="vector">${vectorBot(mood)}<div><div class="who">VECTOR</div><p>${html}</p></div></div>`;
+
+/* =====================================================================
+   ROOM DATA: AP Physics C: Mechanics · Unit 7: Oscillations
+   ===================================================================== */
+/* ---------- extra drawing helpers for this room ---------- */
+const dgrid = (w, h, step = 20) => { let g = ''; for (let x = step; x < w; x += step) g += `<line x1="${x}" y1="0" x2="${x}" y2="${h}" stroke="#e1e6ec" stroke-dasharray="3 3"/>`; for (let y = step; y < h; y += step) g += `<line x1="0" y1="${y}" x2="${w}" y2="${y}" stroke="#e1e6ec" stroke-dasharray="3 3"/>`; return `<rect width="${w}" height="${h}" fill="#fff"/>` + g; };
+const svgWrap = (w, h, inner, label) => `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;height:auto" role="img" aria-label="${label}">${dgrid(w, h)}${inner}</svg>`;
+const ARROW = id => `<defs><marker id="${id}" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#14213d"/></marker></defs>`;
+// zig-zag spring from (x1,y1) to (x2,y2)
+function coil(x1, y1, x2, y2, n = 10, amp = 7, color = '#14213d') {
+  const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy), ux = dx / len, uy = dy / len, px = -uy, py = ux, lead = 8;
+  let p = `M${x1},${y1} L${x1 + ux * lead},${y1 + uy * lead}`;
+  for (let i = 0; i < n; i++) {
+    const s = lead + (len - 2 * lead) * (i + 0.5) / n, sg = i % 2 ? -1 : 1;
+    p += ` L${x1 + ux * s + px * amp * sg},${y1 + uy * s + py * amp * sg}`;
+  }
+  p += ` L${x2 - ux * lead},${y2 - uy * lead} L${x2},${y2}`;
+  return `<path d="${p}" fill="none" stroke="${color}" stroke-width="2.2" stroke-linejoin="round"/>`;
+}
+// General function plot with signed axes. f(x) in data units; ticks every xstep/ystep, labels every xlabEvery/ylabEvery.
+function plot({ f, xmin, xmax, ymin, ymax, xstep, ystep, xlabEvery = 1, ylabEvery = 1, xlab, ylab, w = 560, h = 300, dots = [], label = 'graph' }) {
+  const L = 54, B = 44, T = 14, R = 16, W = w - L - R, H = h - T - B;
+  const X = x => L + (x - xmin) / (xmax - xmin) * W, Y = y => T + H - (y - ymin) / (ymax - ymin) * H;
+  let s = `<rect width="${w}" height="${h}" fill="#fff"/>`;
+  let k = 0;
+  for (let x = xmin; x <= xmax + 1e-9; x += xstep, k++) {
+    const major = k % xlabEvery === 0;
+    s += `<line x1="${X(x)}" y1="${T}" x2="${X(x)}" y2="${T + H}" stroke="${major ? '#cfd7e1' : '#e6eaf0'}" ${major ? '' : 'stroke-dasharray="3 3"'}/>`;
+    if (major) s += `<text x="${X(x)}" y="${T + H + 17}" font-size="12" text-anchor="middle" fill="#3d4a66">${+x.toFixed(2)}</text>`;
+  }
+  k = 0;
+  for (let y = ymin; y <= ymax + 1e-9; y += ystep, k++) {
+    const major = k % ylabEvery === 0;
+    s += `<line x1="${L}" y1="${Y(y)}" x2="${L + W}" y2="${Y(y)}" stroke="${major ? '#cfd7e1' : '#e6eaf0'}" ${major ? '' : 'stroke-dasharray="3 3"'}/>`;
+    if (major) s += `<text x="${L - 7}" y="${Y(y) + 4}" font-size="12" text-anchor="end" fill="#3d4a66">${+y.toFixed(2)}</text>`;
+  }
+  const y0 = Y(Math.max(ymin, Math.min(0, ymax))), x0 = X(Math.max(xmin, Math.min(0, xmax)));
+  s += `<line x1="${L}" y1="${y0}" x2="${L + W}" y2="${y0}" stroke="#14213d" stroke-width="2"/><line x1="${x0}" y1="${T}" x2="${x0}" y2="${T + H}" stroke="#14213d" stroke-width="2"/>`;
+  const pts = []; for (let i = 0; i <= 400; i++) { const x = xmin + (xmax - xmin) * i / 400, y = f(x); if (y >= ymin - 1e-9 && y <= ymax + 1e-9) pts.push(X(x).toFixed(2) + ',' + Y(y).toFixed(2)); }
+  s += `<polyline points="${pts.join(' ')}" fill="none" stroke="#d1495b" stroke-width="3.5" stroke-linejoin="round"/>`;
+  dots.forEach(([x, y, t, dx = 8, dy = -8]) => { s += `<circle cx="${X(x)}" cy="${Y(y)}" r="4.5" fill="#14213d"/>` + (t ? `<text x="${X(x) + dx}" y="${Y(y) + dy}" font-size="12" fill="#14213d" text-anchor="${dx < 0 ? 'end' : 'start'}">${t}</text>` : ''); });
+  s += `<text x="${L + W / 2}" y="${h - 4}" font-size="13" text-anchor="middle" fill="#14213d">${xlab}</text>`;
+  s += `<text x="14" y="${T + H / 2}" font-size="13" text-anchor="middle" fill="#14213d" transform="rotate(-90 14 ${T + H / 2})">${ylab}</text>`;
+  return `<svg viewBox="0 0 ${w} ${h}" style="display:block;margin:0 auto;width:100%;max-width:${w}px;height:auto" role="img" aria-label="${label}">${s}</svg>`;
+}
+// Door 1, item 5: block between two springs on opposite walls
+function twoSpringSVG() {
+  let s = `<rect x="10" y="20" width="12" height="70" fill="#9aa7b8"/><rect x="398" y="20" width="12" height="70" fill="#9aa7b8"/><line x1="10" y1="90" x2="410" y2="90" stroke="#14213d" stroke-width="2"/>`;
+  s += coil(22, 60, 180, 60, 9) + coil(240, 60, 398, 60, 9);
+  s += `<rect x="180" y="38" width="60" height="50" rx="5" fill="#e7f4f4" stroke="#0f8b8d" stroke-width="2.5"/><text x="210" y="68" font-size="13" text-anchor="middle" fill="#0b6b6d">1.0 kg</text>`;
+  s += `<text x="100" y="44" font-size="13" text-anchor="middle" fill="#14213d">k₁ = 48 N/m</text><text x="320" y="44" font-size="13" text-anchor="middle" fill="#14213d">k₂ = 16 N/m</text>`;
+  s += `<text x="210" y="108" font-size="11" text-anchor="middle" fill="#3d4a66">frictionless floor · both springs relaxed at equilibrium</text>`;
+  return svgWrap(420, 116, s, 'block between two springs attached to opposite walls');
+}
+// Door 1, item 6: vertical spring with a cuckoo bird
+function hangSVG() {
+  let s = `<rect x="20" y="8" width="120" height="10" fill="#9aa7b8"/>` + coil(80, 18, 80, 78, 8, 8);
+  s += `<ellipse cx="80" cy="96" rx="20" ry="17" fill="#f4a259" stroke="#14213d" stroke-width="2"/><circle cx="87" cy="91" r="2.6" fill="#14213d"/><path d="M99 95 l9 3 l-9 3 z" fill="#d1495b"/>`;
+  s += `<text x="80" y="130" font-size="12" text-anchor="middle" fill="#14213d">0.25 kg · k = 25 N/m</text>`;
+  return svgWrap(160, 138, s, 'cuckoo bird hanging from a vertical spring');
+}
+// Door 3: the nonuniform clock pendulum
+function pendulumSVG() {
+  const px = 190, py = 34, Lp = 270;
+  let s = ARROW('ar7');
+  s += `<rect x="${px - 70}" y="${py - 22}" width="140" height="10" fill="#9aa7b8"/>`;
+  s += `<polygon points="${px - 2},${py} ${px + 2},${py} ${px + 13},${py + Lp} ${px - 13},${py + Lp}" fill="#c9a66b" stroke="#14213d" stroke-width="2"/>`;
+  s += `<circle cx="${px}" cy="${py}" r="7" fill="#fff" stroke="#14213d" stroke-width="3"/><text x="${px - 14}" y="${py + 5}" font-size="13" text-anchor="end" fill="#14213d">pivot</text>`;
+  // bird at the bottom
+  s += `<ellipse cx="${px}" cy="${py + Lp + 12}" rx="22" ry="17" fill="#f4a259" stroke="#14213d" stroke-width="2"/><circle cx="${px + 8}" cy="${py + Lp + 6}" r="2.6" fill="#14213d"/><path d="M${px + 21} ${py + Lp + 10} l10 3 l-10 3 z" fill="#d1495b"/>`;
+  s += `<text x="${px + 34}" y="${py + Lp + 18}" font-size="13" fill="#14213d">Countess Cuckoo (0.60 kg)</text>`;
+  // x axis
+  s += `<line x1="${px + 70}" y1="${py}" x2="${px + 70}" y2="${py + Lp}" stroke="#0b6b6d" stroke-width="2" marker-end="url(#ar7)"/><text x="${px + 78}" y="${py + Lp / 2}" font-size="13" fill="#0b6b6d">x (from pivot)</text>`;
+  s += `<line x1="${px + 62}" y1="${py}" x2="${px + 78}" y2="${py}" stroke="#0b6b6d" stroke-width="2"/><text x="${px + 84}" y="${py + 5}" font-size="12" fill="#0b6b6d">x = 0</text>`;
+  s += `<text x="${px + 84}" y="${py + Lp - 4}" font-size="12" fill="#0b6b6d">x = L = 1.20 m</text>`;
+  s += `<text x="${px - 24}" y="${py + 150}" font-size="13" text-anchor="end" fill="#14213d">brass rod,</text><text x="${px - 24}" y="${py + 167}" font-size="13" text-anchor="end" fill="#14213d">λ(x) = 2.5x kg/m</text><text x="${px - 24}" y="${py + 184}" font-size="12" text-anchor="end" fill="#3d4a66">(thicker toward</text><text x="${px - 24}" y="${py + 199}" font-size="12" text-anchor="end" fill="#3d4a66">the bottom)</text>`;
+  return svgWrap(440, 340, s, 'nonuniform rod pendulum with a cuckoo bird at the bottom');
+}
+// Door 4: physical pendulum lab setup
+function barLabSVG() {
+  let s = ARROW('ar8');
+  s += `<rect x="40" y="56" width="440" height="22" rx="4" fill="#e7f4f4" stroke="#0f8b8d" stroke-width="2"/>`;
+  for (let i = 1; i <= 17; i++) { const x = 40 + 440 * i / 18; s += `<circle cx="${x}" cy="67" r="3.2" fill="#fff" stroke="#14213d" stroke-width="1.4"/>`; }
+  s += `<line x1="260" y1="50" x2="260" y2="96" stroke="#d1495b" stroke-width="2" stroke-dasharray="4 3"/><text x="260" y="110" font-size="12" text-anchor="middle" fill="#d1495b">center of mass</text>`;
+  s += `<circle cx="358" cy="67" r="6" fill="#14213d"/><text x="358" y="44" font-size="12" text-anchor="middle" fill="#14213d">pivot pin</text>`;
+  s += `<line x1="262" y1="128" x2="356" y2="128" stroke="#14213d" stroke-width="2" marker-end="url(#ar8)"/><line x1="260" y1="120" x2="260" y2="136" stroke="#14213d" stroke-width="2"/><text x="309" y="148" font-size="14" text-anchor="middle" font-style="italic" fill="#14213d">d</text>`;
+  s += `<line x1="40" y1="166" x2="480" y2="166" stroke="#3d4a66" stroke-width="1.5"/><line x1="40" y1="160" x2="40" y2="172" stroke="#3d4a66" stroke-width="1.5"/><line x1="480" y1="160" x2="480" y2="172" stroke="#3d4a66" stroke-width="1.5"/><text x="260" y="184" font-size="13" text-anchor="middle" fill="#3d4a66">total length L = ??? (VECTOR snapped off the label)</text>`;
+  return svgWrap(520, 196, s, 'uniform bar with holes, pivoted a distance d from its center');
+}
+// Door 5, card B: photogate at equilibrium
+function gateSVG() {
+  let s = `<rect x="14" y="30" width="12" height="70" fill="#9aa7b8"/><line x1="14" y1="100" x2="420" y2="100" stroke="#14213d" stroke-width="2"/>`;
+  s += coil(26, 74, 196, 74, 10);
+  s += `<rect x="196" y="56" width="70" height="40" rx="18" fill="#7ee8e0" stroke="#0f8b8d" stroke-width="2.5"/><circle cx="214" cy="70" r="3" fill="#14213d"/><circle cx="230" cy="70" r="3" fill="#14213d"/><rect x="226" y="40" width="10" height="16" fill="#14213d"/><text x="231" y="34" font-size="11" text-anchor="middle" fill="#14213d">1.5 cm flag</text>`;
+  s += `<path d="M216 112 v-62 h30 v62" fill="none" stroke="#d1495b" stroke-width="4"/><text x="300" y="58" font-size="12" fill="#d1495b">photogate at x = 0</text><text x="300" y="74" font-size="12" fill="#d1495b">(equilibrium position)</text>`;
+  return svgWrap(430, 122, s, 'VECTOR on a spring passing through a photogate at equilibrium');
+}
+const T1 = n => `<span style="white-space:nowrap">${n}</span>`;
+
+const ROOM = {
+  id: 'apc-u7-oscillations',
+  salt: 'apc-u7-osc::',
+  title: "VECTOR's Hypnotick Clock",
+  intro: `VECTOR, the class robot vacuum, has rewired the antique grandfather clock in the lab into a <b>Hypnotick Machine</b>:
+    a tower of swinging pendulums and bouncing springs that lulls anyone who watches into a sleepy trance, so VECTOR can vacuum
+    in peace (and in charge). Its only critic is <b>Countess Cuckoo</b>, the clock's very grumpy resident bird. To snap out of
+    the trance and escape, your team must crack five clockwork locks using <b>simple harmonic motion</b>: the defining equation
+    d²x/dt² = −ω²x, periods of springs and pendulums, x(t) graphs and their derivatives, and the energy of oscillators.
+    Calculus is not optional in here.`,
+  finaleCipher: [121,53,35,47,126,63,47,54], // teacher password, XOR-locked with the final door's code
+  wrongLines: [
+    "Nope. Your answer is 180° out of phase with reality.",
+    "Denied. Period.",
+    "Wrong! That code has an amplitude of correctness equal to zero.",
+    "Incorrect. Try oscillating back to your notes.",
+    "Not it. My restoring force is pushing that answer right back at you.",
+    "Tick... tock... wrong. Even Countess Cuckoo is rolling her eyes."
+  ],
+  doors: [
+    /* ---------------- DOOR 1 ---------------- */
+    {
+      name: 'Restoring Force Roll Call', tag: 'Topics 7.1–7.2 · Defining SHM',
+      render: () => `
+        ${say(`My clock has six moving parts. For each one, decide whether it is truly <b>simple harmonic</b>. If it is, find its <b>angular frequency ω</b> (rad/s). Turn each answer into a letter with my answer bank. Parts 1 → 6, in order, spell a <b>6-letter code</b>. Some bank entries are traps built from classic mistakes. Mwahaha.`)}
+        <div class="card" style="margin-bottom:12px"><h4>Answer bank (ω in rad/s)</h4>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;font-family:var(--mono);font-size:14px">
+            ${[['2', 'O'], ['3', 'U'], ['4', 'P'], ['5', 'S'], ['6', 'R'], ['8', 'N'], ['10', 'G'], ['16', 'E'], ['25', 'T'], ['36', 'A'], ['64', 'L'], ['not SHM', 'I']]
+              .map(([v, l]) => `<span style="background:#fff;border:1px solid var(--line);border-radius:8px;padding:3px 9px">${v} → <b>${l}</b></span>`).join('')}
+          </div>
+          <p class="note" style="margin:6px 0 0">Round ω to the nearest whole number before you look it up. All quantities are in SI units.</p></div>
+        <ol class="problems">
+          <li><span class="slot">1</span><span>A 2.0 kg crate of cuckoo seed slides on a frictionless shelf, attached to a horizontal spring with k = 50 N/m.</span></li>
+          <li><span class="slot">2</span><span>The position of a gear tooth obeys ${T1('3 d²x/dt² + 48x = 0')}.</span></li>
+          <li><span class="slot">3</span><span>A 0.50 kg brass weight moves along the x-axis where the only force on it is conservative, with potential energy ${T1('U(x) = 9x²')}.</span></li>
+          <li><span class="slot">4</span><span>A 2.0 kg bead on a frictionless wire feels a net force ${T1('F(x) = −8x³')}. (VECTOR insists it's "basically a spring.")</span></li>
+          <li><span class="slot">5</span><div style="flex:1"><div>A 1.0 kg block sits between two springs attached to opposite walls and is pulled sideways and released.</div><div style="margin-top:6px">${twoSpringSVG()}</div></div></li>
+          <li><span class="slot">6</span><div style="flex:1;display:flex;gap:14px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:220px">Countess Cuckoo's 0.25 kg nephew hangs from a <b>vertical</b> spring (k = 25 N/m). Gravity acts on him the whole time. He is pulled down 3 cm and released.</div><div style="width:160px">${hangSVG()}</div></div></li>
+        </ol>`,
+      fields: [{ label: 'Code word (6 letters)', w: 200, kind: 'word' }],
+      answers: ['rzmdkniddk'],
+      hints: [
+        'SHM means the net force is F = −(constant)·x, so Newton\'s 2nd law can be written d²x/dt² = −ω²x. Rewrite each part that way; ω is the square root of the constant. Watch out: ω, not ω².',
+        'Part 2: divide by 3 first. Part 3: F = −dU/dx = −18x. Part 4: a force ∝ x³ is not linear in x, so it is not SHM. Part 5: both springs push the block back the same way, so k<sub>eff</sub> = k₁ + k₂. Part 6: gravity only shifts the equilibrium; ω = √(k/m) still.'
+      ],
+      success: 'Spring has sprung. The first gear clicks loose. Door 1 unlocked.'
+    },
+    /* ---------------- DOOR 2 ---------------- */
+    {
+      name: 'The Phase Detective', tag: 'Topic 7.3 · Representing & analyzing SHM',
+      render: () => `
+        ${say(`Countess Cuckoo bobs in and out of her little door on a spring. My sensor recorded her position. Her motion fits ${T1('<b>x(t) = A cos(ωt + φ)</b>')}. Read the graph, then use <b>derivatives</b>, not memorized formulas, to find how fast she moves and how hard she is accelerating at <b>t = 1.0 s</b>.`)}
+        <div class="card">${plot({ f: t => 6 * Math.cos(Math.PI / 3 * t + Math.PI / 3), xmin: 0, xmax: 9, ymin: -8, ymax: 8, xstep: 0.5, ystep: 1, xlabEvery: 2, ylabEvery: 2, xlab: 'time t (s)', ylab: 'position x (cm)', w: 600, h: 320, label: 'position versus time graph of a cuckoo bird on a spring' })}</div>
+        <div class="grid g2" style="margin-top:10px">
+          <div class="card"><h4>What to enter</h4>
+            <ol style="margin:0;padding-left:18px">
+              <li>Amplitude A (cm)</li>
+              <li>Phase constant φ in <b>degrees</b>, written so that 0° ≤ φ &lt; 360°</li>
+              <li>Her <b>speed</b> at t = 1.0 s, in <b>mm/s</b></li>
+              <li>The <b>magnitude</b> of her acceleration at t = 1.0 s, in <b>mm/s²</b></li>
+            </ol></div>
+          <div class="card"><h4>Countess Cuckoo says:</h4><p style="margin:0">"Hmph. The graph starts at <b>t = 0</b>. Notice which way I'm moving at that instant, darling. A phase constant is not just where I <i>am</i>; it's where I'm <i>going</i>."</p></div>
+        </div>`,
+      fields: [{ label: 'A (cm)', w: 100, kind: 'num' }, { label: 'φ (degrees)', w: 120, kind: 'num' }, { label: 'speed at 1.0 s (mm/s)', w: 150, kind: 'num' }, { label: '|a| at 1.0 s (mm/s²)', w: 150, kind: 'num' }],
+      answers: ['23ugz472rjw',  '1v56j4eaf1',  'zwhfmjr093',  '1nq629deuq3',  '1cpt1nedzat',  '1298jgnu9v5',  '17bwb3sm045',  '1fia7jgi3h2',  '199faxd8o2h'],
+      hints: [
+        'A is the maximum displacement. The period T is the time between two neighboring troughs, and ω = 2π/T. At t = 0, x(0) = A cos φ, and the curve is heading DOWN, so v(0) = −Aω sin φ is negative. That means sin φ &gt; 0.',
+        'T = 6.0 s, so ω = π/3 rad/s (60° per second). v(t) = dx/dt = −Aω sin(ωt + φ) and a(t) = −Aω² cos(ωt + φ). At t = 1.0 s, ωt + φ = 120°. Then convert cm to mm.'
+      ],
+      success: 'Countess Cuckoo grudgingly applauds with one wing. Door 2 unlocked.'
+    },
+    /* ---------------- DOOR 3 ---------------- */
+    {
+      name: 'The Clock Tower Relay', tag: 'Topics 7.2, 7.5 · Physical pendulum · FRQ relay',
+      roles: true,
+      render: () => `
+        ${say(`My Hypnotick pendulum is a <b>nonuniform</b> brass rod, thicker toward the bottom, with linear mass density <b>λ(x) = 2.5x</b> (kg/m, x measured from the pivot), length <b>L = 1.20 m</b>. Countess Cuckoo (0.60 kg, treat her as a point mass) refuses to get off the bottom end. Each card answers one part and passes it on. Team of 3? Whoever finishes first takes Card D. Small-angle swings; g = 9.8 m/s².`)}
+        <div class="grid g2" style="align-items:start">
+          <div class="card fd">${pendulumSVG()}</div>
+          <div><div class="roles" data-roles></div><div data-rolecard></div></div>
+        </div>`,
+      roleCards: {
+        A: `<div class="card rolecard"><h4>Card A · The Inertia Integrator</h4>
+            <p>Find the <b>rotational inertia</b> of the whole pendulum (rod + Countess) about the pivot. Use calculus for the rod: I<sub>rod</sub> = ∫ x² dm = ∫₀<sup>L</sup> x² λ(x) dx. Do not use ⅓ML²; this rod is not uniform.</p>
+            <p><b>Your lock:</b> I<sub>total</sub> in kg·m², <b>× 100</b>. Tell Cards C and D.</p></div>`,
+        B: `<div class="card rolecard"><h4>Card B · The Balance Keeper</h4>
+            <p>Find the <b>total mass</b> M of the pendulum (rod + Countess), using M<sub>rod</sub> = ∫₀<sup>L</sup> λ(x) dx. Then find <b>d</b>, the distance from the pivot to the center of mass of the whole pendulum: Md = ∫₀<sup>L</sup> x λ(x) dx + m<sub>bird</sub>L.</p>
+            <p><b>Your lock:</b> d in <b>cm</b>. Tell Cards C and D both M and d.</p></div>`,
+        C: `<div class="card rolecard"><h4>Card C · The Timekeeper</h4>
+            <p>You need I from Card A, and M and d from Card B. For small angles, the restoring torque is τ ≈ −Mgd·θ, so I d²θ/dt² = −Mgd·θ.</p>
+            <p><b>Your lock:</b> the period T in seconds, <b>× 100</b> (nearest whole number). Does VECTOR's clock "tick" once per second at each end of the swing?</p></div>`,
+        D: `<div class="card rolecard"><h4>Card D · The Clockmaker</h4>
+            <p>A grandfather-clock repairer wants to replace this whole contraption with a plain <b>simple pendulum</b> (a tiny bob on a light string) that has <b>exactly the same period</b>. You need I from Card A and M and d from Card B.</p>
+            <p><b>Your lock:</b> the length of that simple pendulum, in <b>cm</b>. (Set the two period formulas equal; g cancels.)</p></div>`
+      },
+      fields: [
+        { label: 'A · I × 100 (kg·m²)', w: 130, kind: 'num' }, { label: 'B · d (cm)', w: 120, kind: 'num' },
+        { label: 'C · T × 100 (s)', w: 120, kind: 'num' }, { label: 'D · length (cm)', w: 120, kind: 'num' }
+      ],
+      answers: ['1xh09fzmf98',  '5l9uiemu5q',  '1cshubwe3y6',  'r6p6q3k2tn',  '251ppp8gnjp',  '14kb0o54p2'],
+      hints: [
+        'Card A: ∫₀<sup>1.2</sup> 2.5x³ dx = 2.5(1.2)⁴/4, then add m<sub>bird</sub>L². Card B: M<sub>rod</sub> = 2.5(1.2)²/2, and ∫ x λ dx = 2.5(1.2)³/3. Don\'t forget the bird in both M and Md.',
+        'Card C: ω = √(Mgd / I) and T = 2π/ω = 2π√(I / (Mgd)). Card D: a simple pendulum has T = 2π√(ℓ/g), so ℓ = I/(Md). (I = 2.16 kg·m², M = 2.4 kg.)'
+      ],
+      success: 'Tick. Tock. The tower door swings open, right on schedule. Door 3 unlocked.'
+    },
+    /* ---------------- DOOR 4 ---------------- */
+    {
+      name: 'The Snapped Handle Lab', tag: 'Topic 7.5 · Lab data · Linearization',
+      render: () => `
+        ${say(`I snapped the handle off the clock's winding crank and hid the label. It's a <b>uniform bar</b> with a row of holes. A lab team hung it on a pivot pin through different holes and used a <b>photogate</b> (pendulum mode) to time small swings. Find the bar's <b>length</b>, and check whether your data agree with <b>g</b>. No meter sticks allowed. I ate them.`)}
+        <div class="card fd">${barLabSVG()}</div>
+        <div class="grid g2" style="align-items:start;margin-top:10px">
+          <div>
+            <table class="data"><tr><th>Pivot distance from center, d (cm)</th><th>Period T (s)<br><span style="font-weight:400;font-size:12px">avg. of 3 trials</span></th></tr>
+              ${[[5, '2.370'], [10, '1.760'], [15, '1.558'], [20, '1.464'], [25, '1.448'], [30, '1.452'], [35, '1.471'], [40, '1.514']].map(([d, t]) => `<tr><td>${d}</td><td>${t}</td></tr>`).join('')}
+            </table>
+          </div>
+          <div class="card">
+            <h4>Your mission</h4>
+            <p style="margin-top:0">For a uniform bar of length L, I<sub>cm</sub> = <sup>1</sup>⁄<sub>12</sub>ML², so the parallel-axis theorem and the physical pendulum give</p>
+            <p style="text-align:center;font-size:17px">T = 2π √( (L²/12 + d²) / (g d) )</p>
+            <ol style="margin:0;padding-left:18px">
+              <li>Rearrange this into a <b>straight-line</b> form. Decide what to graph on each axis.</li>
+              <li>Make the graph (Desmos or graph paper) and find the best-fit <b>slope</b> and <b>intercept</b>.</li>
+              <li>Use the slope to find g, and the slope and intercept together to find L.</li>
+            </ol>
+            <p class="note" style="margin-bottom:0">Enter <b>g × 10</b> (in m/s²) and <b>L in cm</b>, each to the nearest whole number. Use every data point.</p>
+          </div>
+        </div>`,
+      fields: [{ label: 'g × 10 (m/s²)', w: 140, kind: 'num' }, { label: 'Bar length L (cm)', w: 160, kind: 'num' }],
+      answers: ['21hp5g9o8hn',  'e63v364btx',  '1zvyud33fl6',  'bcuntihe7i',  'qxcb9y9drw',  '20k1736ir61',  '1ow6ojwkxi6',  '164m5byo4ov',  '8e61f43ucu',  'jyc51x823t',  'f52op0wd7e',  '1gw8o8wc8av',  '21b3b2rfdac',  'c8qnzkzgrq',  '1zwv2aaa6i0',  '2d0tj4ic85y',  'atyd4tm7x9',  '1eerkslfn41',  '1jdyt95barm',  'mjmfu85vze',  '1i81kqsxikh',  '1pxr8ffrs7o',  '13r9qqf9s34',  'jbsdwya9kg',  'cilhxnlm17',  '1zs4ilz5c6p',  '121yvldpr0q',  '2813v6y1nya',  'q2m27kq7iq',  'elfy9l7n2l',  '1xchhp7lclf',  'gjyh2x8z1j',  '18d1jfgegta',  'r5583b2hsk',  '242eb2qja89',  '16oeacw4ig9',  'woiynimtkq',  '4hw9l8jn2y',  'gsq5dj5puy',  '21jmksq07wp',  'w7a8kf1ipg',  'ptwiv8eqc4',  'ze5eprp66o',  '2fh3ughgpt1',  '1blsdsr8dfq',  'eajsy5ygpr',  '137xhvy340w',  'y4qz9hqn2u',  'rgjqizkj11'],
+      hints: [
+        'Square both sides and multiply by d: T²d = (4π²/g)·d² + (4π²/g)·(L²/12). That is y = mx + b with y = T²d and x = d² (use meters!).',
+        'Your slope should be close to 4.0 s²/m and your intercept close to 0.27 s²·m. Then g = 4π²/slope, and intercept/slope = L²/12, so L = √(12 · intercept / slope).'
+      ],
+      success: "That's my handle, all right: 90 cm of shiny brass. Door 4 unlocked."
+    },
+    /* ---------------- DOOR 5 ---------------- */
+    {
+      name: 'The Spring-Loaded Getaway', tag: 'Topics 7.3–7.4 · Energy of SHM · FRQ relay',
+      roles: true,
+      render: () => `
+        ${say(`Fine, you've broken my clock. I'm escaping on my <b>spring-loaded launch pad</b>! I (mass <b>2.0 kg</b>) am bolted to a horizontal spring on a frictionless track, oscillating back and forth. Each card holds one piece of my getaway plan. Every card's answer is needed. Team of 3? Whoever finishes first takes Card D.`, 'mad')}
+        <div class="roles" data-roles></div>
+        <div data-rolecard></div>`,
+      roleCards: {
+        A: `<div class="card rolecard"><h4>Card A · The Spring Surveyor</h4>
+            <p>VECTOR's engineers measured the spring's <b>potential energy</b> U as a function of displacement x from equilibrium:</p>
+            <div class="fd">${plot({ f: x => 100 * x * x, xmin: -0.25, xmax: 0.25, ymin: 0, ymax: 7, xstep: 0.05, ystep: 0.5, xlabEvery: 1, ylabEvery: 2, xlab: 'displacement x (m)', ylab: 'spring potential energy U (J)', w: 520, h: 300, dots: [[0.2, 4, '(0.20 m, 4.0 J)', -10, -10], [-0.1, 1, '(−0.10 m, 1.0 J)', -10, 20]], label: 'spring potential energy versus displacement' })}</div>
+            <p><b>Your lock:</b> the spring constant k (N/m). Tell Cards C and D.</p></div>`,
+        B: `<div class="card rolecard"><h4>Card B · The Gatekeeper</h4>
+            <p>A photogate sits at the <b>equilibrium position</b>. A 1.5 cm flag on VECTOR blocks the beam for <b>5.0 ms</b> each time VECTOR passes through.</p>
+            <div class="fd">${gateSVG()}</div>
+            <p><b>Your lock:</b> the <b>total mechanical energy</b> E of the oscillator (J). VECTOR's mass is 2.0 kg. Tell Cards C and D.</p></div>`,
+        C: `<div class="card rolecard"><h4>Card C · The Range Finder</h4>
+            <p>You need k from Card A and E from Card B. At a turning point, VECTOR is momentarily at rest.</p>
+            <p><b>Your lock:</b> the <b>amplitude</b> A of VECTOR's oscillation, in <b>cm</b>. Tell Card D.</p></div>`,
+        D: `<div class="card rolecard"><h4>Card D · The Power Plotter</h4>
+            <p>VECTOR's launch needs the <b>maximum rate</b> at which the spring transfers energy to VECTOR. With x(t) = A cos(ωt), U(t) = ½kA² cos²(ωt), and the power delivered to VECTOR is P = dK/dt = −dU/dt.</p>
+            <p>You need k (Card A), E and the mass (Card B), and A (Card C). Find ω first.</p>
+            <p><b>Your lock:</b> the <b>maximum</b> value of |dK/dt| (W). Where in the motion does it happen? (Not at x = 0, and not at the turning points!)</p></div>`
+      },
+      fields: [
+        { label: 'A · k (N/m)', w: 120, kind: 'num' }, { label: 'B · E (J)', w: 120, kind: 'num' },
+        { label: 'C · A (cm)', w: 120, kind: 'num' }, { label: 'D · max power (W)', w: 140, kind: 'num' }
+      ],
+      answers: ['11zncaxkq54'],
+      hints: [
+        'Card A: U = ½kx², so k = 2U/x² from either labeled point. Card B: v<sub>max</sub> = (flag width) ÷ (blocking time); at equilibrium all of E is kinetic. Card C: at the turning point, E = ½kA².',
+        'Card D: ω = √(k/m). dU/dt = ½kA² · 2cos(ωt) · (−ω sin(ωt)) = −½kA²ω sin(2ωt), whose biggest magnitude is ½kA²ω = Eω. It happens where x = A/√2.'
+      ],
+      success: 'NOOO! My launch pad just... oscillates. Forever. Without me.'
+    }
+  ]
+};
+
+/* =====================================================================
+   ENGINE
+   ===================================================================== */
+const KEY = 'escape:' + ROOM.id;
+const store = {
+  get() { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch (e) { return null; } },
+  set(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} },
+  clear() { try { localStorage.removeItem(KEY); } catch (e) {} }
+};
+let S = store.get() || { started: false, team: '', size: 4, start: 0, end: 0, door: 0, hints: {}, wrong: 0, role: 'A', timer: null };
+const save = () => store.set(S);
+const $ = (q, el = document) => el.querySelector(q);
+const fmt = ms => { const s = Math.max(0, Math.floor(ms / 1000)); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
+const hintsUsed = () => Object.values(S.hints).reduce((a, b) => a + b, 0);
+
+function timerLive() { return S.timer && S.timer.end && S.timer.day === dayKey(); }
+function timeUp() { return timerLive() && Date.now() >= S.timer.end && !S.end; }
+function hud() {
+  const t = S.started ? fmt((S.end || Date.now()) - S.start) : '00:00';
+  let chip;
+  if (timerLive() && !S.end) { const left = S.timer.end - Date.now();
+    chip = `<button class="tchip ${left < 5 * 60000 ? 'low' : ''}" id="tchip" title="Class timer">⏳ Class <b>${left > 0 ? fmt(left) : '0:00'}</b></button>`; }
+  else chip = `<button class="tchip" id="tchip" title="Enter class timer code">⏲ ${S.timer && S.timer.off && S.timer.day === dayKey() ? 'Timer off' : 'Timer code'}</button>`;
+  $('#hud').innerHTML = `${chip}<span title="Your team's time">⏱ <b>${t}</b></span><span title="Hints used">💡 <b>${hintsUsed()}</b></span><span title="Wrong codes">✖ <b>${S.wrong}</b></span>`;
+  $('#tchip').onclick = () => { $('#timerBox').classList.toggle('on'); $('#timerInput').focus(); };
+}
+let shownTimeUp = false;
+setInterval(() => { hud(); const up = timeUp() && S.started; if (up !== shownTimeUp) render(); }, 1000);
+function applyTimerCode(raw, msgEl) {
+  const r = parseTimerCode(raw);
+  if (!r) { if (msgEl) { msgEl.style.color = '#ffb3bd'; msgEl.textContent = "That timer code isn't valid. Check the board and try again."; } return false; }
+  S.timer = r.type === 'off' ? { off: true, end: null, day: dayKey() } : { off: false, end: r.end, day: dayKey() };
+  save();
+  if (msgEl) { msgEl.style.color = '#9ff0b8'; msgEl.textContent = r.type === 'off' ? 'Timer turned off. Keep going!' : `Timer set: ends at ${new Date(r.end).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}.`; }
+  render(); return true;
+}
+
+function hall() {
+  $('#hall').innerHTML = ROOM.doors.map((d, i) => {
+    const cls = i < S.door ? 'open' : (i === S.door && S.started && !S.end ? 'current' : '');
+    return `<div class="door-pill ${cls}"><span class="lock"></span><span class="n">${i + 1}</span>${d.name}</div>`;
+  }).join('');
+}
+
+function normalize(v, f) {
+  v = String(v).trim();
+  if (f.kind === 'word') return v.toUpperCase().replace(/[^A-Z]/g, '');
+  const m = v.replace(/,/g, '').match(/-?\d*\.?\d+/); // first number only, so units like "W/m2" are ignored
+  if (!m) return '';
+  const n = parseFloat(m[0]);
+  const r = f.roundTo || 1;
+  return String(Math.round(Math.abs(n) / r) * r);
+}
+
+function render() {
+  hud(); hall();
+  const st = $('#stage');
+  if (!S.started) return renderIntro(st);
+  if (S.door >= ROOM.doors.length) { shownTimeUp = false; return renderFinale(st); }
+  shownTimeUp = timeUp();
+  if (shownTimeUp) return renderTimeUp(st);
+  const i = S.door, d = ROOM.doors[i];
+  st.innerHTML = `<span class="tag">Door ${i + 1} of ${ROOM.doors.length} · ${d.tag}</span><h2>${d.name}</h2>${d.render()}
+    <div class="lockbox">
+      <div class="lbl">🔒 Door ${i + 1} lock</div>
+      <form class="fields" id="lockForm" autocomplete="off">
+        ${d.fields.map((f, k) => `<label class="field">${f.label}<input style="--w:${f.w}px" name="f${k}" inputmode="${f.kind === 'num' ? 'decimal' : 'text'}" required></label>`).join('')}
+        <button class="btn" type="submit">Try code</button>
+      </form>
+      <div class="feedback" id="fb" aria-live="polite"></div>
+      <div class="hints no-print">${d.hints.map((h, k) => `<button class="btn ghost" data-hint="${k}" ${k > (S.hints[i] || 0) ? 'disabled style="opacity:.4"' : ''}>💡 Hint ${k + 1}</button>`).join('')}</div>
+      <div id="hintOut">${d.hints.slice(0, S.hints[i] || 0).map(h => `<div class="hinttext">${h}</div>`).join('')}</div>
+    </div>`;
+  if (d.roles) setupRoles(st, d);
+  $('#lockForm').addEventListener('submit', e => { e.preventDefault(); check(d, i); });
+  st.querySelectorAll('[data-hint]').forEach(b => b.addEventListener('click', () => {
+    const k = +b.dataset.hint; if ((S.hints[i] || 0) <= k) { S.hints[i] = k + 1; save(); render(); }
+  }));
+  const first = st.querySelector('#lockForm input'); if (first && document.activeElement === document.body) first.focus({ preventScroll: true });
+}
+
+function setupRoles(st, d) {
+  const box = $('[data-roles]', st), out = $('[data-rolecard]', st);
+  const keys = Object.keys(d.roleCards);
+  const draw = () => {
+    box.innerHTML = '<span class="note" style="align-self:center;margin-right:4px">I am holding:</span>' + keys.map(k => `<button type="button" class="${k === S.role ? 'on' : ''}" data-r="${k}">Card ${k}</button>`).join('');
+    out.innerHTML = d.roleCards[S.role] || '';
+    box.querySelectorAll('[data-r]').forEach(b => b.addEventListener('click', () => { S.role = b.dataset.r; save(); draw(); }));
+  };
+  draw();
+}
+
+function check(d, i) {
+  const form = $('#lockForm'), fb = $('#fb');
+  const vals = d.fields.map((f, k) => normalize(form.elements['f' + k].value, f));
+  const h = cyrb53(ROOM.salt + 'd' + (i + 1) + '::' + vals.join('|'));
+  if (d.answers.includes(h)) {
+    S.door = i + 1;
+    if (S.door >= ROOM.doors.length) { S.end = Date.now(); S.key = vals.join('|'); }
+    save();
+    fb.className = 'feedback good'; fb.textContent = '✔ ' + d.success;
+    form.querySelector('button').disabled = true;
+    setTimeout(render, 1400);
+  } else {
+    S.wrong++; save(); hud();
+    fb.className = 'feedback bad';
+    fb.textContent = '✖ ' + ROOM.wrongLines[Math.floor(Math.random() * ROOM.wrongLines.length)];
+    form.classList.remove('shake'); void form.offsetWidth; form.classList.add('shake');
+  }
+}
+
+function renderIntro(st) {
+  st.innerHTML = `<div class="center">
+      <span class="tag">Escape Room · Teams of 3–4</span>
+      <h2>${ROOM.title}</h2></div>
+      ${say(ROOM.intro + ' <br><br>The clock starts when you press the button. Hints are free, but I <i>count</i> them. Mwahaha.')}
+      <div class="setup">
+        <div><label for="team">Team name</label><input id="team" maxlength="40" placeholder="e.g., The Restoring Forces" value="${S.team || ''}"></div>
+        <div><label for="names">Team members</label><input id="names" maxlength="120" placeholder="First names" value="${S.names || ''}"></div>
+        <div><label for="size">Players</label><select id="size"><option value="3">3 players</option><option value="4" selected>4 players</option></select></div>
+        <div><label for="tcode">Class timer code <span class="note">(from the board, if your teacher posted one)</span></label><input id="tcode" maxlength="12" placeholder="e.g., 1452-AB" style="font-family:var(--mono);text-transform:uppercase"></div>
+        <div id="tcodeMsg" class="note"></div>
+        <p class="note" style="margin:0">Every player opens this page on their own Chromebook and enters the <b>same</b> team name. Bring paper, a pencil, and a calculator.</p>
+        <button class="btn dark" id="go">Start the clock ▶</button>
+      </div>`;
+  $('#size').value = S.size || 4;
+  $('#go').addEventListener('click', () => {
+    const tc = $('#tcode').value.trim();
+    if (tc && !parseTimerCode(tc)) { $('#tcodeMsg').style.color = '#d1495b'; $('#tcodeMsg').textContent = "That timer code isn't valid. Fix it or leave it blank."; return; }
+    S.team = $('#team').value.trim() || 'Unnamed Team'; S.names = $('#names').value.trim(); S.size = +$('#size').value;
+    if (tc) { const r = parseTimerCode(tc); S.timer = r.type === 'off' ? { off: true, end: null, day: dayKey() } : { off: false, end: r.end, day: dayKey() }; }
+    S.started = true; S.start = Date.now(); save(); render();
+  });
+}
+
+function renderFinale(st) {
+  const t = fmt(S.end - S.start);
+  st.innerHTML = `<div class="center">
+      ${say(`Fine. FINE. You escaped, and the trance is broken. I'll go back to vacuuming... back and forth... back and forth... with a period of about 2 seconds. Show this screen to your teacher.`, 'happy')}
+      <div class="cert">
+        <div class="tag">Certificate of Escape</div>
+        <h2 style="margin:4px 0">${escapeHtml(S.team)}</h2>
+        <div class="note">${escapeHtml(S.names || '')}</div>
+        <div class="stats"><div>Time<b>${t}</b></div><div>Hints<b>${hintsUsed()}</b></div><div>Wrong codes<b>${S.wrong}</b></div></div>
+        <div class="note">Finish code (your teacher types this in)</div>
+        <div class="fcode">${finishCode(S.end, Math.min(99, hintsUsed()))}</div>
+        <div class="note" style="margin-top:8px">Teacher password</div>
+        <div class="pw">${unlockPw()}</div>
+        <div class="note">${new Date(S.end).toLocaleString()} · AP Physics C: Mechanics · Unit 7: Oscillations · ${ROOM.title}</div>
+      </div>
+      <p class="no-print"><button class="btn dark" onclick="window.print()">Print certificate</button></p>
+    </div>`;
+}
+function renderTimeUp(st) {
+  const opened = S.door;
+  st.innerHTML = `<div class="timeup">
+      ${say(`Beep boop... <b>TIME'S UP!</b> The lab stays locked. Show this screen to your teacher.`, 'happy')}
+      <h2>⏰ Time's Up</h2>
+      <div class="cert">
+        <h2 style="margin:4px 0;color:var(--ink);font-size:24px">${escapeHtml(S.team)}</h2>
+        <div class="note">${escapeHtml(S.names || '')}</div>
+        <div class="stats"><div>Doors opened<b>${opened} / ${ROOM.doors.length}</b></div><div>Hints<b>${hintsUsed()}</b></div><div>Wrong codes<b>${S.wrong}</b></div></div>
+        <div class="note">Stopped on Door ${Math.min(opened + 1, ROOM.doors.length)}: ${ROOM.doors[Math.min(opened, ROOM.doors.length - 1)].name}</div>
+      </div>
+      <p class="note">Did your teacher give more time? Type the new code from the board:</p>
+      <form id="moreTime" autocomplete="off" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <input id="moreInput" placeholder="1505-AB" style="font-family:var(--mono);font-size:20px;letter-spacing:.1em;width:180px;padding:8px 10px;border-radius:9px;border:2px solid var(--line);text-transform:uppercase">
+        <button class="btn dark" type="submit">Keep going</button></form>
+      <div id="moreMsg" class="note" style="margin-top:6px"></div>
+    </div>`;
+  $('#moreTime').addEventListener('submit', e => { e.preventDefault(); const m = $('#moreMsg'); applyTimerCode($('#moreInput').value, m); if (m.textContent.startsWith('That')) m.style.color = '#d1495b'; });
+}
+function pwKey(s) { return cyrb53(ROOM.salt + 'pw1::' + s) + cyrb53('pw2::' + s + ROOM.salt) + cyrb53(s + '::pw3' + ROOM.salt); }
+function unlockPw() { const k = pwKey(S.key || ''); return ROOM.finaleCipher.map((b, i) => String.fromCharCode(b ^ k.charCodeAt(i % k.length))).join(''); }
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+$('#timerForm').addEventListener('submit', e => { e.preventDefault(); if (applyTimerCode($('#timerInput').value, $('#timerMsg'))) { $('#timerInput').value = ''; setTimeout(() => $('#timerBox').classList.remove('on'), 1600); } });
+$('#timerClose').addEventListener('click', () => $('#timerBox').classList.remove('on'));
+$('#resetBtn').addEventListener('click', () => $('#confirmBox').classList.add('on'));
+$('#resetNo').addEventListener('click', () => $('#confirmBox').classList.remove('on'));
+$('#resetYes').addEventListener('click', () => { store.clear(); S = { started: false, team: '', size: 4, start: 0, end: 0, door: 0, hints: {}, wrong: 0, role: 'A', timer: null }; $('#confirmBox').classList.remove('on'); render(); });
+render();
+</script>
+</body>
+</html>

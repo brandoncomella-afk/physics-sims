@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Escape Room · AP Calculus BC · Unit 9: Parametric Equations, Polar Coordinates, and Vector-Valued Functions · VECTOR's Polar Skate-Off</title>
+<style>
+:root{
+  --ink:#14213d; --ink-2:#3d4a66; --paper:#fbf8f1; --card:#ffffff; --line:#d9d2c3;
+  --teal:#0f8b8d; --teal-d:#0b6b6d; --amber:#f4a259; --red:#d1495b; --green:#3a9d5d;
+  --night:#0d1b2a; --night-2:#1b263b; --glow:#7ee8e0;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  --sans:"Avenir Next","Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:var(--sans);color:var(--ink);background:var(--night);
+  background-image:linear-gradient(rgba(126,232,224,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(126,232,224,.06) 1px,transparent 1px);
+  background-size:28px 28px;min-height:100vh;line-height:1.5}
+.wrap{max-width:980px;margin:0 auto;padding:20px 18px 60px}
+header.top{display:flex;align-items:center;gap:14px;color:#e8f1f2;flex-wrap:wrap}
+header.top .unit{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--glow)}
+header.top h1{margin:0;font-size:26px;letter-spacing:.01em}
+header.top .spacer{flex:1}
+.hud{display:flex;gap:10px;font-family:var(--mono);font-size:13px}
+.hud span{background:var(--night-2);border:1px solid #2f3e5a;color:#e8f1f2;padding:5px 10px;border-radius:8px}
+.hud b{color:var(--glow);font-weight:600}
+
+/* progress hallway */
+.hall{display:flex;gap:8px;margin:18px 0 18px;flex-wrap:wrap}
+.door-pill{flex:1;min-width:120px;background:var(--night-2);border:1px solid #2f3e5a;color:#8fa0b8;border-radius:10px;padding:8px 10px;font-size:13px;display:flex;gap:8px;align-items:center}
+.door-pill .n{font-family:var(--mono);font-size:11px;border:1px solid currentColor;border-radius:5px;padding:0 5px}
+.door-pill.open{color:#bff3ee;border-color:var(--teal)}
+.door-pill.current{color:#fff;border-color:var(--amber);box-shadow:0 0 0 2px rgba(244,162,89,.25)}
+.door-pill.open .lock::before{content:"🔓"} .door-pill .lock::before{content:"🔒"}
+
+.panel{background:var(--paper);border-radius:16px;padding:22px 24px;box-shadow:0 18px 50px rgba(0,0,0,.35);position:relative}
+.panel h2{margin:0 0 4px;font-size:22px}
+.tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;background:#e7f4f4;color:var(--teal-d);border-radius:6px;padding:2px 8px;margin-bottom:10px}
+.vector{text-align:left;display:flex;gap:14px;align-items:flex-start;background:var(--night);color:#e8f1f2;border-radius:12px;padding:12px 14px;margin:10px 0 16px}
+.vector svg{flex:0 0 auto}
+.vector p{margin:0}
+.vector .who{font-family:var(--mono);font-size:11px;color:var(--glow);letter-spacing:.12em;text-transform:uppercase}
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.card h4{margin:0 0 6px;font-size:15px}
+.badge{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;background:var(--ink);color:#fff;font-weight:700;font-family:var(--mono);margin-right:8px}
+.fd{text-align:center}
+.fd .badge{background:var(--teal)}
+table.data{border-collapse:collapse;margin:8px 0;font-family:var(--mono);font-size:14px}
+table.data th,table.data td{border:1px solid var(--line);padding:6px 12px;text-align:center;background:#fff}
+table.data th{background:#eef2f6}
+ol.problems{padding-left:0;list-style:none;margin:0}
+ol.problems li{display:flex;gap:10px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+ol.problems .slot{flex:0 0 auto;font-family:var(--mono);font-weight:700;background:var(--amber);color:var(--ink);border-radius:6px;padding:0 8px;height:26px;line-height:26px}
+.stmt{display:flex;gap:10px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin-bottom:7px}
+.stmt .num{flex:0 0 auto;min-width:34px;text-align:center;font-family:var(--mono);font-weight:700;background:#efe7d6;border-radius:6px;padding:1px 6px}
+
+/* roles */
+.roles{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
+.roles button{font:inherit;font-size:14px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;cursor:pointer}
+.roles button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.rolecard{border-left:5px solid var(--amber)}
+.note{font-size:14px;color:var(--ink-2)}
+
+/* lock */
+.lockbox{margin-top:18px;background:var(--night-2);color:#e8f1f2;border-radius:14px;padding:16px}
+.lockbox .lbl{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--glow);margin-bottom:8px}
+.fields{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:4px;font-size:13px;color:#b9c6d6}
+.field input{font-family:var(--mono);font-size:22px;letter-spacing:.12em;width:var(--w,150px);padding:8px 10px;border-radius:9px;border:2px solid #3b4d6b;background:#0d1b2a;color:#fff;text-transform:uppercase}
+.field input:focus{outline:none;border-color:var(--amber)}
+.btn{font:inherit;font-weight:700;border:0;border-radius:10px;padding:11px 18px;cursor:pointer;background:var(--amber);color:var(--ink)}
+.btn:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent;color:#cfe0ea;border:1px solid #3b4d6b;font-weight:500}
+.btn.dark{background:var(--ink);color:#fff}
+.feedback{margin-top:10px;min-height:24px;font-size:15px}
+.feedback.bad{color:#ffb3bd}.feedback.good{color:#9ff0b8}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.hints{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.hinttext{background:#fff7e8;border:1px dashed var(--amber);border-radius:10px;padding:8px 12px;margin-top:8px;font-size:14px;color:var(--ink)}
+
+/* intro / finale */
+.center{text-align:center}
+.setup{display:grid;gap:12px;max-width:520px;margin:14px auto 0;text-align:left}
+.setup label{font-size:14px;font-weight:600}
+.setup input,.setup select{font:inherit;width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:#fff}
+.cert{border:3px double var(--ink);border-radius:14px;padding:22px;background:#fff;max-width:620px;margin:16px auto 0}
+.cert .pw{font-family:var(--mono);font-size:30px;letter-spacing:.25em;background:var(--ink);color:var(--glow);display:inline-block;padding:6px 16px;border-radius:10px;margin:6px 0}
+.stats{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:10px 0}
+.stats div{background:#f2efe6;border-radius:10px;padding:8px 14px;font-size:14px}
+.stats b{display:block;font-family:var(--mono);font-size:20px}
+.foot{color:#7f90a8;font-size:12px;text-align:center;margin-top:22px}
+.foot a{color:#9fd9d4}
+.reset{background:none;border:0;color:#7f90a8;text-decoration:underline;cursor:pointer;font:inherit;font-size:12px}
+.confirm{display:none;margin-top:8px;color:#e8f1f2;font-size:13px}
+.confirm.on{display:block}
+svg text{font-family:var(--sans)}
+.tchip{cursor:pointer;font:inherit;font-family:var(--mono);font-size:13px;background:var(--night-2);border:1px solid #2f3e5a;color:#e8f1f2;padding:5px 10px;border-radius:8px}
+.tchip b{color:var(--amber)} .tchip.low{border-color:var(--red);animation:pulse 1s infinite} .tchip.low b{color:#ffb3bd}
+@keyframes pulse{50%{box-shadow:0 0 0 3px rgba(209,73,91,.35)}}
+#timerBox{display:none;margin-top:12px;background:var(--night-2);border:1px solid #3b4d6b;border-radius:12px;padding:12px 14px;color:#e8f1f2}
+#timerBox.on{display:block}
+#timerBox form{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#timerBox input{font-family:var(--mono);font-size:18px;letter-spacing:.1em;width:160px;padding:7px 10px;border-radius:8px;border:2px solid #3b4d6b;background:#0d1b2a;color:#fff;text-transform:uppercase}
+#timerMsg{font-size:14px;margin-top:6px;min-height:20px}
+.timeup{text-align:center}
+.timeup h2{font-size:40px;color:var(--red);margin:6px 0}
+.fcode{font-family:var(--mono);font-size:26px;letter-spacing:.12em;background:#fff7e8;border:2px dashed var(--amber);display:inline-block;padding:4px 14px;border-radius:10px;margin:4px 0}
+@media print{body{background:#fff}.hall,.hud,.foot,.no-print{display:none!important}.panel{box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="unit">AP Calculus BC · Unit 9: Parametric Equations, Polar Coordinates, and Vector-Valued Functions</div>
+      <h1>VECTOR's Polar Skate-Off</h1>
+    </div>
+    <div class="spacer"></div>
+    <div class="hud" id="hud"></div>
+  </header>
+  <div id="timerBox" class="no-print">
+    <form id="timerForm" autocomplete="off"><span>⏲ Class timer code (from the board):</span>
+      <input id="timerInput" placeholder="1452-AB" aria-label="Class timer code">
+      <button class="btn" type="submit" style="padding:8px 14px">Set</button>
+      <button class="btn ghost" type="button" id="timerClose" style="padding:8px 12px">Close</button></form>
+    <div id="timerMsg" aria-live="polite"></div>
+  </div>
+  <nav class="hall" id="hall" aria-label="Door progress"></nav>
+  <main class="panel" id="stage"></main>
+  <div class="foot">
+    Mr. C's Science · <a href="index.html">All escape rooms</a> ·
+    <button class="reset" id="resetBtn">Reset this device</button>
+    <div class="confirm" id="confirmBox">Erase all progress on this device?
+      <button class="btn ghost" id="resetYes" style="padding:4px 10px">Yes, reset</button>
+      <button class="btn ghost" id="resetNo" style="padding:4px 10px">Cancel</button></div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   ESCAPE ROOM ENGINE (reusable). To make a new unit, copy this file and
+   replace the ROOM object below. Answers are stored only as salted
+   hashes (cyrb53); generate them with the helper in the teacher guide.
+   ===================================================================== */
+function cyrb53(str, seed = 0) {
+  let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+  for (let i = 0, ch; i < str.length; i++) { ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507); h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507); h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+
+/* ---------- CLASS TIMER + FINISH CODES (shared with teacher.html; keep identical) ---------- */
+const TALPH = 'ACDEFGHJKMNPQRTUVWXY34679';
+const pad2 = n => String(n).padStart(2, '0');
+function dayKey(d = new Date()) { return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+function tmac(s, day) { const h = parseInt(cyrb53('mrc-class-timer::' + (day || dayKey()) + '::' + s), 36); return TALPH[h % 25] + TALPH[Math.floor(h / 25) % 25]; }
+function timerCode(endMs) { const d = new Date(endMs), t = pad2(d.getHours()) + pad2(d.getMinutes()); return t + '-' + tmac('T' + t); }
+function offCode() { return 'OFF-' + tmac('OFF'); }
+function finishCode(ms, hints) { const d = new Date(ms), t = pad2(d.getHours()) + pad2(d.getMinutes()) + pad2(d.getSeconds()); return t + '-' + hints + '-' + tmac('F' + t + '-' + hints); }
+function cleanCode(raw) { return String(raw || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
+// -> {type:'end', end:ms} | {type:'off'} | null
+function parseTimerCode(raw) {
+  const c = cleanCode(raw); let m;
+  if ((m = c.match(/^OFF([A-Z0-9]{2})$/)) && m[1] === tmac('OFF')) return { type: 'off' };
+  if ((m = c.match(/^(\d{4})([A-Z0-9]{2})$/)) && m[2] === tmac('T' + m[1])) {
+    const hh = +m[1].slice(0, 2), mm = +m[1].slice(2); if (hh > 23 || mm > 59) return null;
+    const d = new Date(); d.setHours(hh, mm, 0, 0); return { type: 'end', end: d.getTime() };
+  }
+  return null;
+}
+// -> {finish:ms, hints:n} | null
+function parseFinishCode(raw) {
+  const c = String(raw || '').toUpperCase().replace(/\s/g, ''); const m = c.match(/^(\d{6})-?(\d{1,2})-?([A-Z0-9]{2})$/);
+  if (!m || m[3] !== tmac('F' + m[1] + '-' + (+m[2]))) return null;
+  const d = new Date(); d.setHours(+m[1].slice(0, 2), +m[1].slice(2, 4), +m[1].slice(4), 0);
+  return { finish: d.getTime(), hints: +m[2] };
+}
+
+/* ---------- drawing helpers ---------- */
+const sub = (main, s) => `${main}<tspan dy="4" font-size="10">${s}</tspan><tspan dy="-4"></tspan>`;
+// Force diagram: dot on a dashed grid, arrows measured in grid units
+function forceDiagram(forces, opts = {}) {
+  const u = 16, size = opts.size || 176, c = size / 2;
+  let g = '';
+  for (let x = c % u; x <= size; x += u) g += `<line x1="${x}" y1="0" x2="${x}" y2="${size}" stroke="#b9c3cf" stroke-dasharray="3 3" stroke-width="1"/>`;
+  for (let y = c % u; y <= size; y += u) g += `<line x1="0" y1="${y}" x2="${size}" y2="${y}" stroke="#b9c3cf" stroke-dasharray="3 3" stroke-width="1"/>`;
+  let a = '';
+  const dirs = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+  forces.forEach(f => {
+    const [dx, dy] = dirs[f.dir], L = f.len * u, x2 = c + dx * L, y2 = c + dy * L;
+    a += `<line x1="${c}" y1="${c}" x2="${x2 - dx * 7}" y2="${y2 - dy * 7}" stroke="#14213d" stroke-width="3"/>`;
+    const p = dx ? `${x2},${y2} ${x2 - dx * 10},${y2 - 6} ${x2 - dx * 10},${y2 + 6}` : `${x2},${y2} ${x2 - 6},${y2 - dy * 10} ${x2 + 6},${y2 - dy * 10}`;
+    a += `<polygon points="${p}" fill="#14213d"/>`;
+    // vertical arrows: label beside the tip; horizontal arrows: label above the tip, pulled inward
+    const out = !!f.mag; // labels with magnitudes go outward past the tip (canvas is padded)
+    const lx = dx ? x2 + (out ? dx * 8 : 0) : c + 8, ly = dy ? y2 + (dy > 0 ? 14 : -4) : (out ? c + 5 : c - 12);
+    const anchor = out ? (dx < 0 ? 'end' : 'start') : (dx > 0 ? 'end' : 'start');
+    a += `<text x="${lx}" y="${ly}" font-size="14" font-style="italic" fill="#0b6b6d" text-anchor="${anchor}">${sub('F', f.lab)}${f.mag ? ` = ${f.mag}` : ''}</text>`;
+  });
+  const px = opts.padX || 0;
+  return `<svg viewBox="${-px} 0 ${size + 2 * px} ${size}" width="${size + 2 * px}" height="${size}" style="max-width:100%;height:auto" role="img" aria-label="force diagram"><rect width="${size}" height="${size}" fill="#fff"/>${g}${a}<circle cx="${c}" cy="${c}" r="5.5" fill="#d1495b"/></svg>`;
+}
+// Line graph on a grid. pts in data units.
+function graph({ pts, xmax, ymax, xstep, ystep, xlab, ylab, w = 420, h = 250, ticks = true }) {
+  const L = 48, B = 36, T = 12, R = 14, W = w - L - R, H = h - T - B;
+  const X = x => L + x / xmax * W, Y = y => T + H - y / ymax * H;
+  let s = `<rect width="${w}" height="${h}" fill="#fff"/>`;
+  for (let x = 0; x <= xmax + 1e-9; x += xstep) s += `<line x1="${X(x)}" y1="${T}" x2="${X(x)}" y2="${T + H}" stroke="#dde3ea"/>` + (ticks ? `<text x="${X(x)}" y="${T + H + 16}" font-size="12" text-anchor="middle" fill="#3d4a66">${+x.toFixed(2)}</text>` : '');
+  for (let y = 0; y <= ymax + 1e-9; y += ystep) s += `<line x1="${L}" y1="${Y(y)}" x2="${L + W}" y2="${Y(y)}" stroke="#dde3ea"/>` + (ticks ? `<text x="${L - 7}" y="${Y(y) + 4}" font-size="12" text-anchor="end" fill="#3d4a66">${+y.toFixed(2)}</text>` : '');
+  s += `<line x1="${L}" y1="${T + H}" x2="${L + W}" y2="${T + H}" stroke="#14213d" stroke-width="2"/><line x1="${L}" y1="${T}" x2="${L}" y2="${T + H}" stroke="#14213d" stroke-width="2"/>`;
+  s += `<polyline points="${pts.map(p => X(p[0]) + ',' + Y(p[1])).join(' ')}" fill="none" stroke="#d1495b" stroke-width="3.5" stroke-linejoin="round"/>`;
+  s += `<text x="${L + W / 2}" y="${h - 3}" font-size="13" text-anchor="middle" fill="#14213d">${xlab}</text>`;
+  s += `<text x="13" y="${T + H / 2}" font-size="13" text-anchor="middle" fill="#14213d" transform="rotate(-90 13 ${T + H / 2})">${ylab}</text>`;
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;height:auto" role="img" aria-label="graph">${s}</svg>`;
+}
+function vectorBot(mood = 'smug') {
+  const eyes = mood === 'mad' ? '<path d="M18 22 l8 3 M42 22 l-8 3" stroke="#0d1b2a" stroke-width="3" stroke-linecap="round"/>' : '';
+  const mouth = mood === 'happy' ? '<path d="M22 36 q8 7 16 0" stroke="#0d1b2a" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    : mood === 'mad' ? '<path d="M22 39 q8 -6 16 0" stroke="#0d1b2a" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    : '<path d="M23 37 h14" stroke="#0d1b2a" stroke-width="3" stroke-linecap="round"/>';
+  return `<svg width="60" height="60" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="32" r="25" fill="#7ee8e0"/><circle cx="30" cy="32" r="25" fill="none" stroke="#0f8b8d" stroke-width="3"/><rect x="14" y="20" width="32" height="12" rx="6" fill="#0d1b2a" opacity=".12"/><circle cx="22" cy="27" r="4" fill="#0d1b2a"/><circle cx="38" cy="27" r="4" fill="#0d1b2a"/>${eyes}${mouth}<line x1="30" y1="7" x2="30" y2="1" stroke="#0f8b8d" stroke-width="3"/><circle cx="30" cy="1.5" r="3" fill="#f4a259"/></svg>`;
+}
+const say = (html, mood) => `<div class="vector">${vectorBot(mood)}<div><div class="who">VECTOR</div><p>${html}</p></div></div>`;
+
+/* ---------- calculus helpers (fractions, x-y plots, polar plots) ---------- */
+document.head.insertAdjacentHTML('beforeend', `<style>
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.92em;line-height:1.1;margin:0 2px}
+.fr>span:first-child{border-bottom:1.5px solid currentColor;padding:0 3px}
+.fr>span:last-child{padding:0 3px}
+.sig{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:.95;margin:0 3px 0 0}
+.sig small{font-size:.66em}.sig .sg{font-size:1.6em;line-height:.9}
+.mth{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-size:1.08em;white-space:nowrap}
+.bank{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px;margin:8px 0}
+.bank .card{display:flex;align-items:center;gap:6px;padding:8px 10px;font-size:18px}
+.bank .badge{width:28px;height:28px;margin-right:4px}
+table.data td.l{text-align:left}
+table.grid3 td,table.grid3 th{padding:7px 9px}
+table.grid3 td.cell{font-family:var(--mono);font-weight:700;font-size:16px;min-width:56px}
+</style>`);
+const fr = (a, b) => `<span class="fr"><span>${a}</span><span>${b}</span></span>`;
+const sig = (lo, hi) => `<span class="sig"><small>${hi}</small><span class="sg">Σ</span><small>${lo}</small></span>`;
+const M = s => `<span class="mth">${s.replace(/Σ<sub>(.*?)<\/sub><sup>(.*?)<\/sup>/g, (m, lo, hi) => sig(lo, hi))}</span>`;
+function xyPlot(o) {
+  const L = o.L || 46, B = o.B || 38, T = 12, Rt = 14, w = o.w || 420, h = o.h || 300, W = w - L - Rt, H = h - T - B;
+  const X = x => L + (x - o.xmin) / (o.xmax - o.xmin) * W, Y = y => T + H - (y - o.ymin) / (o.ymax - o.ymin) * H;
+  let s = `<rect width="${w}" height="${h}" fill="#fff"/>`;
+  const le = o.labelEvery || 1;
+  let k = 0;
+  for (let x = o.xmin; x <= o.xmax + 1e-9; x += o.xstep, k++) s += `<line x1="${X(x)}" y1="${T}" x2="${X(x)}" y2="${T + H}" stroke="#b9c3cf" stroke-dasharray="3 3"/>` + (k % le === 0 ? `<text x="${X(x)}" y="${T + H + 16}" font-size="12" text-anchor="middle" fill="#3d4a66">${+x.toFixed(2)}</text>` : '');
+  k = 0;
+  for (let y = o.ymin; y <= o.ymax + 1e-9; y += o.ystep, k++) s += `<line x1="${L}" y1="${Y(y)}" x2="${L + W}" y2="${Y(y)}" stroke="#b9c3cf" stroke-dasharray="3 3"/>` + (k % le === 0 ? `<text x="${L - 6}" y="${Y(y) + 4}" font-size="12" text-anchor="end" fill="#3d4a66">${+y.toFixed(3)}</text>` : '');
+  s += `<line x1="${L}" y1="${T + H}" x2="${L + W}" y2="${T + H}" stroke="#14213d" stroke-width="2"/><line x1="${L}" y1="${T}" x2="${L}" y2="${T + H}" stroke="#14213d" stroke-width="2"/>`;
+  (o.curves || []).forEach(c => { s += `<polyline points="${c.pts.map(p => X(p[0]).toFixed(1) + ',' + Y(p[1]).toFixed(1)).join(' ')}" fill="none" stroke="${c.color || '#d1495b'}" stroke-width="${c.width || 3.5}" stroke-linejoin="round" ${c.dash ? `stroke-dasharray="${c.dash}"` : ''}/>`; });
+  (o.dots || []).forEach(d => { s += `<circle cx="${X(d.x)}" cy="${Y(d.y)}" r="${d.r || 5}" fill="${d.color || '#14213d'}"/>` + (d.label ? `<text x="${X(d.x) + (d.dx || 8)}" y="${Y(d.y) + (d.dy || -8)}" font-size="13" fill="#14213d" text-anchor="${d.anchor || 'start'}">${d.label}</text>` : ''); });
+  (o.arrows || []).forEach(a => { const x = X(a.x), y = Y(a.y), ang = Math.atan2(-(a.vy) / (o.ymax - o.ymin) * H, a.vx / (o.xmax - o.xmin) * W);
+    const p = (r, t) => `${(x + r * Math.cos(t)).toFixed(1)},${(y + r * Math.sin(t)).toFixed(1)}`;
+    s += `<polygon points="${p(0, 0)} ${p(13, ang + Math.PI - 0.42)} ${p(13, ang + Math.PI + 0.42)}" fill="${a.color || '#d1495b'}"/>`; });
+  s += `<text x="${L + W / 2}" y="${h - 4}" font-size="13" text-anchor="middle" fill="#14213d">${o.xlab || ''}</text>`;
+  s += `<text x="13" y="${T + H / 2}" font-size="13" text-anchor="middle" fill="#14213d" transform="rotate(-90 13 ${T + H / 2})">${o.ylab || ''}</text>`;
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;height:auto" role="img" aria-label="${o.aria || 'graph'}">${s}</svg>`;
+}
+// sample a parametric / polar curve
+const paramPts = (fx, fy, t0, t1, n = 300) => Array.from({ length: n + 1 }, (_, i) => { const t = t0 + (t1 - t0) * i / n; return [fx(t), fy(t)]; });
+const polarPts = (f, t0, t1, n = 400) => paramPts(t => f(t) * Math.cos(t), t => f(t) * Math.sin(t), t0, t1, n);
+// Polar grid plot. o: {xmin,xmax,ymin,ymax,unit,rings,curves:[{pts,color,width,dash}],fills:[{pts,fill,op}],labels:[{x,y,text,color,size,weight}],angleLabels}
+function polarPlot(o) {
+  const u = o.unit || 50, W = (o.xmax - o.xmin) * u, H = (o.ymax - o.ymin) * u;
+  const X = x => (x - o.xmin) * u, Y = y => (o.ymax - y) * u, cx = X(0), cy = Y(0);
+  let s = `<rect width="${W}" height="${H}" fill="#fff"/>`;
+  for (let r = 1; r <= o.rings; r++) s += `<circle cx="${cx}" cy="${cy}" r="${r * u}" fill="none" stroke="#b9c3cf" stroke-dasharray="3 3"/>`;
+  for (let k = 0; k < 12; k++) { const a = k * Math.PI / 6, R = o.rings * u; s += `<line x1="${cx}" y1="${cy}" x2="${(cx + R * Math.cos(a)).toFixed(1)}" y2="${(cy - R * Math.sin(a)).toFixed(1)}" stroke="#b9c3cf" stroke-dasharray="3 3"/>`; }
+  s += `<line x1="0" y1="${cy}" x2="${W}" y2="${cy}" stroke="#3d4a66" stroke-width="1.5"/><line x1="${cx}" y1="0" x2="${cx}" y2="${H}" stroke="#3d4a66" stroke-width="1.5"/>`;
+  for (let r = 1; r <= o.rings; r++) s += `<text x="${cx + r * u - 3}" y="${cy + 14}" font-size="11" text-anchor="end" fill="#3d4a66">${r}</text>`;
+  const poly = pts => pts.map(p => X(p[0]).toFixed(1) + ',' + Y(p[1]).toFixed(1)).join(' ');
+  (o.fills || []).forEach(f => { s += `<polygon points="${poly(f.pts)}" fill="${f.fill}" fill-opacity="${f.op || .35}" stroke="none"/>`; });
+  (o.curves || []).forEach(c => { s += `<polyline points="${poly(c.pts)}" fill="none" stroke="${c.color || '#d1495b'}" stroke-width="${c.width || 3}" stroke-linejoin="round" ${c.dash ? `stroke-dasharray="${c.dash}"` : ''}/>`; });
+  (o.labels || []).forEach(l => { s += `<text x="${X(l.x)}" y="${Y(l.y)}" font-size="${l.size || 14}" font-weight="${l.weight || 700}" text-anchor="${l.anchor || 'middle'}" fill="${l.color || '#14213d'}" ${l.halo ? 'stroke="#fff" stroke-width="4" paint-order="stroke"' : ''}>${l.text}</text>`; });
+  if (o.angleLabels) { const R = o.rings * u + 4;
+    [['θ = 0', 0, 'end', -6, -6], ['θ = π/2', Math.PI / 2, 'start', 6, 12], ['θ = π', Math.PI, 'start', 6, -6], ['θ = 3π/2', 3 * Math.PI / 2, 'start', 6, -4]].forEach(([t, a, an, dx, dy]) => {
+      s += `<text x="${(cx + R * Math.cos(a) + dx).toFixed(1)}" y="${(cy - R * Math.sin(a) + dy).toFixed(1)}" font-size="12" font-style="italic" text-anchor="${an}" fill="#3d4a66">${t}</text>`; }); }
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px;height:auto" role="img" aria-label="${o.aria || 'polar graph'}">${s}</svg>`;
+}
+
+/* ---------- Unit 9 pictures ---------- */
+const card9 = t => 2 + 2 * Math.cos(t);
+function rinkPlot() {
+  const th = Math.PI / 3;
+  const R = polarPts(card9, -th, th, 120).concat(polarPts(() => 3, th, -th, 120));
+  const S = polarPts(t => Math.min(card9(t), 3), 0, 2 * Math.PI, 480);
+  return polarPlot({ xmin: -4.2, xmax: 4.5, ymin: -4.2, ymax: 4.2, unit: 40, rings: 4, angleLabels: false,
+    fills: [{ pts: S, fill: '#0f8b8d', op: .22 }, { pts: R, fill: '#f4a259', op: .55 }],
+    curves: [{ pts: polarPts(() => 3, 0, 2 * Math.PI), color: '#14213d', width: 3, dash: '9 5' }, { pts: polarPts(card9, 0, 2 * Math.PI), color: '#d1495b', width: 3.5 }],
+    labels: [{ x: 3.5, y: 0.5, text: 'R', size: 20 }, { x: 1.2, y: 0.3, text: 'S', size: 20 },
+      { x: -2.5, y: 3.4, text: "VECTOR's fence", size: 13, color: '#14213d', anchor: 'middle', halo: true },
+      { x: 2.55, y: -3.45, text: "Rosalind's cardioid", size: 13, color: '#d1495b', anchor: 'middle', halo: true }],
+    aria: 'a cardioid and a circle centered at the pole; region R is inside the cardioid and outside the circle on the right; region S is inside both' });
+}
+function limaconPlot() {
+  const f = t => 1 + 2 * Math.cos(t);
+  return polarPlot({ xmin: -3.6, xmax: 3.9, ymin: -3.35, ymax: 3.35, unit: 44, rings: 3, angleLabels: true,
+    curves: [{ pts: polarPts(f, 0, 2 * Math.PI, 600), color: '#d1495b', width: 3.5 }, { pts: [[0.7, -0.78], [0.62, -0.42]], color: '#0b6b6d', width: 1.5 }],
+    labels: [{ x: 0.75, y: -0.95, text: 'inner loop', size: 12, color: '#0b6b6d', weight: 600, halo: true, anchor: 'middle' }],
+    aria: 'polar graph of a limaçon with an inner loop' });
+}
+function skatePath() {
+  const pts = paramPts(t => t ** 3 - 3 * t + 3, t => 3 * t * t, 0, 3);
+  return xyPlot({ xmin: 0, xmax: 22, ymin: 0, ymax: 28, xstep: 2, ystep: 2, labelEvery: 2, w: 440, h: 330,
+    curves: [{ pts }], dots: [{ x: 3, y: 0, label: 'start (t = 0)', dy: -9, dx: 6 }, { x: 0, y: 0, color: '#0f8b8d', r: 7, label: 'dock', dx: -10, dy: 22, anchor: 'end' }],
+    arrows: [{ x: 21, y: 27, vx: 24, vy: 18 }], xlab: 'x (meters)', ylab: 'y (meters)', aria: "VECTOR's skating path from t = 0 to t = 3" });
+}
+
+/* =====================================================================
+   ROOM DATA: AP Calculus BC · Unit 9
+   ===================================================================== */
+const ROOM = {
+  id: 'calc-u9-parametric-polar',
+  salt: 'calc-u9::',
+  title: 'VECTOR\u2019s Polar Skate-Off',
+  intro: `The class robot vacuum, <b>VECTOR</b>, flooded the gym, froze it solid, and strapped on a pair of
+    <b>rocket skates</b>. Tonight is <b>VECTOR ON ICE</b>, a figure-skating spectacular starring VECTOR and its arch-rival,
+    <b>Duchess Rosalind</b>, a flamingo who only skates perfect polar curves. The gym doors are locked until your team
+    can score every routine: parametric slopes, velocity vectors, arc length, polar tangents, and polar areas.
+    Five doors. Five codes. Show your work like it's an FRQ.`,
+  finaleCipher: [41,113,97,33,56,35,126,34] /* teacher password, XOR-locked with the final door code */,
+  wrongLines: [
+    "Nope. My lock has a vertical tangent: dx/dt = 0, and so does my patience.",
+    "Denied! That answer is off by a factor of dx/dt.",
+    "Wrong. Did you forget the ½ in ½∫r² dθ? Rosalind never does.",
+    "Incorrect. Your code points the wrong way, like a negative r.",
+    "That's not it. Speed is a magnitude, and so is my disappointment.",
+    "Try again. Even my rocket skates trace better curves than that."
+  ],
+  doors: [
+    /* ---------------- DOOR 1 ---------------- */
+    {
+      name: 'Parametric Pit Stop', tag: 'Topics 9.1–9.2 · dy/dx and d²y/dx²',
+      render: () => `
+        ${say(`Before the show, I warm up on four practice tracks. Every answer is in my <b>answer bank</b>. The bank letters, in order 1 → 4, spell my <b>4-letter</b> door code. Some bank cards are traps for skaters who skip steps.`)}
+        <ol class="problems">
+          <li><span class="slot">1</span><span>Warm-up lap: ${M('x = t² + 1,  y = t³ − 3t')}. Find ${M('dy/dx')} at ${M('t = 2')}.</span></li>
+          <li><span class="slot">2</span><span>Duchess Rosalind's elliptical glide: ${M('x = 2 cos t,  y = 3 sin t')}. Find ${M('dy/dx')} at ${M('t = π/4')}.</span></li>
+          <li><span class="slot">3</span><span>VECTOR's swoop: ${M('x = t² − 4t,  y = t³ − 12t')}. Find the <b>x-coordinate</b> of the point where the curve has a <b>horizontal tangent line</b>.</span></li>
+          <li><span class="slot">4</span><span>Spin cooldown: ${M('x = t²,  y = t³')}. Find ${M('d²y/dx²')} at ${M('t = 1')}.</span></li>
+        </ol>
+        <div class="bank">
+          ${[['L', fr(3, 2)], ['P', fr(9, 4)], ['R', '−4'], ['E', '−' + fr(2, 3)], ['H', fr(3, 4)], ['T', '12'], ['S', fr(4, 9)], ['A', '−' + fr(3, 2)], ['M', '3'], ['K', '6']]
+            .map(([k, v]) => `<div class="card"><span class="badge">${k}</span>${M(v)}</div>`).join('')}
+        </div>`,
+      fields: [{ label: 'Code word', w: 170, kind: 'word' }],
+      answers: ["bkumjrgg2a"],
+      hints: [
+        `${M('dy/dx = (dy/dt) ÷ (dx/dt)')}. For #3, a horizontal tangent needs ${M('dy/dt = 0')} <b>and</b> ${M('dx/dt ≠ 0')}.`,
+        `For #4, ${M('d²y/dx² = [d/dt (dy/dx)] ÷ (dx/dt)')}. Don't stop after differentiating with respect to ${M('t')}. In #3, at ${M('t = 2')} BOTH derivatives are 0, so that point is not a horizontal tangent (its slope approaches 6).`
+      ],
+      success: 'Pit stop complete. Your slopes are sharper than my skate blades. Door 1 unlocked.'
+    },
+    /* ---------------- DOOR 2 ---------------- */
+    {
+      name: 'Rocket-Skate Relay', tag: 'Topics 9.3–9.6 · Vector-valued motion · team relay',
+      roles: true,
+      render: () => `
+        ${say(`Time for my rocket-skate routine! My position on the ice is ${M('<b>r</b>(t) = ⟨x(t), y(t)⟩')} in meters, with ${M('t')} in seconds, for ${M('0 ≤ t ≤ 3')}. My <b>charging dock</b> is at the origin. Each of you holds one piece of my flight data. Team of 3? Whoever finishes first takes Card D.`)}
+        <div class="grid g2" style="align-items:start">
+          <div class="card">${skatePath()}</div>
+          <div><div class="roles" data-roles></div><div data-rolecard></div></div>
+        </div>`,
+      roleCards: {
+        A: `<div class="card rolecard"><h4>Card A · Horizontal Velocity</h4>
+            <p>VECTOR's horizontal velocity is ${M('x′(t) = 3t² − 3')} m/s. Share this with everyone.</p>
+            <p><b>Your question:</b> At what time ${M('t > 0')} is VECTOR moving <b>straight up the rink</b> (parallel to the y-axis)? Check with Card B that VECTOR is actually moving then.</p></div>`,
+        B: `<div class="card rolecard"><h4>Card B · Vertical Velocity</h4>
+            <p>VECTOR's vertical velocity is ${M('y′(t) = 6t')} m/s. Share this with everyone.</p>
+            <p><b>Your question:</b> What is VECTOR's <b>speed</b> at ${M('t = 2')}, in m/s? (You need Card A's formula.)</p></div>`,
+        C: `<div class="card rolecard"><h4>Card C · Starting Line</h4>
+            <p>At ${M('t = 0')}, VECTOR is at ${M('<b>r</b>(0) = ⟨3, 0⟩')}.</p>
+            <p><b>Your question:</b> How far is VECTOR from its <b>charging dock</b> (the origin) at ${M('t = 2')}, in meters? (You need both velocity components.)</p></div>`,
+        D: `<div class="card rolecard"><h4>Card D · Odometer</h4>
+            <p>The judges score total ice covered, not net displacement.</p>
+            <p><b>Your question:</b> What is the <b>total distance traveled</b> by VECTOR from ${M('t = 0')} to ${M('t = 3')}, in meters? (You need both velocity components. Simplify under the square root before you integrate.)</p></div>`
+      },
+      fields: [
+        { label: 'A · time (s)', w: 110, kind: 'num' }, { label: 'B · speed (m/s)', w: 110, kind: 'num' },
+        { label: 'C · dist. to dock (m)', w: 130, kind: 'num' }, { label: 'D · distance (m)', w: 120, kind: 'num' }
+      ],
+      answers: ["1z5ko0qb213"],
+      hints: [
+        `Speed = ${M('√(x′(t)² + y′(t)²)')}. Position = starting position + ${M('∫ velocity dt')}, one component at a time. Total distance = ${M('∫₀³ speed dt')}.`,
+        `Card D: ${M('(3t² − 3)² + (6t)² = 9(t² + 1)²')}, so the speed is ${M('3(t² + 1)')}. Card C: ${M('x(2) = 3 + ∫₀² x′(t) dt')} and ${M('y(2) = 0 + ∫₀² y′(t) dt')}, then use the distance formula. Every answer is a whole number.`
+      ],
+      success: 'A perfect 6.0 from the judges. Door 2 unlocked.'
+    },
+    /* ---------------- DOOR 3 ---------------- */
+    {
+      name: 'Odometer Log', tag: 'Topics 9.3 & 9.6 · Motion from a data table',
+      render: () => `
+        ${say(`Between routines I switch to <b>cruise mode</b> and vacuum the ice shavings. My wheel encoders logged my velocity components. The functions ${M('x′')} and ${M('y′')} are differentiable, and position is in centimeters.`)}
+        <div class="grid g2" style="align-items:start">
+          <div>
+            <table class="data"><tr><th>t (seconds)</th><td>0</td><td>2</td><td>5</td><td>8</td></tr>
+              <tr><th>x′(t) (cm/s)</th><td>6</td><td>12</td><td>−10</td><td>0</td></tr>
+              <tr><th>y′(t) (cm/s)</th><td>8</td><td>16</td><td>24</td><td>12</td></tr></table>
+            <p class="note">At ${M('t = 0')}, VECTOR's x-coordinate is ${M('x(0) = 40')} cm.</p>
+          </div>
+          <div class="card">
+            <h4>Score the routine</h4>
+            <ol style="margin:0;padding-left:18px">
+              <li>Find VECTOR's <b>speed</b> at ${M('t = 5')} seconds.</li>
+              <li>Use a <b>trapezoidal sum</b> with the three subintervals in the table to approximate the <b>total distance</b> VECTOR travels from ${M('t = 0')} to ${M('t = 8')}.</li>
+              <li>Use a <b>trapezoidal sum</b> with the same three subintervals to approximate ${M('x(8)')}.</li>
+            </ol>
+          </div>
+        </div>`,
+      fields: [{ label: '1 · speed (cm/s)', w: 130, kind: 'num' }, { label: '2 · distance (cm)', w: 130, kind: 'num' }, { label: '3 · x(8) (cm)', w: 130, kind: 'num' }],
+      answers: ["1tkl5dwrij2"],
+      hints: [
+        `Total distance = ${M('∫₀⁸ √(x′(t)² + y′(t)²) dt')}. Compute the speed at every time in the table first, then build trapezoids. The subintervals have widths 2, 3, and 3.`,
+        `The speeds are all whole numbers (think 3-4-5 and 5-12-13 triangles). For #3, ${M('x(8) = x(0) + ∫₀⁸ x′(t) dt')}; a negative ${M('x′')} value subtracts.`
+      ],
+      success: 'Your trapezoids are tighter than my bristles. Door 3 unlocked.'
+    },
+    /* ---------------- DOOR 4 ---------------- */
+    {
+      name: 'Flamingo Facts', tag: 'Topic 9.7 · Polar coordinates & derivatives',
+      render: () => `
+        ${say(`Duchess Rosalind skates the polar curve ${M('r = 1 + 2 cos θ')} for ${M('0 ≤ θ ≤ 2π')}. Her fan club wrote eight "facts" about it. Some are true. Some are <i>flamingo fibs</i>. <b>Add up the numbers of the TRUE statements</b>. That sum is the code.`)}
+        <div class="grid g2" style="align-items:start">
+          <div class="card fd">${limaconPlot()}</div>
+          <div>
+          ${[
+            [13, 'At θ = π, r = −1, so Rosalind is at the Cartesian point (1, 0).'],
+            [23, 'At θ = π/2, the slope dy/dx of the curve equals dr/dθ, which is −2.'],
+            [11, 'At θ = π/3, Rosalind is moving <b>away from</b> the pole, because r > 0 there.'],
+            [19, 'At θ = π/2, the slope dy/dx of the tangent line is <b>2</b>.'],
+            [7, 'For any polar curve r = f(θ), dy/dθ = f′(θ) sin θ.'],
+            [29, 'At θ = 0, the curve has a <b>vertical</b> tangent line.'],
+            [10, 'On an interval where r < 0 and dr/dθ > 0, Rosalind’s distance from the pole is <b>increasing</b>.'],
+            [6, 'For 2π/3 < θ < 4π/3, r < 0, and these θ-values trace the small inner loop.'],
+          ].map(([n, t]) => `<div class="stmt"><span class="num">${n}</span><span>${t}</span></div>`).join('')}
+          </div>
+        </div>`,
+      fields: [{ label: 'Sum', w: 120, kind: 'num' }],
+      answers: ["1a2qd5emq4a"],
+      hints: [
+        `Use ${M('x = r cos θ')} and ${M('y = r sin θ')} with the product rule: ${M('dy/dθ = r′ sin θ + r cos θ')} and ${M('dx/dθ = r′ cos θ − r sin θ')}. Then ${M('dy/dx = (dy/dθ) ÷ (dx/dθ)')}.`,
+        `Distance from the pole is ${M('|r|')}. If ${M('r > 0')} and ${M('r′ < 0')}, ${M('|r|')} shrinks; if ${M('r < 0')} and ${M('r′ > 0')}, ${M('|r|')} also shrinks. Exactly four statements are true.`
+      ],
+      success: 'Rosalind curtsies. Your tangents are flawless. Door 4 unlocked.'
+    },
+    /* ---------------- DOOR 5 ---------------- */
+    {
+      name: "Rosalind's Rink", tag: 'Topics 9.7–9.9 · Polar area · team relay',
+      roles: true,
+      render: () => `
+        ${say(`Grand finale! Rosalind skates her cardioid; I patrol my circular fence. The judges want the area of every region of ice. Region <b>R</b> (amber) is inside the cardioid but <b>outside</b> the circle. Region <b>S</b> (teal) is inside <b>both</b> curves. The equations are on your cards. Team of 3? Whoever finishes first takes Card D.`, 'mad')}
+        <div class="grid g2" style="align-items:start">
+          <div class="card fd">${rinkPlot()}</div>
+          <div><div class="roles" data-roles></div><div data-rolecard></div></div>
+        </div>`,
+      roleCards: {
+        A: `<div class="card rolecard"><h4>Card A · The Cardioid</h4>
+            <p>Rosalind skates ${M('r = 2 + 2 cos θ')}, ${M('0 ≤ θ ≤ 2π')}. Share this with everyone.</p>
+            <p><b>Your question:</b> The total area enclosed by the cardioid is ${M('kπ')}. What is ${M('k')}? (No calculator needed.)</p></div>`,
+        B: `<div class="card rolecard"><h4>Card B · The Fence</h4>
+            <p>VECTOR's fence is the circle ${M('r = 3')}. Share this with everyone.</p>
+            <p><b>Your question:</b> The two curves cross at two points. What is the angle ${M('θ')} of the intersection point in the <b>upper half</b> of the plane, <b>in degrees</b>? Tell your team both intersection angles (in radians, too!).</p></div>`,
+        C: `<div class="card rolecard"><h4>Card C · Region R</h4>
+            <p>You need both equations (Cards A and B) and the intersection angles (Card B).</p>
+            <p><b>Your question:</b> Find the area of region <b>R</b>. Enter <b>area × 100</b>, rounded to the nearest whole number. (Calculator allowed. Keep at least 3 decimal places until the end.)</p></div>`,
+        D: `<div class="card rolecard"><h4>Card D · Region S</h4>
+            <p>You need Card A's total area and Card C's area of region R.</p>
+            <p><b>Your question:</b> Find the area of region <b>S</b>. Enter <b>area × 100</b>, rounded to the nearest whole number. (Calculator allowed. Keep at least 3 decimal places until the end.)</p></div>`
+      },
+      fields: [
+        { label: 'A · k', w: 100, kind: 'num' }, { label: 'B · angle (°)', w: 110, kind: 'num' },
+        { label: 'C · area R × 100', w: 140, kind: 'num' }, { label: 'D · area S × 100', w: 140, kind: 'num' }
+      ],
+      answers: ["tkwsjj5cno"],
+      hints: [
+        `Polar area = ${M('½∫ r² dθ')}. The curves meet where ${M('2 + 2 cos θ = 3')}. Region R runs from ${M('θ = −π/3')} to ${M('θ = π/3')}: ${M('½∫ (r<sub>outer</sub>² − r<sub>inner</sub>²) dθ')}.`,
+        `Card A: use ${M('cos² θ = (1 + cos 2θ)/2')}; the area is a whole number times π. Card C: the exact area is ${M('(9√3)/2 − π')}. Card D: S = (whole cardioid) − R.`
+      ],
+      success: 'NOOO! My rink! My beautiful rink!'
+    }
+  ]
+};
+
+
+/* =====================================================================
+   ENGINE
+   ===================================================================== */
+const KEY = 'escape:' + ROOM.id;
+const store = {
+  get() { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch (e) { return null; } },
+  set(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} },
+  clear() { try { localStorage.removeItem(KEY); } catch (e) {} }
+};
+let S = store.get() || { started: false, team: '', size: 4, start: 0, end: 0, door: 0, hints: {}, wrong: 0, role: 'A', timer: null };
+const save = () => store.set(S);
+const $ = (q, el = document) => el.querySelector(q);
+const fmt = ms => { const s = Math.max(0, Math.floor(ms / 1000)); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
+const hintsUsed = () => Object.values(S.hints).reduce((a, b) => a + b, 0);
+
+function timerLive() { return S.timer && S.timer.end && S.timer.day === dayKey(); }
+function timeUp() { return timerLive() && Date.now() >= S.timer.end && !S.end; }
+function hud() {
+  const t = S.started ? fmt((S.end || Date.now()) - S.start) : '00:00';
+  let chip;
+  if (timerLive() && !S.end) { const left = S.timer.end - Date.now();
+    chip = `<button class="tchip ${left < 5 * 60000 ? 'low' : ''}" id="tchip" title="Class timer">⏳ Class <b>${left > 0 ? fmt(left) : '0:00'}</b></button>`; }
+  else chip = `<button class="tchip" id="tchip" title="Enter class timer code">⏲ ${S.timer && S.timer.off && S.timer.day === dayKey() ? 'Timer off' : 'Timer code'}</button>`;
+  $('#hud').innerHTML = `${chip}<span title="Your team's time">⏱ <b>${t}</b></span><span title="Hints used">💡 <b>${hintsUsed()}</b></span><span title="Wrong codes">✖ <b>${S.wrong}</b></span>`;
+  $('#tchip').onclick = () => { $('#timerBox').classList.toggle('on'); $('#timerInput').focus(); };
+}
+let shownTimeUp = false;
+setInterval(() => { hud(); const up = timeUp() && S.started; if (up !== shownTimeUp) render(); }, 1000);
+function applyTimerCode(raw, msgEl) {
+  const r = parseTimerCode(raw);
+  if (!r) { if (msgEl) { msgEl.style.color = '#ffb3bd'; msgEl.textContent = "That timer code isn't valid. Check the board and try again."; } return false; }
+  S.timer = r.type === 'off' ? { off: true, end: null, day: dayKey() } : { off: false, end: r.end, day: dayKey() };
+  save();
+  if (msgEl) { msgEl.style.color = '#9ff0b8'; msgEl.textContent = r.type === 'off' ? 'Timer turned off. Keep going!' : `Timer set: ends at ${new Date(r.end).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}.`; }
+  render(); return true;
+}
+
+function hall() {
+  $('#hall').innerHTML = ROOM.doors.map((d, i) => {
+    const cls = i < S.door ? 'open' : (i === S.door && S.started && !S.end ? 'current' : '');
+    return `<div class="door-pill ${cls}"><span class="lock"></span><span class="n">${i + 1}</span>${d.name}</div>`;
+  }).join('');
+}
+
+function normalize(v, f) {
+  v = String(v).trim();
+  if (f.kind === 'word') return v.toUpperCase().replace(/[^A-Z]/g, '');
+  const m = v.replace(/,/g, '').match(/-?\d*\.?\d+/); // first number only, so units like "W/m2" are ignored
+  if (!m) return '';
+  const n = parseFloat(m[0]);
+  const r = f.roundTo || 1;
+  return String(Math.round(Math.abs(n) / r) * r);
+}
+
+function render() {
+  hud(); hall();
+  const st = $('#stage');
+  if (!S.started) return renderIntro(st);
+  if (S.door >= ROOM.doors.length) { shownTimeUp = false; return renderFinale(st); }
+  shownTimeUp = timeUp();
+  if (shownTimeUp) return renderTimeUp(st);
+  const i = S.door, d = ROOM.doors[i];
+  st.innerHTML = `<span class="tag">Door ${i + 1} of ${ROOM.doors.length} · ${d.tag}</span><h2>${d.name}</h2>${d.render()}
+    <div class="lockbox">
+      <div class="lbl">🔒 Door ${i + 1} lock</div>
+      <form class="fields" id="lockForm" autocomplete="off">
+        ${d.fields.map((f, k) => `<label class="field">${f.label}<input style="--w:${f.w}px" name="f${k}" inputmode="${f.kind === 'num' ? 'decimal' : 'text'}" required></label>`).join('')}
+        <button class="btn" type="submit">Try code</button>
+      </form>
+      <div class="feedback" id="fb" aria-live="polite"></div>
+      <div class="hints no-print">${d.hints.map((h, k) => `<button class="btn ghost" data-hint="${k}" ${k > (S.hints[i] || 0) ? 'disabled style="opacity:.4"' : ''}>💡 Hint ${k + 1}</button>`).join('')}</div>
+      <div id="hintOut">${d.hints.slice(0, S.hints[i] || 0).map(h => `<div class="hinttext">${h}</div>`).join('')}</div>
+    </div>`;
+  if (d.roles) setupRoles(st, d);
+  $('#lockForm').addEventListener('submit', e => { e.preventDefault(); check(d, i); });
+  st.querySelectorAll('[data-hint]').forEach(b => b.addEventListener('click', () => {
+    const k = +b.dataset.hint; if ((S.hints[i] || 0) <= k) { S.hints[i] = k + 1; save(); render(); }
+  }));
+  const first = st.querySelector('#lockForm input'); if (first && document.activeElement === document.body) first.focus({ preventScroll: true });
+}
+
+function setupRoles(st, d) {
+  const box = $('[data-roles]', st), out = $('[data-rolecard]', st);
+  const keys = Object.keys(d.roleCards);
+  const draw = () => {
+    box.innerHTML = '<span class="note" style="align-self:center;margin-right:4px">I am holding:</span>' + keys.map(k => `<button type="button" class="${k === S.role ? 'on' : ''}" data-r="${k}">Card ${k}</button>`).join('');
+    out.innerHTML = d.roleCards[S.role] || '';
+    box.querySelectorAll('[data-r]').forEach(b => b.addEventListener('click', () => { S.role = b.dataset.r; save(); draw(); }));
+  };
+  draw();
+}
+
+function check(d, i) {
+  const form = $('#lockForm'), fb = $('#fb');
+  const vals = d.fields.map((f, k) => normalize(form.elements['f' + k].value, f));
+  const h = cyrb53(ROOM.salt + 'd' + (i + 1) + '::' + vals.join('|'));
+  if (d.answers.includes(h)) {
+    S.door = i + 1;
+    if (S.door >= ROOM.doors.length) { S.end = Date.now(); S.key = vals.join('|'); }
+    save();
+    fb.className = 'feedback good'; fb.textContent = '✔ ' + d.success;
+    form.querySelector('button').disabled = true;
+    setTimeout(render, 1400);
+  } else {
+    S.wrong++; save(); hud();
+    fb.className = 'feedback bad';
+    fb.textContent = '✖ ' + ROOM.wrongLines[Math.floor(Math.random() * ROOM.wrongLines.length)];
+    form.classList.remove('shake'); void form.offsetWidth; form.classList.add('shake');
+  }
+}
+
+function renderIntro(st) {
+  st.innerHTML = `<div class="center">
+      <span class="tag">Escape Room · Teams of 3–4</span>
+      <h2>${ROOM.title}</h2></div>
+      ${say(ROOM.intro + ' <br><br>The clock starts when you press the button. Hints are free, but I <i>count</i> them. Mwahaha.')}
+      <div class="setup">
+        <div><label for="team">Team name</label><input id="team" maxlength="40" placeholder="e.g., The Rocket Skaters" value="${S.team || ''}"></div>
+        <div><label for="names">Team members</label><input id="names" maxlength="120" placeholder="First names" value="${S.names || ''}"></div>
+        <div><label for="size">Players</label><select id="size"><option value="3">3 players</option><option value="4" selected>4 players</option></select></div>
+        <div><label for="tcode">Class timer code <span class="note">(from the board, if your teacher posted one)</span></label><input id="tcode" maxlength="12" placeholder="e.g., 1452-AB" style="font-family:var(--mono);text-transform:uppercase"></div>
+        <div id="tcodeMsg" class="note"></div>
+        <p class="note" style="margin:0">Every player opens this page on their own Chromebook and enters the <b>same</b> team name. Bring paper, a pencil, and a calculator.</p>
+        <button class="btn dark" id="go">Start the clock ▶</button>
+      </div>`;
+  $('#size').value = S.size || 4;
+  $('#go').addEventListener('click', () => {
+    const tc = $('#tcode').value.trim();
+    if (tc && !parseTimerCode(tc)) { $('#tcodeMsg').style.color = '#d1495b'; $('#tcodeMsg').textContent = "That timer code isn't valid. Fix it or leave it blank."; return; }
+    S.team = $('#team').value.trim() || 'Unnamed Team'; S.names = $('#names').value.trim(); S.size = +$('#size').value;
+    if (tc) { const r = parseTimerCode(tc); S.timer = r.type === 'off' ? { off: true, end: null, day: dayKey() } : { off: false, end: r.end, day: dayKey() }; }
+    S.started = true; S.start = Date.now(); save(); render();
+  });
+}
+
+function renderFinale(st) {
+  const t = fmt(S.end - S.start);
+  st.innerHTML = `<div class="center">
+      ${say(`Fine. FINE. You escaped. I'll go back to vacuuming. Show this screen to your teacher.`, 'happy')}
+      <div class="cert">
+        <div class="tag">Certificate of Escape</div>
+        <h2 style="margin:4px 0">${escapeHtml(S.team)}</h2>
+        <div class="note">${escapeHtml(S.names || '')}</div>
+        <div class="stats"><div>Time<b>${t}</b></div><div>Hints<b>${hintsUsed()}</b></div><div>Wrong codes<b>${S.wrong}</b></div></div>
+        <div class="note">Finish code (your teacher types this in)</div>
+        <div class="fcode">${finishCode(S.end, Math.min(99, hintsUsed()))}</div>
+        <div class="note" style="margin-top:8px">Teacher password</div>
+        <div class="pw">${unlockPw()}</div>
+        <div class="note">${new Date(S.end).toLocaleString()} · AP Calculus BC · Unit 9: Parametric Equations, Polar Coordinates, and Vector-Valued Functions · ${ROOM.title}</div>
+      </div>
+      <p class="no-print"><button class="btn dark" onclick="window.print()">Print certificate</button></p>
+    </div>`;
+}
+function renderTimeUp(st) {
+  const opened = S.door;
+  st.innerHTML = `<div class="timeup">
+      ${say(`Beep boop... <b>TIME'S UP!</b> The lab stays locked. Show this screen to your teacher.`, 'happy')}
+      <h2>⏰ Time's Up</h2>
+      <div class="cert">
+        <h2 style="margin:4px 0;color:var(--ink);font-size:24px">${escapeHtml(S.team)}</h2>
+        <div class="note">${escapeHtml(S.names || '')}</div>
+        <div class="stats"><div>Doors opened<b>${opened} / ${ROOM.doors.length}</b></div><div>Hints<b>${hintsUsed()}</b></div><div>Wrong codes<b>${S.wrong}</b></div></div>
+        <div class="note">Stopped on Door ${Math.min(opened + 1, ROOM.doors.length)}: ${ROOM.doors[Math.min(opened, ROOM.doors.length - 1)].name}</div>
+      </div>
+      <p class="note">Did your teacher give more time? Type the new code from the board:</p>
+      <form id="moreTime" autocomplete="off" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <input id="moreInput" placeholder="1505-AB" style="font-family:var(--mono);font-size:20px;letter-spacing:.1em;width:180px;padding:8px 10px;border-radius:9px;border:2px solid var(--line);text-transform:uppercase">
+        <button class="btn dark" type="submit">Keep going</button></form>
+      <div id="moreMsg" class="note" style="margin-top:6px"></div>
+    </div>`;
+  $('#moreTime').addEventListener('submit', e => { e.preventDefault(); const m = $('#moreMsg'); applyTimerCode($('#moreInput').value, m); if (m.textContent.startsWith('That')) m.style.color = '#d1495b'; });
+}
+function pwKey(s) { return cyrb53(ROOM.salt + 'pw1::' + s) + cyrb53('pw2::' + s + ROOM.salt) + cyrb53(s + '::pw3' + ROOM.salt); }
+function unlockPw() { const k = pwKey(S.key || ''); return ROOM.finaleCipher.map((b, i) => String.fromCharCode(b ^ k.charCodeAt(i % k.length))).join(''); }
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+$('#timerForm').addEventListener('submit', e => { e.preventDefault(); if (applyTimerCode($('#timerInput').value, $('#timerMsg'))) { $('#timerInput').value = ''; setTimeout(() => $('#timerBox').classList.remove('on'), 1600); } });
+$('#timerClose').addEventListener('click', () => $('#timerBox').classList.remove('on'));
+$('#resetBtn').addEventListener('click', () => $('#confirmBox').classList.add('on'));
+$('#resetNo').addEventListener('click', () => $('#confirmBox').classList.remove('on'));
+$('#resetYes').addEventListener('click', () => { store.clear(); S = { started: false, team: '', size: 4, start: 0, end: 0, door: 0, hints: {}, wrong: 0, role: 'A', timer: null }; $('#confirmBox').classList.remove('on'); render(); });
+render();
+</script>
+</body>
+</html>
