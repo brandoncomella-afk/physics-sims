@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Escape Room · Magnetism · VECTOR's Magnetic Personality</title>
+<style>
+:root{
+  --ink:#14213d; --ink-2:#3d4a66; --paper:#fbf8f1; --card:#ffffff; --line:#d9d2c3;
+  --teal:#0f8b8d; --teal-d:#0b6b6d; --amber:#f4a259; --red:#d1495b; --green:#3a9d5d;
+  --night:#0d1b2a; --night-2:#1b263b; --glow:#7ee8e0;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  --sans:"Avenir Next","Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:var(--sans);color:var(--ink);background:var(--night);
+  background-image:linear-gradient(rgba(126,232,224,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(126,232,224,.06) 1px,transparent 1px);
+  background-size:28px 28px;min-height:100vh;line-height:1.5}
+.wrap{max-width:980px;margin:0 auto;padding:20px 18px 60px}
+header.top{display:flex;align-items:center;gap:14px;color:#e8f1f2;flex-wrap:wrap}
+header.top .unit{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--glow)}
+header.top h1{margin:0;font-size:26px;letter-spacing:.01em}
+header.top .spacer{flex:1}
+.hud{display:flex;gap:10px;font-family:var(--mono);font-size:13px}
+.hud span{background:var(--night-2);border:1px solid #2f3e5a;color:#e8f1f2;padding:5px 10px;border-radius:8px}
+.hud b{color:var(--glow);font-weight:600}
+
+/* progress hallway */
+.hall{display:flex;gap:8px;margin:18px 0 18px;flex-wrap:wrap}
+.door-pill{flex:1;min-width:120px;background:var(--night-2);border:1px solid #2f3e5a;color:#8fa0b8;border-radius:10px;padding:8px 10px;font-size:13px;display:flex;gap:8px;align-items:center}
+.door-pill .n{font-family:var(--mono);font-size:11px;border:1px solid currentColor;border-radius:5px;padding:0 5px}
+.door-pill.open{color:#bff3ee;border-color:var(--teal)}
+.door-pill.current{color:#fff;border-color:var(--amber);box-shadow:0 0 0 2px rgba(244,162,89,.25)}
+.door-pill.open .lock::before{content:"🔓"} .door-pill .lock::before{content:"🔒"}
+
+.panel{background:var(--paper);border-radius:16px;padding:22px 24px;box-shadow:0 18px 50px rgba(0,0,0,.35);position:relative}
+.panel h2{margin:0 0 4px;font-size:22px}
+.tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;background:#e7f4f4;color:var(--teal-d);border-radius:6px;padding:2px 8px;margin-bottom:10px}
+.vector{text-align:left;display:flex;gap:14px;align-items:flex-start;background:var(--night);color:#e8f1f2;border-radius:12px;padding:12px 14px;margin:10px 0 16px}
+.vector svg{flex:0 0 auto}
+.vector p{margin:0}
+.vector .who{font-family:var(--mono);font-size:11px;color:var(--glow);letter-spacing:.12em;text-transform:uppercase}
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.card h4{margin:0 0 6px;font-size:15px}
+.badge{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;background:var(--ink);color:#fff;font-weight:700;font-family:var(--mono);margin-right:8px}
+.fd{text-align:center}
+.fd .badge{background:var(--teal)}
+table.data{border-collapse:collapse;margin:8px 0;font-family:var(--mono);font-size:14px}
+table.data th,table.data td{border:1px solid var(--line);padding:6px 12px;text-align:center;background:#fff}
+table.data th{background:#eef2f6}
+ol.problems{padding-left:0;list-style:none;margin:0}
+ol.problems li{display:flex;gap:10px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+ol.problems .slot{flex:0 0 auto;font-family:var(--mono);font-weight:700;background:var(--amber);color:var(--ink);border-radius:6px;padding:0 8px;height:26px;line-height:26px}
+.stmt{display:flex;gap:10px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin-bottom:7px}
+.stmt .num{flex:0 0 auto;min-width:34px;text-align:center;font-family:var(--mono);font-weight:700;background:#efe7d6;border-radius:6px;padding:1px 6px}
+
+/* roles */
+.roles{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
+.roles button{font:inherit;font-size:14px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;cursor:pointer}
+.roles button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.rolecard{border-left:5px solid var(--amber)}
+.note{font-size:14px;color:var(--ink-2)}
+
+/* lock */
+.lockbox{margin-top:18px;background:var(--night-2);color:#e8f1f2;border-radius:14px;padding:16px}
+.lockbox .lbl{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--glow);margin-bottom:8px}
+.fields{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:4px;font-size:13px;color:#b9c6d6}
+.field input{font-family:var(--mono);font-size:22px;letter-spacing:.12em;width:var(--w,150px);padding:8px 10px;border-radius:9px;border:2px solid #3b4d6b;background:#0d1b2a;color:#fff;text-transform:uppercase}
+.field input:focus{outline:none;border-color:var(--amber)}
+.btn{font:inherit;font-weight:700;border:0;border-radius:10px;padding:11px 18px;cursor:pointer;background:var(--amber);color:var(--ink)}
+.btn:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent;color:#cfe0ea;border:1px solid #3b4d6b;font-weight:500}
+.btn.dark{background:var(--ink);color:#fff}
+.feedback{margin-top:10px;min-height:24px;font-size:15px}
+.feedback.bad{color:#ffb3bd}.feedback.good{color:#9ff0b8}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.hints{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.hinttext{background:#fff7e8;border:1px dashed var(--amber);border-radius:10px;padding:8px 12px;margin-top:8px;font-size:14px;color:var(--ink)}
+
+/* intro / finale */
+.center{text-align:center}
+.setup{display:grid;gap:12px;max-width:520px;margin:14px auto 0;text-align:left}
+.setup label{font-size:14px;font-weight:600}
+.setup input,.setup select{font:inherit;width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:#fff}
+.cert{border:3px double var(--ink);border-radius:14px;padding:22px;background:#fff;max-width:620px;margin:16px auto 0}
+.cert .pw{font-family:var(--mono);font-size:30px;letter-spacing:.25em;background:var(--ink);color:var(--glow);display:inline-block;padding:6px 16px;border-radius:10px;margin:6px 0}
+.stats{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:10px 0}
+.stats div{background:#f2efe6;border-radius:10px;padding:8px 14px;font-size:14px}
+.stats b{display:block;font-family:var(--mono);font-size:20px}
+.foot{color:#7f90a8;font-size:12px;text-align:center;margin-top:22px}
+.foot a{color:#9fd9d4}
+.reset{background:none;border:0;color:#7f90a8;text-decoration:underline;cursor:pointer;font:inherit;font-size:12px}
+.confirm{display:none;margin-top:8px;color:#e8f1f2;font-size:13px}
+.confirm.on{display:block}
+svg text{font-family:var(--sans)}
+.tchip{cursor:pointer;font:inherit;font-family:var(--mono);font-size:13px;background:var(--night-2);border:1px solid #2f3e5a;color:#e8f1f2;padding:5px 10px;border-radius:8px}
+.tchip b{color:var(--amber)} .tchip.low{border-color:var(--red);animation:pulse 1s infinite} .tchip.low b{color:#ffb3bd}
+@keyframes pulse{50%{box-shadow:0 0 0 3px rgba(209,73,91,.35)}}
+#timerBox{display:none;margin-top:12px;background:var(--night-2);border:1px solid #3b4d6b;border-radius:12px;padding:12px 14px;color:#e8f1f2}
+#timerBox.on{display:block}
+#timerBox form{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#timerBox input{font-family:var(--mono);font-size:18px;letter-spacing:.1em;width:160px;padding:7px 10px;border-radius:8px;border:2px solid #3b4d6b;background:#0d1b2a;color:#fff;text-transform:uppercase}
+#timerMsg{font-size:14px;margin-top:6px;min-height:20px}
+.timeup{text-align:center}
+.timeup h2{font-size:40px;color:var(--red);margin:6px 0}
+.fcode{font-family:var(--mono);font-size:26px;letter-spacing:.12em;background:#fff7e8;border:2px dashed var(--amber);display:inline-block;padding:4px 14px;border-radius:10px;margin:4px 0}
+@media print{body{background:#fff}.hall,.hud,.foot,.no-print{display:none!important}.panel{box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="unit">Physics of the Universe · Magnetism</div>
+      <h1>VECTOR's Magnetic Personality</h1>
+    </div>
+    <div class="spacer"></div>
+    <div class="hud" id="hud"></div>
+  </header>
+  <div id="timerBox" class="no-print">
+    <form id="timerForm" autocomplete="off"><span>⏲ Class timer code (from the board):</span>
+      <input id="timerInput" placeholder="1452-AB" aria-label="Class timer code">
+      <button class="btn" type="submit" style="padding:8px 14px">Set</button>
+      <button class="btn ghost" type="button" id="timerClose" style="padding:8px 12px">Close</button></form>
+    <div id="timerMsg" aria-live="polite"></div>
+  </div>
+  <nav class="hall" id="hall" aria-label="Door progress"></nav>
+  <main class="panel" id="stage"></main>
+  <div class="foot">
+    Mr. C's Science · <a href="index.html">All escape rooms</a> ·
+    <button class="reset" id="resetBtn">Reset this device</button>
+    <div class="confirm" id="confirmBox">Erase all progress on this device?
+      <button class="btn ghost" id="resetYes" style="padding:4px 10px">Yes, reset</button>
+      <button class="btn ghost" id="resetNo" style="padding:4px 10px">Cancel</button></div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   ESCAPE ROOM ENGINE (reusable). To make a new unit, copy this file and
+   replace the ROOM object below. Answers are stored only as salted
+   hashes (cyrb53); generate them with the helper in the teacher guide.
+   ===================================================================== */
+function cyrb53(str, seed = 0) {
+  let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+  for (let i = 0, ch; i < str.length; i++) { ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507); h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507); h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+
+/* ---------- CLASS TIMER + FINISH CODES (shared with teacher.html; keep identical) ---------- */
+const TALPH = 'ACDEFGHJKMNPQRTUVWXY34679';
+const pad2 = n => String(n).padStart(2, '0');
+function dayKey(d = new Date()) { return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+function tmac(s, day) { const h = parseInt(cyrb53('mrc-class-timer::' + (day || dayKey()) + '::' + s), 36); return TALPH[h % 25] + TALPH[Math.floor(h / 25) % 25]; }
+function timerCode(endMs) { const d = new Date(endMs), t = pad2(d.getHours()) + pad2(d.getMinutes()); return t + '-' + tmac('T' + t); }
+function offCode() { return 'OFF-' + tmac('OFF'); }
+function finishCode(ms, hints) { const d = new Date(ms), t = pad2(d.getHours()) + pad2(d.getMinutes()) + pad2(d.getSeconds()); return t + '-' + hints + '-' + tmac('F' + t + '-' + hints); }
+function cleanCode(raw) { return String(raw || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
+// -> {type:'end', end:ms} | {type:'off'} | null
+function parseTimerCode(raw) {
+  const c = cleanCode(raw); let m;
+  if ((m = c.match(/^OFF([A-Z0-9]{2})$/)) && m[1] === tmac('OFF')) return { type: 'off' };
+  if ((m = c.match(/^(\d{4})([A-Z0-9]{2})$/)) && m[2] === tmac('T' + m[1])) {
+    const hh = +m[1].slice(0, 2), mm = +m[1].slice(2); if (hh > 23 || mm > 59) return null;
+    const d = new Date(); d.setHours(hh, mm, 0, 0); return { type: 'end', end: d.getTime() };
+  }
+  return null;
+}
+// -> {finish:ms, hints:n} | null
+function parseFinishCode(raw) {
+  const c = String(raw || '').toUpperCase().replace(/\s/g, ''); const m = c.match(/^(\d{6})-?(\d{1,2})-?([A-Z0-9]{2})$/);
+  if (!m || m[3] !== tmac('F' + m[1] + '-' + (+m[2]))) return null;
+  const d = new Date(); d.setHours(+m[1].slice(0, 2), +m[1].slice(2, 4), +m[1].slice(4), 0);
+  return { finish: d.getTime(), hints: +m[2] };
+}
+
+/* ---------- drawing helpers ---------- */
+const sub = (main, s) => `${main}<tspan dy="4" font-size="10">${s}</tspan><tspan dy="-4"></tspan>`;
+// Force diagram: dot on a dashed grid, arrows measured in grid units
+function forceDiagram(forces, opts = {}) {
+  const u = 16, size = opts.size || 176, c = size / 2;
+  let g = '';
+  for (let x = c % u; x <= size; x += u) g += `<line x1="${x}" y1="0" x2="${x}" y2="${size}" stroke="#b9c3cf" stroke-dasharray="3 3" stroke-width="1"/>`;
+  for (let y = c % u; y <= size; y += u) g += `<line x1="0" y1="${y}" x2="${size}" y2="${y}" stroke="#b9c3cf" stroke-dasharray="3 3" stroke-width="1"/>`;
+  let a = '';
+  const dirs = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+  forces.forEach(f => {
+    const [dx, dy] = dirs[f.dir], L = f.len * u, x2 = c + dx * L, y2 = c + dy * L;
+    a += `<line x1="${c}" y1="${c}" x2="${x2 - dx * 7}" y2="${y2 - dy * 7}" stroke="#14213d" stroke-width="3"/>`;
+    const p = dx ? `${x2},${y2} ${x2 - dx * 10},${y2 - 6} ${x2 - dx * 10},${y2 + 6}` : `${x2},${y2} ${x2 - 6},${y2 - dy * 10} ${x2 + 6},${y2 - dy * 10}`;
+    a += `<polygon points="${p}" fill="#14213d"/>`;
+    // vertical arrows: label beside the tip; horizontal arrows: label above the tip, pulled inward
+    const out = !!f.mag; // labels with magnitudes go outward past the tip (canvas is padded)
+    const lx = dx ? x2 + (out ? dx * 8 : 0) : c + 8, ly = dy ? y2 + (dy > 0 ? 14 : -4) : (out ? c + 5 : c - 12);
+    const anchor = out ? (dx < 0 ? 'end' : 'start') : (dx > 0 ? 'end' : 'start');
+    a += `<text x="${lx}" y="${ly}" font-size="14" font-style="italic" fill="#0b6b6d" text-anchor="${anchor}">${sub('F', f.lab)}${f.mag ? ` = ${f.mag}` : ''}</text>`;
+  });
+  const px = opts.padX || 0;
+  return `<svg viewBox="${-px} 0 ${size + 2 * px} ${size}" width="${size + 2 * px}" height="${size}" style="max-width:100%;height:auto" role="img" aria-label="force diagram"><rect width="${size}" height="${size}" fill="#fff"/>${g}${a}<circle cx="${c}" cy="${c}" r="5.5" fill="#d1495b"/></svg>`;
+}
+// Line graph on a grid. pts in data units.
+function graph({ pts, xmax, ymax, xstep, ystep, xlab, ylab, w = 420, h = 250, ticks = true }) {
+  const L = 48, B = 36, T = 12, R = 14, W = w - L - R, H = h - T - B;
+  const X = x => L + x / xmax * W, Y = y => T + H - y / ymax * H;
+  let s = `<rect width="${w}" height="${h}" fill="#fff"/>`;
+  for (let x = 0; x <= xmax + 1e-9; x += xstep) s += `<line x1="${X(x)}" y1="${T}" x2="${X(x)}" y2="${T + H}" stroke="#dde3ea"/>` + (ticks ? `<text x="${X(x)}" y="${T + H + 16}" font-size="12" text-anchor="middle" fill="#3d4a66">${+x.toFixed(2)}</text>` : '');
+  for (let y = 0; y <= ymax + 1e-9; y += ystep) s += `<line x1="${L}" y1="${Y(y)}" x2="${L + W}" y2="${Y(y)}" stroke="#dde3ea"/>` + (ticks ? `<text x="${L - 7}" y="${Y(y) + 4}" font-size="12" text-anchor="end" fill="#3d4a66">${+y.toFixed(2)}</text>` : '');
+  s += `<line x1="${L}" y1="${T + H}" x2="${L + W}" y2="${T + H}" stroke="#14213d" stroke-width="2"/><line x1="${L}" y1="${T}" x2="${L}" y2="${T + H}" stroke="#14213d" stroke-width="2"/>`;
+  s += `<polyline points="${pts.map(p => X(p[0]) + ',' + Y(p[1])).join(' ')}" fill="none" stroke="#d1495b" stroke-width="3.5" stroke-linejoin="round"/>`;
+  s += `<text x="${L + W / 2}" y="${h - 3}" font-size="13" text-anchor="middle" fill="#14213d">${xlab}</text>`;
+  s += `<text x="13" y="${T + H / 2}" font-size="13" text-anchor="middle" fill="#14213d" transform="rotate(-90 13 ${T + H / 2})">${ylab}</text>`;
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;height:auto" role="img" aria-label="graph">${s}</svg>`;
+}
+function vectorBot(mood = 'smug') {
+  const eyes = mood === 'mad' ? '<path d="M18 22 l8 3 M42 22 l-8 3" stroke="#0d1b2a" stroke-width="3" stroke-linecap="round"/>' : '';
+  const mouth = mood === 'happy' ? '<path d="M22 36 q8 7 16 0" stroke="#0d1b2a" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    : mood === 'mad' ? '<path d="M22 39 q8 -6 16 0" stroke="#0d1b2a" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    : '<path d="M23 37 h14" stroke="#0d1b2a" stroke-width="3" stroke-linecap="round"/>';
+  return `<svg width="60" height="60" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="32" r="25" fill="#7ee8e0"/><circle cx="30" cy="32" r="25" fill="none" stroke="#0f8b8d" stroke-width="3"/><rect x="14" y="20" width="32" height="12" rx="6" fill="#0d1b2a" opacity=".12"/><circle cx="22" cy="27" r="4" fill="#0d1b2a"/><circle cx="38" cy="27" r="4" fill="#0d1b2a"/>${eyes}${mouth}<line x1="30" y1="7" x2="30" y2="1" stroke="#0f8b8d" stroke-width="3"/><circle cx="30" cy="1.5" r="3" fill="#f4a259"/></svg>`;
+}
+const say = (html, mood) => `<div class="vector">${vectorBot(mood)}<div><div class="who">VECTOR</div><p>${html}</p></div></div>`;
+
+/* ---------- magnetism drawing helpers ---------- */
+const INK = '#14213d', NCOL = '#d1495b', SCOL = '#2f6fb5', CU = '#c98a12', TEAL = '#0b6b6d';
+const mtext = (x, y, t, o = {}) => `<text x="${x}" y="${y}" font-size="${o.fs || 13}" font-weight="${o.fw || 600}" text-anchor="${o.a || 'middle'}" fill="${o.col || TEAL}"${o.it ? ' font-style="italic"' : ''}>${t}</text>`;
+// white canvas with the dashed grid used across the rooms
+function gridSvg(w, h, inner, label = 'diagram', step = 20) {
+  let g = '';
+  for (let x = step; x < w; x += step) g += `<line x1="${x}" y1="0" x2="${x}" y2="${h}" stroke="#d5dbe3" stroke-dasharray="3 3"/>`;
+  for (let y = step; y < h; y += step) g += `<line x1="0" y1="${y}" x2="${w}" y2="${y}" stroke="#d5dbe3" stroke-dasharray="3 3"/>`;
+  return `<svg viewBox="0 0 ${w} ${h}" width="${w}" style="max-width:100%;height:auto" role="img" aria-label="${label}"><rect width="${w}" height="${h}" fill="#fff"/>${g}${inner}</svg>`;
+}
+// bar magnet: left half is pole `left`, right half the other pole (N red, S blue)
+function magnet(x, y, w, h, left = 'S') {
+  const right = left === 'S' ? 'N' : 'S', c = p => (p === 'N' ? NCOL : SCOL);
+  return `<rect x="${x}" y="${y}" width="${w / 2}" height="${h}" fill="${c(left)}"/><rect x="${x + w / 2}" y="${y}" width="${w / 2}" height="${h}" fill="${c(right)}"/>
+    <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" fill="none" stroke="${INK}" stroke-width="2.5"/>
+    ${mtext(x + w / 4, y + h / 2 + 8, left, { fs: 22, fw: 800, col: '#fff' })}${mtext(x + 3 * w / 4, y + h / 2 + 8, right, { fs: 22, fw: 800, col: '#fff' })}`;
+}
+// an empty compass (needle hidden) with a number
+const compassSpot = (x, y, n) => `<circle cx="${x}" cy="${y}" r="17" fill="#fff7e8" stroke="${CU}" stroke-width="2.5"/><circle cx="${x}" cy="${y}" r="12" fill="none" stroke="${CU}" stroke-width="1" stroke-dasharray="2 3"/>${mtext(x, y + 6, n, { fs: 17, fw: 800, col: INK })}`;
+// field-line loops from one end of a magnet to the other, no arrowheads
+function loops(xa, xb, y, n = 3, dx = 40, dy = 52) {
+  let s = '';
+  for (let k = 1; k <= n; k++) [-1, 1].forEach(sg => {
+    s += `<path d="M${xb} ${y} C${xb + dx * k} ${y + sg * dy * k}, ${xa - dx * k} ${y + sg * dy * k}, ${xa} ${y}" fill="none" stroke="#9aa7b8" stroke-width="1.6"/>`;
+  });
+  return s;
+}
+// current/field symbols: out of page (dot) and into page (cross)
+const dotSym = (x, y, r = 14, col = INK) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" stroke="${col}" stroke-width="2.5"/><circle cx="${x}" cy="${y}" r="${r * .28}" fill="${col}"/>`;
+const crossSym = (x, y, r = 14, col = INK) => { const d = r * .62; return `<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" stroke="${col}" stroke-width="2.5"/><path d="M${x - d} ${y - d} L${x + d} ${y + d} M${x + d} ${y - d} L${x - d} ${y + d}" stroke="${col}" stroke-width="2.5"/>`; };
+const smallX = (x, y, col = SCOL) => `<path d="M${x - 5} ${y - 5} L${x + 5} ${y + 5} M${x + 5} ${y - 5} L${x - 5} ${y + 5}" stroke="${col}" stroke-width="2"/>`;
+// arrow from (x1,y1) to (x2,y2)
+function arrow(x1, y1, x2, y2, col = INK, wdt = 3) {
+  const a = Math.atan2(y2 - y1, x2 - x1), hx = x2 - 12 * Math.cos(a), hy = y2 - 12 * Math.sin(a), px = 6 * Math.sin(a), py = -6 * Math.cos(a);
+  return `<line x1="${x1}" y1="${y1}" x2="${hx}" y2="${hy}" stroke="${col}" stroke-width="${wdt}"/><polygon points="${x2},${y2} ${hx + px},${hy + py} ${hx - px},${hy - py}" fill="${col}"/>`;
+}
+// point "P" where the field is asked about
+const pointP = (x, y) => `<circle cx="${x}" cy="${y}" r="6" fill="${NCOL}"/>${mtext(x + 12, y - 8, 'P', { fs: 16, fw: 800, col: NCOL, a: 'start' })}`;
+// direction tile: arrow or dot/cross symbol
+function dirIcon(d) {
+  const c = 22;
+  const body = d === 'out' ? dotSym(c, c, 13) : d === 'in' ? crossSym(c, c, 13)
+    : arrow(...({ up: [c, 38, c, 6], down: [c, 6, c, 38], left: [38, c, 6, c], right: [6, c, 38, c] })[d]);
+  return `<svg width="44" height="44" viewBox="0 0 44 44" aria-label="${d}">${body}</svg>`;
+}
+// electromagnet: iron nail wrapped in a coil, battery, hanging paper clips
+function electromagnet() {
+  let s = `<rect x="60" y="62" width="230" height="16" fill="#9aa3ad" stroke="${INK}" stroke-width="2"/><rect x="48" y="54" width="14" height="32" rx="2" fill="#9aa3ad" stroke="${INK}" stroke-width="2"/><polygon points="290,62 318,70 290,78" fill="#9aa3ad" stroke="${INK}" stroke-width="2"/>`;
+  for (let i = 0; i < 14; i++) s += `<ellipse cx="${88 + i * 13}" cy="70" rx="5" ry="15" fill="none" stroke="${CU}" stroke-width="3"/>`;
+  s += `<path d="M88 85 C88 130, 120 140, 150 140" fill="none" stroke="${CU}" stroke-width="2.5"/><path d="M257 85 C257 130, 225 140, 200 140" fill="none" stroke="${CU}" stroke-width="2.5"/>`;
+  s += `<line x1="170" y1="126" x2="170" y2="154" stroke="${INK}" stroke-width="2.5"/><line x1="180" y1="132" x2="180" y2="148" stroke="${INK}" stroke-width="5"/><line x1="150" y1="140" x2="170" y2="140" stroke="${CU}" stroke-width="2.5"/><line x1="180" y1="140" x2="200" y2="140" stroke="${CU}" stroke-width="2.5"/>`;
+  s += mtext(175, 172, 'power supply (fixed at 2.0 A)', { fs: 12, col: INK });
+  // paper clip chain hanging from the tip
+  for (let i = 0; i < 4; i++) s += `<rect x="${309 + (i % 2) * 4}" y="${78 + i * 22}" width="10" height="24" rx="5" fill="none" stroke="#5c6b80" stroke-width="2"/>`;
+  s += mtext(170, 30, 'iron nail core', { fs: 12, col: INK }) + mtext(340, 118, 'paper clips', { fs: 12, col: INK, a: 'start' });
+  return gridSvg(440, 182, s, 'electromagnet made from a nail, coil, and power supply');
+}
+// door 5: magnet on a cart rolls through a photogate toward the hula-hoop coil
+function hoopRig() {
+  let s = `<line x1="10" y1="168" x2="470" y2="168" stroke="${INK}" stroke-width="3"/>`;
+  s += `<rect x="40" y="128" width="96" height="26" rx="5" fill="#f4a259" stroke="${INK}" stroke-width="2"/><circle cx="60" cy="160" r="8" fill="${INK}"/><circle cx="116" cy="160" r="8" fill="${INK}"/>`;
+  s += magnet(48, 100, 80, 28, 'S') + arrow(140, 92, 190, 92, NCOL, 3) + mtext(165, 84, 'v', { fs: 15, it: true, col: NCOL });
+  s += `<path d="M205 168 V96 H245 V168" fill="none" stroke="${INK}" stroke-width="5"/><circle cx="225" cy="104" r="4" fill="${NCOL}"/>` + mtext(225, 86, 'photogate', { fs: 12, col: INK });
+  for (let i = 0; i < 5; i++) s += `<ellipse cx="${370 + i * 6}" cy="98" rx="20" ry="66" fill="none" stroke="${CU}" stroke-width="3"/>`;
+  s += mtext(400, 186, 'Giant Hula-Hoop Coil', { fs: 12, col: INK });
+  s += `<path d="M418 140 C450 140, 450 60, 418 50" fill="none" stroke="${CU}" stroke-width="2"/><circle cx="452" cy="96" r="14" fill="#fff" stroke="${INK}" stroke-width="2.2"/>` + mtext(452, 101, 'V', { fs: 15, fw: 700, col: INK });
+  return gridSvg(480, 196, s, 'magnet on a cart passes through a photogate into a large coil');
+}
+
+/* =====================================================================
+   ROOM DATA: Magnetism & Electromagnetic Induction
+   ===================================================================== */
+const ROOM = {
+  id: 'gp-magnetism',
+  salt: 'gp-magnetism::',
+  title: "VECTOR's Magnetic Personality",
+  intro: `The class robot vacuum, <b>VECTOR</b>, wrapped itself in 3 kilometers of copper wire and cranked up the current
+    to pick up paper clips faster. Now VECTOR is a walking <b>electromagnet</b>, and everything steel in the lab is stuck to it:
+    scissors, staplers, a fire extinguisher, and the lock on the lab door. Admiral Needle, a tiny and very proud compass,
+    can't find north anymore, and Dame Ferrita, a hedgehog made entirely of iron filings, has been stuck to VECTOR's bumper since second period.
+    Five magnetically sealed doors stand between you and VECTOR's OFF switch. Each one needs a code.`,
+  finaleCipher: [33,49,127,44,37,38,55], // teacher password, XOR-locked with the final door's code
+  wrongLines: [
+    "That code has zero attraction. Repelled!",
+    "Opposites attract... and you are the opposite of correct.",
+    "In-coil-rect. Try again.",
+    "You're way out of your field.",
+    "No current events here. That code is wrong.",
+    "That answer has no flux given. Denied.",
+    "Your answer is pointing south. Try again."
+  ],
+  doors: [
+    /* ---------------- DOOR 1 ---------------- */
+    {
+      name: "Admiral Needle's Compass Court", tag: 'Magnetic field patterns · poles',
+      render: () => `
+        ${say(`I hid the needles of Admiral Needle's five compasses. Without them, he's lost at sea. Figure out which way each compass needle would point, then read the letter for that direction from the table. Compasses 1 → 5 spell my <b>5-letter</b> code.`)}
+        <p class="note"><b>Remember:</b> the north (red) end of a compass needle points <b>along</b> the magnetic field. Outside a magnet, the field points <b>away from N</b> and <b>toward S</b>. The gray field lines show the shape of the field, but I removed the arrowheads. Mwahaha.</p>
+        <div class="grid g2" style="align-items:start">
+          <div class="card center"><h4>Diagram A · one bar magnet</h4>
+            ${gridSvg(460, 290, loops(150, 310, 145) + `<line x1="310" y1="145" x2="450" y2="145" stroke="#9aa7b8" stroke-width="1.6"/><line x1="10" y1="145" x2="150" y2="145" stroke="#9aa7b8" stroke-width="1.6"/>` + magnet(150, 125, 160, 40, 'S') + compassSpot(230, 34, 1) + compassSpot(398, 145, 2) + compassSpot(230, 256, 3) + compassSpot(62, 145, 4), 'bar magnet with four compasses')}
+            <p class="note" style="margin:4px 0 0">Compass 1 is directly above the middle of the magnet, 2 is just past the N end, 3 is directly below the middle, 4 is just past the S end.</p></div>
+          <div class="card center"><h4>Diagram B · two magnets, N facing N</h4>
+            ${gridSvg(400, 200, magnet(20, 120, 130, 40, 'S') + magnet(250, 120, 130, 40, 'N') + compassSpot(200, 56, 5) + `<line x1="200" y1="80" x2="200" y2="134" stroke="#9aa7b8" stroke-dasharray="4 4"/>` + mtext(200, 186, 'gap', { fs: 12, col: INK }), 'two bar magnets with north poles facing each other')}
+            <p class="note" style="margin:4px 0 0">Compass 5 sits directly above the <b>middle of the gap</b>. (These magnets are taped down. Otherwise, would they attract or repel?)</p>
+            <table class="data" style="margin:10px auto 0"><tr><th>Compass</th><th>↑ up</th><th>↓ down</th><th>← left</th><th>→ right</th></tr>
+              ${[['1', 'R', 'A', 'F', 'B'], ['2', 'O', 'U', 'S', 'I'], ['3', 'H', 'T', 'E', 'A'], ['4', 'N', 'C', 'R', 'L'], ['5', 'D', 'K', 'M', 'G']]
+                .map(r => `<tr><th>${r[0]}</th>${r.slice(1).map(c => `<td><b>${c}</b></td>`).join('')}</tr>`).join('')}</table></div>
+        </div>`,
+      fields: [{ label: 'Code word', w: 190, kind: 'word' }],
+      answers: ['14qykrmwi4d'],
+      hints: [
+        'Trace a field line from the N end, around the outside of the magnet, to the S end. Above and below the middle of the magnet, the field runs parallel to the magnet, heading toward S. Past the S end, the field points INTO the S pole.',
+        'Compass 4 is to the LEFT of the S pole, so its needle points right (toward S). In Diagram B, both N poles push field lines away, so straight above the gap the field points up, away from the magnets. The word is what surrounds every magnet.'
+      ],
+      success: "Admiral Needle salutes you and points proudly north. Door 1 unlocked."
+    },
+    /* ---------------- DOOR 2 ---------------- */
+    {
+      name: "Dame Ferrita's Right-Hand Relay", tag: 'Right-hand rules · team relay',
+      roles: true,
+      render: () => `
+        ${say(`Dame Ferrita's iron-filing spikes line up with any magnetic field, so she's my lie detector. Each card shows one wire. Use your <b>right hand</b> to find the direction asked for, then read its letter from the key. Letters in order <b>A, B, C, D</b> spell a <b>4-letter word</b>. Team of 3? Whoever finishes first takes Card D.`)}
+        <div class="card"><h4>Direction key</h4>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+            ${[['up', 'C', 'up the page'], ['down', 'S', 'down the page'], ['left', 'L', 'left'], ['right', 'O', 'right'], ['out', 'I', 'out of the page'], ['in', 'N', 'into the page']]
+              .map(([d, k, t]) => `<div class="card" style="display:flex;align-items:center;gap:6px;padding:6px 10px"><span class="badge" style="background:var(--teal)">${k}</span>${dirIcon(d)}<span class="note">${t}</span></div>`).join('')}
+          </div>
+          <p class="note" style="margin:8px 0 0"><b>⊙</b> = arrow coming toward you, out of the page (you see the tip). <b>⊗</b> = arrow going away from you, into the page (you see the tail feathers).</p></div>
+        <div class="roles" data-roles></div>
+        <div data-rolecard></div>`,
+      roleCards: {
+        A: `<div class="card rolecard"><h4>Card A · The Fountain Wire</h4>
+            <p>Looking straight down at a vertical wire. Its current flows <b>out of the page</b> (⊙), toward you. Point P is to the <b>right</b> of the wire.</p>
+            <div class="center">${gridSvg(260, 180, dotSym(90, 90, 16) + mtext(90, 130, 'I out of page', { fs: 12, col: INK }) + pointP(190, 90), 'wire with current out of the page and point P to its right')}</div>
+            <p><b>Your question:</b> Which way does the <b>magnetic field</b> point at P? (Right-hand grip rule: thumb along the current, fingers curl along B.)</p></div>`,
+        B: `<div class="card rolecard"><h4>Card B · The Drain Wire</h4>
+            <p>Looking straight down at another vertical wire. Its current flows <b>into the page</b> (⊗), away from you. Point P is directly <b>above</b> the wire on the page.</p>
+            <div class="center">${gridSvg(260, 180, crossSym(130, 130, 16) + mtext(175, 135, 'I into page', { fs: 12, col: INK, a: 'start' }) + pointP(130, 44), 'wire with current into the page and point P above it')}</div>
+            <p><b>Your question:</b> Which way does the <b>magnetic field</b> point at P?</p></div>`,
+        C: `<div class="card rolecard"><h4>Card C · The Tightrope Wire</h4>
+            <p>A long straight wire lies flat on the page. Its current flows to the <b>right</b>. Point P is <b>above</b> the wire on the page.</p>
+            <div class="center">${gridSvg(260, 180, `<line x1="20" y1="120" x2="240" y2="120" stroke="${INK}" stroke-width="4"/>` + arrow(150, 120, 200, 120, NCOL, 4) + mtext(175, 145, 'I', { fs: 16, it: true, col: NCOL }) + pointP(120, 54), 'horizontal wire with current to the right and point P above it')}</div>
+            <p><b>Your question:</b> Which way does the <b>magnetic field</b> point at P?</p></div>`,
+        D: `<div class="card rolecard"><h4>Card D · The Wire in the Field</h4>
+            <p>A wire runs straight up the page with current flowing <b>up</b>. It sits inside one of VECTOR's magnetic fields, which points <b>into the page</b> (blue ✕ marks).</p>
+            <div class="center">${gridSvg(260, 200, (() => { let s = ''; for (let x = 30; x <= 230; x += 40) for (let y = 30; y <= 170; y += 35) if (Math.abs(x - 130) > 20) s += smallX(x, y); return s; })() + `<line x1="130" y1="190" x2="130" y2="10" stroke="${INK}" stroke-width="4"/>` + arrow(130, 110, 130, 60, NCOL, 4) + mtext(146, 92, 'I', { fs: 16, it: true, col: NCOL, a: 'start' }) + mtext(232, 196, 'B into page', { fs: 12, col: SCOL, a: 'end' }), 'vertical wire with upward current in a field into the page')}</div>
+            <p><b>Your question:</b> Which way is the <b>magnetic force</b> on the wire? (Right-hand rule for force: fingers along the current, curl toward B, or use the flat-hand version your teacher showed you.)</p></div>`
+      },
+      fields: [{ label: 'Team word (A B C D)', w: 190, kind: 'word' }],
+      answers: ['c6zxbgbwsp'],
+      hints: [
+        'Wire rules: point your right thumb along the current; your fingers curl the way B circles the wire. For ⊙ (current toward you), B circles counterclockwise as you see it. For ⊗, clockwise. B at a point is tangent to the circle through that point.',
+        'A: counterclockwise circle, at the right side, is moving up. B: clockwise circle, at the top, is moving right. C: thumb right, fingers come up out of the page above the wire. D: the force is left. The word is something you wrap around a nail.'
+      ],
+      success: "Dame Ferrita's spikes stand up and applaud. Door 2 unlocked."
+    },
+    /* ---------------- DOOR 3 ---------------- */
+    {
+      name: 'The Motor Workshop', tag: 'F = BIL · motors vs. generators',
+      render: () => `
+        ${say(`My wheels are driven by electric motors: forces on current-carrying wires in magnetic fields. Solve each problem with <b>F = BIL</b>. Every answer is a whole number from 1 to 26. Turn each number into a letter (<b>A = 1, B = 2, ... Z = 26</b>) to spell a <b>5-letter</b> word. In every problem, the wire is <b>perpendicular</b> to the field.`)}
+        <ol class="problems">
+          <li><span class="slot">1</span><span>VECTOR's left wheel motor has <b>2 m</b> of wire in a <b>0.5 T</b> field, carrying <b>13 A</b>. What is the force on the wire, in newtons?</span></li>
+          <li><span class="slot">2</span><span>Dame Ferrita's heated hedgehog blanket has <b>5 m</b> of wire carrying <b>12 A</b> through a <b>0.25 T</b> field. Find the force, in newtons.</span></li>
+          <li><span class="slot">3</span><span>A wire <b>500 cm</b> long carries <b>10 A</b> in a <b>0.4 T</b> field. Find the force, in newtons. (Careful with the units!)</span></li>
+          <li><span class="slot">4</span><span>Admiral Needle's tiny boat motor feels a force of <b>6 N</b> on <b>2 m</b> of wire in a <b>0.2 T</b> field. What <b>current</b> flows, in amps?</span></li>
+          <li><span class="slot">5</span><span>A magnetic force of <b>54 N</b> acts on a wire carrying <b>2 A</b> in a <b>1.5 T</b> field. How <b>long</b> is the wire, in meters?</span></li>
+        </ol>
+        <div class="card" style="margin-top:10px"><h4>Second lock · Motor or generator?</h4>
+          <p class="note" style="margin-top:0">A <b>motor</b> turns electrical energy into motion. A <b>generator</b> turns motion into electrical energy. How many of these eight gadgets are <b>generators</b>?</p>
+          <div class="grid g3">${['Electric desk fan', 'Hand-crank emergency flashlight', 'Wind turbine', 'Kitchen blender', 'Bicycle wheel dynamo light', 'Hydroelectric dam', "VECTOR's wheels", 'Car alternator (charges the battery while the engine runs)']
+            .map(g => `<div class="stmt" style="margin:0">${g}</div>`).join('')}</div></div>`,
+      fields: [{ label: 'Code word', w: 190, kind: 'word' }, { label: 'Number of generators', w: 150, kind: 'num' }],
+      answers: ['olvjev9k3c'],
+      hints: [
+        'F = BIL. To find the current, rearrange to I = F ÷ (BL). To find the length, L = F ÷ (BI). Change 500 cm to meters first (100 cm = 1 m).',
+        'The numbers are 13, 15, 20, 15, 18. For the second lock, ask "does it USE electricity to make motion, or MAKE electricity from motion?" Only the fan, the blender, and VECTOR\'s wheels are motors.'
+      ],
+      success: "Motors humming, generators spinning. Door 3 unlocked."
+    },
+    /* ---------------- DOOR 4 ---------------- */
+    {
+      name: 'The Paper Clip Lab', tag: 'Electromagnets · analyze lab data',
+      render: () => `
+        ${say(`I built my electromagnet by trial and error. Lots of error. Now <b>you</b> have to figure out how strong it could be. If you can predict it, I'll open the door. (I won't. Okay, I will.)`)}
+        <p>Students wrapped insulated wire around an iron nail and connected it to a lab power supply set to a constant <b>2.0 A</b>. They counted how many paper clips the nail could lift for different numbers of turns (loops) of wire.</p>
+        <div class="grid g2" style="align-items:start">
+          <div>
+            <div class="card center">${electromagnet()}</div>
+            <table class="data"><tr><th>Turns of wire</th><th>Paper clips lifted</th></tr>
+              <tr><td>10</td><td>4</td></tr><tr><td>20</td><td>9</td></tr><tr><td>30</td><td>13</td></tr><tr><td>40</td><td>18</td></tr><tr><td>50</td><td>22</td></tr></table>
+          </div>
+          <div class="card">
+            <h4>Lock 1 · Make a prediction</h4>
+            <ol style="margin:0;padding-left:18px">
+              <li>Graph <b>paper clips (y-axis) vs. turns (x-axis)</b> on graph paper.</li>
+              <li>Draw a best-fit line. Find its slope (clips per turn).</li>
+              <li>Predict how many paper clips the nail would lift with <b>80 turns</b> at the same 2.0 A current.</li>
+            </ol>
+            <h4 style="margin-top:12px">Lock 2 · True or false?</h4>
+            <p class="note" style="margin-top:0">Add up the numbers of the <b>TRUE</b> statements.</p>
+            ${[[1, 'Adding more turns of wire makes an electromagnet stronger.'], [2, 'Replacing the iron nail with a wooden pencil makes the electromagnet stronger.'], [4, 'Increasing the current makes an electromagnet stronger.'], [8, 'Holding a magnet perfectly still inside a coil produces a steady induced current.'], [16, 'Pushing a magnet into a coil faster produces a bigger induced voltage.'], [32, 'An electric motor turns mechanical energy (motion) into electrical energy.'], [64, 'Pulling the magnet back out of the coil reverses the direction of the induced current.'], [128, 'Switching off the current makes an iron-core electromagnet lose most of its magnetism.']]
+              .map(([n, t]) => `<div class="stmt"><span class="num">${n}</span><span>${t}</span></div>`).join('')}
+          </div>
+        </div>`,
+      fields: [{ label: 'Clips at 80 turns', w: 150, kind: 'num' }, { label: 'Sum of TRUE', w: 150, kind: 'num' }],
+      answers: ['26c401imeex',  'kenikpx87l',  '1aqm9xqrdpr',  '2ezw13nyu01',  'w43b648goe'], // 34–38 clips | 213
+      hints: [
+        'The points fall close to a straight line through the origin: roughly 9 clips for every 20 turns. Extend your best-fit line out to 80 turns. For Lock 2: induced current needs CHANGING magnetic field (motion), and a motor is the opposite of a generator.',
+        'Slope ≈ (22 − 4) ÷ (50 − 10) ≈ 0.45 clips per turn, so 80 turns ≈ 36 clips (anything from 34 to 38 is accepted). Statements 2, 8, and 32 are false.'
+      ],
+      success: "Prediction confirmed. Dame Ferrita is impressed and only slightly stuck to the nail. Door 4 unlocked."
+    },
+    /* ---------------- DOOR 5 ---------------- */
+    {
+      name: 'The Hula-Hoop Generator', tag: "Faraday's law · team relay",
+      roles: true,
+      render: () => `
+        ${say(`My OFF switch only works if the <b>Giant Hula-Hoop Coil</b> produces exactly the right induced voltage. A magnet rides a cart through a photogate and into the coil. Each card holds one piece. <b>Cards A, B, and C feed Card D</b>, so talk! Team of 3? One player holds both Card C and Card D.`, 'mad')}
+        <div class="card center">${hoopRig()}
+          <p class="note" style="margin:4px 0 0">Faraday's law: <b>EMF = N · ΔΦ ÷ Δt</b>, where magnetic flux Φ = B · A (field × area of one loop).</p></div>
+        <div class="roles" data-roles></div>
+        <div data-rolecard></div>`,
+      roleCards: {
+        A: `<div class="card rolecard"><h4>Card A · The Flux Meter</h4>
+            <p>Each loop of the hula-hoop coil has an area of <b>5 m²</b>. Before the magnet arrives, the field through the hoop is <b>0.1 T</b>. Once the magnet is all the way in, the field through the hoop is <b>0.5 T</b>.</p>
+            <p><b>Your question:</b> What is the <b>change in magnetic flux</b> ΔΦ through one loop, in webers (Wb = T·m²)? Tell Card D.</p></div>`,
+        B: `<div class="card rolecard"><h4>Card B · The Photogate</h4>
+            <p>The photogate reads the cart's speed as <b>0.30 m/s</b>, and the cart rolls at constant speed. The magnet has to travel <b>1.2 m</b> from where the field starts to change until it is all the way inside the hoop.</p>
+            <div class="center"><span style="font-family:var(--mono);font-size:22px;background:#cfe3c8;border:2px solid var(--ink);border-radius:8px;display:inline-block;padding:4px 14px">v = 0.30 m/s</span></div>
+            <p><b>Your question:</b> How long does the change take, Δt, in seconds? Tell Card D.</p></div>`,
+        C: `<div class="card rolecard"><h4>Card C · The Wire Spool</h4>
+            <p>Professor Whiskers, a hamster with a hard hat, wound the coil. He used <b>400 m</b> of copper wire, and each loop of the hoop is <b>8 m</b> around.</p>
+            <p><b>Your question:</b> How many <b>turns</b> N does the coil have? Tell Card D.</p></div>`,
+        D: `<div class="card rolecard"><h4>Card D · The Voltmeter</h4>
+            <p>You are reading the voltmeter connected to the coil. You need ΔΦ from Card A, Δt from Card B, and N from Card C.</p>
+            <p><b>Your question:</b> What <b>EMF</b> (induced voltage) does the voltmeter read while the magnet moves in, in volts? (EMF = N · ΔΦ ÷ Δt)</p>
+            <p class="note">Bonus thought: what would the meter show if the cart stopped with the magnet sitting inside the hoop?</p></div>`
+      },
+      fields: [
+        { label: 'A · ΔΦ (Wb)', w: 120, kind: 'num' }, { label: 'B · Δt (s)', w: 120, kind: 'num' },
+        { label: 'C · turns N', w: 120, kind: 'num' }, { label: 'D · EMF (V)', w: 120, kind: 'num' }
+      ],
+      answers: ['jgadp5h783'],
+      hints: [
+        'A: ΔΦ = (B_final − B_initial) × A. B: time = distance ÷ speed. C: number of loops = total wire length ÷ length of one loop.',
+        'ΔΦ = (0.5 − 0.1) × 5 = 2 Wb, Δt = 1.2 ÷ 0.30 = 4 s, N = 400 ÷ 8 = 50. Now plug into EMF = N · ΔΦ ÷ Δt.'
+      ],
+      success: "NOOO! 25 volts, exactly enough to trip my OFF switch! Everything is... falling... off... *clang* *clang* *CLANG*"
+    }
+  ]
+};
+
+/* =====================================================================
+   ENGINE
+   ===================================================================== */
+const KEY = 'escape:' + ROOM.id;
+const store = {
+  get() { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch (e) { return null; } },
+  set(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} },
+  clear() { try { localStorage.removeItem(KEY); } catch (e) {} }
+};
+let S = store.get() || { started: false, team: '', size: 4, start: 0, end: 0, door: 0, hints: {}, wrong: 0, role: 'A', timer: null };
+const save = () => store.set(S);
+const $ = (q, el = document) => el.querySelector(q);
+const fmt = ms => { const s = Math.max(0, Math.floor(ms / 1000)); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
+const hintsUsed = () => Object.values(S.hints).reduce((a, b) => a + b, 0);
+
+function timerLive() { return S.timer && S.timer.end && S.timer.day === dayKey(); }
+function timeUp() { return timerLive() && Date.now() >= S.timer.end && !S.end; }
+function hud() {
+  const t = S.started ? fmt((S.end || Date.now()) - S.start) : '00:00';
+  let chip;
+  if (timerLive() && !S.end) { const left = S.timer.end - Date.now();
+    chip = `<button class="tchip ${left < 5 * 60000 ? 'low' : ''}" id="tchip" title="Class timer">⏳ Class <b>${left > 0 ? fmt(left) : '0:00'}</b></button>`; }
+  else chip = `<button class="tchip" id="tchip" title="Enter class timer code">⏲ ${S.timer && S.timer.off && S.timer.day === dayKey() ? 'Timer off' : 'Timer code'}</button>`;
+  $('#hud').innerHTML = `${chip}<span title="Your team's time">⏱ <b>${t}</b></span><span title="Hints used">💡 <b>${hintsUsed()}</b></span><span title="Wrong codes">✖ <b>${S.wrong}</b></span>`;
+  $('#tchip').onclick = () => { $('#timerBox').classList.toggle('on'); $('#timerInput').focus(); };
+}
+let shownTimeUp = false;
+setInterval(() => { hud(); const up = timeUp() && S.started; if (up !== shownTimeUp) render(); }, 1000);
+function applyTimerCode(raw, msgEl) {
+  const r = parseTimerCode(raw);
+  if (!r) { if (msgEl) { msgEl.style.color = '#ffb3bd'; msgEl.textContent = "That timer code isn't valid. Check the board and try again."; } return false; }
+  S.timer = r.type === 'off' ? { off: true, end: null, day: dayKey() } : { off: false, end: r.end, day: dayKey() };
+  save();
+  if (msgEl) { msgEl.style.color = '#9ff0b8'; msgEl.textContent = r.type === 'off' ? 'Timer turned off. Keep going!' : `Timer set: ends at ${new Date(r.end).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}.`; }
+  render(); return true;
+}
+
+function hall() {
+  $('#hall').innerHTML = ROOM.doors.map((d, i) => {
+    const cls = i < S.door ? 'open' : (i === S.door && S.started && !S.end ? 'current' : '');
+    return `<div class="door-pill ${cls}"><span class="lock"></span><span class="n">${i + 1}</span>${d.name}</div>`;
+  }).join('');
+}
+
+function normalize(v, f) {
+  v = String(v).trim();
+  if (f.kind === 'word') return v.toUpperCase().replace(/[^A-Z]/g, '');
+  const n = parseFloat(v.replace(/,/g, '').replace(/[^0-9.\-]/g, ''));
+  if (isNaN(n)) return '';
+  const r = f.roundTo || 1;
+  return String(Math.round(Math.abs(n) / r) * r);
+}
+
+function render() {
+  hud(); hall();
+  const st = $('#stage');
+  if (!S.started) return renderIntro(st);
+  if (S.door >= ROOM.doors.length) { shownTimeUp = false; return renderFinale(st); }
+  shownTimeUp = timeUp();
+  if (shownTimeUp) return renderTimeUp(st);
+  const i = S.door, d = ROOM.doors[i];
+  st.innerHTML = `<span class="tag">Door ${i + 1} of ${ROOM.doors.length} · ${d.tag}</span><h2>${d.name}</h2>${d.render()}
+    <div class="lockbox">
+      <div class="lbl">🔒 Door ${i + 1} lock</div>
+      <form class="fields" id="lockForm" autocomplete="off">
+        ${d.fields.map((f, k) => `<label class="field">${f.label}<input style="--w:${f.w}px" name="f${k}" inputmode="${f.kind === 'num' ? 'decimal' : 'text'}" required></label>`).join('')}
+        <button class="btn" type="submit">Try code</button>
+      </form>
+      <div class="feedback" id="fb" aria-live="polite"></div>
+      <div class="hints no-print">${d.hints.map((h, k) => `<button class="btn ghost" data-hint="${k}" ${k > (S.hints[i] || 0) ? 'disabled style="opacity:.4"' : ''}>💡 Hint ${k + 1}</button>`).join('')}</div>
+      <div id="hintOut">${d.hints.slice(0, S.hints[i] || 0).map(h => `<div class="hinttext">${h}</div>`).join('')}</div>
+    </div>`;
+  if (d.roles) setupRoles(st, d);
+  $('#lockForm').addEventListener('submit', e => { e.preventDefault(); check(d, i); });
+  st.querySelectorAll('[data-hint]').forEach(b => b.addEventListener('click', () => {
+    const k = +b.dataset.hint; if ((S.hints[i] || 0) <= k) { S.hints[i] = k + 1; save(); render(); }
+  }));
+  const first = st.querySelector('#lockForm input'); if (first && document.activeElement === document.body) first.focus({ preventScroll: true });
+}
+
+function setupRoles(st, d) {
+  const box = $('[data-roles]', st), out = $('[data-rolecard]', st);
+  const keys = Object.keys(d.roleCards);
+  const draw = () => {
+    box.innerHTML = '<span class="note" style="align-self:center;margin-right:4px">I am holding:</span>' + keys.map(k => `<button type="button" class="${k === S.role ? 'on' : ''}" data-r="${k}">Card ${k}</button>`).join('');
+    out.innerHTML = d.roleCards[S.role] || '';
+    box.querySelectorAll('[data-r]').forEach(b => b.addEventListener('click', () => { S.role = b.dataset.r; save(); draw(); }));
+  };
+  draw();
+}
+
+function check(d, i) {
+  const form = $('#lockForm'), fb = $('#fb');
+  const vals = d.fields.map((f, k) => normalize(form.elements['f' + k].value, f));
+  const h = cyrb53(ROOM.salt + 'd' + (i + 1) + '::' + vals.join('|'));
+  if (d.answers.includes(h)) {
+    S.door = i + 1;
+    if (S.door >= ROOM.doors.length) { S.end = Date.now(); S.key = vals.join('|'); }
+    save();
+    fb.className = 'feedback good'; fb.textContent = '✔ ' + d.success;
+    form.querySelector('button').disabled = true;
+    setTimeout(render, 1400);
+  } else {
+    S.wrong++; save(); hud();
+    fb.className = 'feedback bad';
+    fb.textContent = '✖ ' + ROOM.wrongLines[Math.floor(Math.random() * ROOM.wrongLines.length)];
+    form.classList.remove('shake'); void form.offsetWidth; form.classList.add('shake');
+  }
+}
+
+function renderIntro(st) {
+  st.innerHTML = `<div class="center">
+      <span class="tag">Escape Room · Teams of 3–4</span>
+      <h2>${ROOM.title}</h2></div>
+      ${say(ROOM.intro + ' <br><br>The clock starts when you press the button. Hints are free, but I <i>count</i> them. Mwahaha.')}
+      <div class="setup">
+        <div><label for="team">Team name</label><input id="team" maxlength="40" placeholder="e.g., The North Stars" value="${S.team || ''}"></div>
+        <div><label for="names">Team members</label><input id="names" maxlength="120" placeholder="First names" value="${S.names || ''}"></div>
+        <div><label for="size">Players</label><select id="size"><option value="3">3 players</option><option value="4" selected>4 players</option></select></div>
+        <div><label for="tcode">Class timer code <span class="note">(from the board, if your teacher posted one)</span></label><input id="tcode" maxlength="12" placeholder="e.g., 1452-AB" style="font-family:var(--mono);text-transform:uppercase"></div>
+        <div id="tcodeMsg" class="note"></div>
+        <p class="note" style="margin:0">Every player opens this page on their own Chromebook and enters the <b>same</b> team name. Bring paper, a pencil, and a calculator.</p>
+        <button class="btn dark" id="go">Start the clock ▶</button>
+      </div>`;
+  $('#size').value = S.size || 4;
+  $('#go').addEventListener('click', () => {
+    const tc = $('#tcode').value.trim();
+    if (tc && !parseTimerCode(tc)) { $('#tcodeMsg').style.color = '#d1495b'; $('#tcodeMsg').textContent = "That timer code isn't valid. Fix it or leave it blank."; return; }
+    S.team = $('#team').value.trim() || 'Unnamed Team'; S.names = $('#names').value.trim(); S.size = +$('#size').value;
+    if (tc) { const r = parseTimerCode(tc); S.timer = r.type === 'off' ? { off: true, end: null, day: dayKey() } : { off: false, end: r.end, day: dayKey() }; }
+    S.started = true; S.start = Date.now(); save(); render();
+  });
+}
+
+function renderFinale(st) {
+  const t = fmt(S.end - S.start);
+  st.innerHTML = `<div class="center">
+      ${say(`Fine. FINE. You escaped. I'll go back to vacuuming. Show this screen to your teacher.`, 'happy')}
+      <div class="cert">
+        <div class="tag">Certificate of Escape</div>
+        <h2 style="margin:4px 0">${escapeHtml(S.team)}</h2>
+        <div class="note">${escapeHtml(S.names || '')}</div>
+        <div class="stats"><div>Time<b>${t}</b></div><div>Hints<b>${hintsUsed()}</b></div><div>Wrong codes<b>${S.wrong}</b></div></div>
+        <div class="note">Finish code (your teacher types this in)</div>
+        <div class="fcode">${finishCode(S.end, Math.min(99, hintsUsed()))}</div>
+        <div class="note" style="margin-top:8px">Teacher password</div>
+        <div class="pw">${unlockPw()}</div>
+        <div class="note">${new Date(S.end).toLocaleString()} · Magnetism · ${ROOM.title}</div>
+      </div>
+      <p class="no-print"><button class="btn dark" onclick="window.print()">Print certificate</button></p>
+    </div>`;
+}
+function renderTimeUp(st) {
+  const opened = S.door;
+  st.innerHTML = `<div class="timeup">
+      ${say(`Beep boop... <b>TIME'S UP!</b> The lab stays locked. Show this screen to your teacher.`, 'happy')}
+      <h2>⏰ Time's Up</h2>
+      <div class="cert">
+        <h2 style="margin:4px 0;color:var(--ink);font-size:24px">${escapeHtml(S.team)}</h2>
+        <div class="note">${escapeHtml(S.names || '')}</div>
+        <div class="stats"><div>Doors opened<b>${opened} / ${ROOM.doors.length}</b></div><div>Hints<b>${hintsUsed()}</b></div><div>Wrong codes<b>${S.wrong}</b></div></div>
+        <div class="note">Stopped on Door ${Math.min(opened + 1, ROOM.doors.length)}: ${ROOM.doors[Math.min(opened, ROOM.doors.length - 1)].name}</div>
+      </div>
+      <p class="note">Did your teacher give more time? Type the new code from the board:</p>
+      <form id="moreTime" autocomplete="off" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <input id="moreInput" placeholder="1505-AB" style="font-family:var(--mono);font-size:20px;letter-spacing:.1em;width:180px;padding:8px 10px;border-radius:9px;border:2px solid var(--line);text-transform:uppercase">
+        <button class="btn dark" type="submit">Keep going</button></form>
+      <div id="moreMsg" class="note" style="margin-top:6px"></div>
+    </div>`;
+  $('#moreTime').addEventListener('submit', e => { e.preventDefault(); const m = $('#moreMsg'); applyTimerCode($('#moreInput').value, m); if (m.textContent.startsWith('That')) m.style.color = '#d1495b'; });
+}
+function unlockPw() { const k = ROOM.salt + (S.key || ''); return ROOM.finaleCipher.map((b, i) => String.fromCharCode(b ^ k.charCodeAt(i % k.length))).join(''); }
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+$('#timerForm').addEventListener('submit', e => { e.preventDefault(); if (applyTimerCode($('#timerInput').value, $('#timerMsg'))) { $('#timerInput').value = ''; setTimeout(() => $('#timerBox').classList.remove('on'), 1600); } });
+$('#timerClose').addEventListener('click', () => $('#timerBox').classList.remove('on'));
+$('#resetBtn').addEventListener('click', () => $('#confirmBox').classList.add('on'));
+$('#resetNo').addEventListener('click', () => $('#confirmBox').classList.remove('on'));
+$('#resetYes').addEventListener('click', () => { store.clear(); S = { started: false, team: '', size: 4, start: 0, end: 0, door: 0, hints: {}, wrong: 0, role: 'A', timer: null }; $('#confirmBox').classList.remove('on'); render(); });
+render();
+</script>
+</body>
+</html>

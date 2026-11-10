@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Class Escape Timer · Mr. C's Science</title>
+<style>
+:root{--ink:#14213d;--paper:#fbf8f1;--line:#d9d2c3;--teal:#0f8b8d;--amber:#f4a259;--red:#d1495b;--green:#3a9d5d;--night:#0d1b2a;--night-2:#1b263b;--glow:#7ee8e0;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;--sans:"Avenir Next","Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif}
+*{box-sizing:border-box}body{margin:0;font-family:var(--sans);color:#e8f1f2;background:var(--night);
+  background-image:linear-gradient(rgba(126,232,224,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(126,232,224,.06) 1px,transparent 1px);background-size:28px 28px;min-height:100vh}
+.wrap{max-width:1180px;margin:0 auto;padding:22px 20px 50px}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--glow)}
+h1{margin:4px 0 16px;font-size:28px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{font:inherit;font-weight:700;border:0;border-radius:10px;padding:10px 16px;cursor:pointer;background:var(--amber);color:var(--ink)}
+.btn.ghost{background:transparent;color:#cfe0ea;border:1px solid #3b4d6b;font-weight:500}
+.btn.red{background:var(--red);color:#fff}.btn.teal{background:var(--teal);color:#fff}
+.btn:disabled{opacity:.4;cursor:default}
+input{font:inherit;padding:9px 11px;border-radius:9px;border:2px solid #3b4d6b;background:#0d1b2a;color:#fff}
+input:focus{outline:none;border-color:var(--amber)}
+.layout{display:grid;grid-template-columns:1.25fr 1fr;gap:18px}
+@media (max-width:900px){.layout{grid-template-columns:1fr}}
+.box{background:var(--night-2);border:1px solid #2f3e5a;border-radius:16px;padding:18px 20px}
+.clock{font-family:var(--mono);font-weight:700;font-size:clamp(72px,12vw,150px);line-height:1;letter-spacing:.02em;text-align:center;margin:8px 0}
+.clock.low{color:#ffb3bd}.clock.up{color:var(--red);animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.35}}
+.sub{text-align:center;color:#b9c6d6;font-size:18px}
+.codebox{text-align:center;margin:16px 0 4px;background:#0d1b2a;border:2px dashed var(--amber);border-radius:14px;padding:10px}
+.codebox .lbl{font-family:var(--mono);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber)}
+.codebox .code{font-family:var(--mono);font-size:clamp(40px,6vw,64px);font-weight:700;letter-spacing:.12em}
+.codebox.fresh{animation:fresh 1.2s 3}
+@keyframes fresh{50%{background:#3a2a12}}
+.controls{margin-top:14px;justify-content:center}
+.lb h2{margin:0 0 10px;font-size:22px}
+table{width:100%;border-collapse:collapse;font-size:20px}
+th{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#8fa0b8;text-align:left;padding:6px 8px;border-bottom:1px solid #2f3e5a}
+td{padding:10px 8px;border-bottom:1px solid #22304a}
+td.t{font-family:var(--mono);font-weight:700}
+tr.first td{color:var(--amber)}
+.rank{font-family:var(--mono);color:#8fa0b8}
+.x{background:none;border:0;color:#6f819b;cursor:pointer;font-size:16px}
+.empty{color:#6f819b;text-align:center;padding:18px 0}
+.msg{min-height:22px;font-size:14px;margin-top:6px}
+.msg.bad{color:#ffb3bd}.msg.good{color:#9ff0b8}
+.presets button{min-width:72px}
+.gate{max-width:420px;margin:80px auto;text-align:center}
+.note{color:#8fa0b8;font-size:13px}
+.hidden{display:none!important}
+.foot{color:#6f819b;font-size:12px;text-align:center;margin-top:22px}
+.foot a{color:#9fd9d4}
+details{margin-top:18px;color:#b9c6d6;font-size:14px}
+summary{cursor:pointer}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- PIN gate -->
+  <div id="gate" class="gate box">
+    <div class="kicker">Mr. C's Science · Teacher</div>
+    <h1>Class Escape Timer</h1>
+    <form id="pinForm" class="row" style="justify-content:center"><input id="pin" type="password" placeholder="Teacher PIN" autocomplete="off"><button class="btn">Open</button></form>
+    <div id="pinMsg" class="msg bad"></div>
+  </div>
+
+  <div id="app" class="hidden">
+    <div class="row"><div><div class="kicker">Mr. C's Science · Escape Rooms</div><h1 style="margin-bottom:12px">Class Escape Timer</h1></div>
+      <div style="flex:1"></div><button class="btn ghost" id="fsBtn">⛶ Full screen</button></div>
+
+    <!-- setup -->
+    <div id="setup" class="box">
+      <h2 style="margin:0 0 8px">Start a class timer</h2>
+      <p class="note" style="margin-top:0">Students type the code shown on the board into their escape room. When time runs out, their rooms lock and show their progress.</p>
+      <div class="row presets">
+        <button class="btn ghost" data-min="15">15 min</button><button class="btn ghost" data-min="20">20 min</button>
+        <button class="btn ghost" data-min="30">30 min</button><button class="btn ghost" data-min="40">40 min</button>
+        <button class="btn ghost" data-min="45">45 min</button>
+        <span class="note">or</span><input id="customMin" type="number" min="1" max="240" placeholder="minutes" style="width:110px">
+        <button class="btn" id="startBtn">Start ▶</button>
+        <button class="btn ghost" id="noTimerBtn" title="Track finish times with no time limit">Start with no time limit</button>
+      </div>
+      <div id="setupMsg" class="msg"></div>
+    </div>
+
+    <!-- running -->
+    <div id="running" class="layout hidden">
+      <div class="box">
+        <div id="clock" class="clock">--:--</div>
+        <div id="sub" class="sub"></div>
+        <div id="codebox" class="codebox"><div class="lbl" id="codeLbl">Timer code: type this in your room</div><div class="code" id="code">----</div></div>
+        <div class="row controls">
+          <button class="btn ghost" data-add="2">+2 min</button><button class="btn ghost" data-add="5">+5 min</button><button class="btn ghost" data-add="10">+10 min</button>
+          <button class="btn teal" id="offBtn">Turn timer off</button>
+          <button class="btn red" id="endBtn">End now</button>
+        </div>
+        <p class="note" style="text-align:center">After +time or turning the timer off, a <b>new code</b> appears. Students whose rooms locked type it to keep going.</p>
+      </div>
+      <div class="box lb">
+        <h2>🏁 Finish line</h2>
+        <form id="finForm" class="row" autocomplete="off">
+          <input id="finTeam" placeholder="Team name" style="flex:1;min-width:140px">
+          <input id="finCode" placeholder="Finish code" style="width:170px;font-family:var(--mono);text-transform:uppercase">
+          <button class="btn">Add</button>
+        </form>
+        <div id="finMsg" class="msg"></div>
+        <table><thead><tr><th>#</th><th>Team</th><th>Time</th><th>Hints</th><th></th></tr></thead><tbody id="lbBody"></tbody></table>
+        <p class="note">Time = when the team escaped − when you pressed Start. Finish codes come from each team's escape certificate and only work today.</p>
+      </div>
+    </div>
+    <div id="newClassRow" class="row hidden" style="justify-content:center;margin-top:16px">
+      <button class="btn ghost" id="newClass">New class (clear timer &amp; leaderboard)</button>
+    </div>
+
+    <details><summary>Change the teacher PIN</summary>
+      <p>Type a new PIN, then replace the <code>PIN_HASH</code> line near the top of the script in <code>teacher.html</code> with this:</p>
+      <div class="row"><input id="newPin" placeholder="New PIN"><button class="btn ghost" id="mkPin" type="button">Make line</button></div>
+      <pre id="pinLine" style="background:#0d1b2a;padding:10px;border-radius:8px;white-space:pre-wrap"></pre>
+    </details>
+  </div>
+  <div class="foot"><a href="index.html">All escape rooms</a></div>
+</div>
+<script>
+function cyrb53(str, seed = 0) {
+  let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+  for (let i = 0, ch; i < str.length; i++) { ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507); h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507); h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+const PIN_HASH = '17x4u1phk5'; // default PIN: escape2026
+/* ---------- CLASS TIMER + FINISH CODES (shared with teacher.html; keep identical) ---------- */
+const TALPH = 'ACDEFGHJKMNPQRTUVWXY34679';
+const pad2 = n => String(n).padStart(2, '0');
+function dayKey(d = new Date()) { return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+function tmac(s, day) { const h = parseInt(cyrb53('mrc-class-timer::' + (day || dayKey()) + '::' + s), 36); return TALPH[h % 25] + TALPH[Math.floor(h / 25) % 25]; }
+function timerCode(endMs) { const d = new Date(endMs), t = pad2(d.getHours()) + pad2(d.getMinutes()); return t + '-' + tmac('T' + t); }
+function offCode() { return 'OFF-' + tmac('OFF'); }
+function finishCode(ms, hints) { const d = new Date(ms), t = pad2(d.getHours()) + pad2(d.getMinutes()) + pad2(d.getSeconds()); return t + '-' + hints + '-' + tmac('F' + t + '-' + hints); }
+function cleanCode(raw) { return String(raw || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
+// -> {type:'end', end:ms} | {type:'off'} | null
+function parseTimerCode(raw) {
+  const c = cleanCode(raw); let m;
+  if ((m = c.match(/^OFF([A-Z0-9]{2})$/)) && m[1] === tmac('OFF')) return { type: 'off' };
+  if ((m = c.match(/^(\d{4})([A-Z0-9]{2})$/)) && m[2] === tmac('T' + m[1])) {
+    const hh = +m[1].slice(0, 2), mm = +m[1].slice(2); if (hh > 23 || mm > 59) return null;
+    const d = new Date(); d.setHours(hh, mm, 0, 0); return { type: 'end', end: d.getTime() };
+  }
+  return null;
+}
+// -> {finish:ms, hints:n} | null
+function parseFinishCode(raw) {
+  const c = String(raw || '').toUpperCase().replace(/\s/g, ''); const m = c.match(/^(\d{6})-?(\d{1,2})-?([A-Z0-9]{2})$/);
+  if (!m || m[3] !== tmac('F' + m[1] + '-' + (+m[2]))) return null;
+  const d = new Date(); d.setHours(+m[1].slice(0, 2), +m[1].slice(2, 4), +m[1].slice(4), 0);
+  return { finish: d.getTime(), hints: +m[2] };
+}
+
+const $ = q => document.querySelector(q);
+const KEY = 'mrc-teacher-timer';
+const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch (e) { return null; } };
+const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(T)); } catch (e) {} };
+let T = load();
+if (!T || T.day !== dayKey()) T = { day: dayKey(), start: 0, end: null, off: false, noLimit: false, finishers: [] };
+const fmt = ms => { const neg = ms < 0; ms = Math.abs(ms); const s = Math.floor(ms / 1000), h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60);
+  return (neg ? '−' : '') + (h ? h + ':' + pad2(m) : m) + ':' + pad2(s % 60); };
+const clock12 = ms => new Date(ms).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+const roundUpMin = ms => Math.ceil(ms / 60000) * 60000;
+
+// gate
+let authed = false; try { authed = sessionStorage.getItem('mrc-teacher-ok') === '1'; } catch (e) {}
+$('#pinForm').addEventListener('submit', e => { e.preventDefault();
+  if (cyrb53('mrc-teacher-pin::' + $('#pin').value) === PIN_HASH) { authed = true; try { sessionStorage.setItem('mrc-teacher-ok', '1'); } catch (e) {} show(); }
+  else $('#pinMsg').textContent = 'Wrong PIN.'; });
+$('#mkPin').addEventListener('click', () => { const v = $('#newPin').value; if (v) $('#pinLine').textContent = `const PIN_HASH = '${cyrb53('mrc-teacher-pin::' + v)}';`; });
+
+let lastCode = '';
+function show() {
+  $('#gate').classList.toggle('hidden', authed); $('#app').classList.toggle('hidden', !authed);
+  if (!authed) return;
+  const started = !!T.start;
+  $('#setup').classList.toggle('hidden', started); $('#running').classList.toggle('hidden', !started);
+  $('#newClassRow').classList.toggle('hidden', !started);
+  tick(); drawBoard();
+}
+function tick() {
+  if (!authed || !T.start) return;
+  const now = Date.now(), clock = $('#clock'), sub = $('#sub');
+  let code, lbl;
+  if (T.off || T.noLimit) {
+    clock.textContent = fmt(now - T.start); clock.className = 'clock';
+    sub.textContent = T.noLimit ? 'No time limit · time since start' : 'Timer OFF · time since start';
+    code = T.noLimit ? '' : offCode(); lbl = 'Timer off: locked rooms type this code';
+  } else {
+    const left = T.end - now;
+    clock.textContent = left > 0 ? fmt(left) : '0:00';
+    clock.className = 'clock' + (left <= 0 ? ' up' : left < 5 * 60000 ? ' low' : '');
+    sub.textContent = left > 0 ? `Ends at ${clock12(T.end)} · started ${clock12(T.start)}` : `TIME'S UP · ended at ${clock12(T.end)}`;
+    code = timerCode(T.end); lbl = 'Timer code: type this in your room';
+  }
+  $('#codebox').classList.toggle('hidden', !code);
+  if (code) { $('#code').textContent = code; $('#codeLbl').textContent = lbl;
+    if (lastCode && code !== lastCode) { const b = $('#codebox'); b.classList.remove('fresh'); void b.offsetWidth; b.classList.add('fresh'); }
+    lastCode = code; }
+  $('#offBtn').disabled = T.off || T.noLimit;
+  $('#endBtn').disabled = !(T.off || T.noLimit) && T.end <= now;
+}
+setInterval(tick, 500);
+
+function begin(min, noLimit) {
+  const now = Date.now();
+  T = { day: dayKey(), start: now, end: noLimit ? null : roundUpMin(now + min * 60000), off: false, noLimit: !!noLimit, finishers: T.finishers || [] };
+  lastCode = ''; persist(); show();
+}
+document.querySelectorAll('[data-min]').forEach(b => b.addEventListener('click', () => begin(+b.dataset.min)));
+$('#startBtn').addEventListener('click', () => { const m = +$('#customMin').value;
+  if (!(m > 0)) { $('#setupMsg').className = 'msg bad'; $('#setupMsg').textContent = 'Pick a preset or type a number of minutes.'; return; } begin(m); });
+$('#noTimerBtn').addEventListener('click', () => begin(0, true));
+document.querySelectorAll('[data-add]').forEach(b => b.addEventListener('click', () => {
+  const now = Date.now(), base = (T.off || T.noLimit || !T.end || T.end < now) ? now : T.end;
+  T.end = roundUpMin(base + +b.dataset.add * 60000); T.off = false; T.noLimit = false; persist(); tick();
+}));
+$('#offBtn').addEventListener('click', () => { T.off = true; persist(); tick(); });
+$('#endBtn').addEventListener('click', () => { T.off = false; T.noLimit = false; T.end = Math.floor(Date.now() / 60000) * 60000; persist(); tick(); });
+$('#newClass').addEventListener('click', () => { if ($('#newClass').dataset.armed) { T = { day: dayKey(), start: 0, end: null, off: false, noLimit: false, finishers: [] }; persist(); delete $('#newClass').dataset.armed; $('#newClass').textContent = 'New class (clear timer & leaderboard)'; show(); }
+  else { $('#newClass').dataset.armed = '1'; $('#newClass').textContent = 'Click again to clear everything'; setTimeout(() => { delete $('#newClass').dataset.armed; $('#newClass').textContent = 'New class (clear timer & leaderboard)'; }, 4000); } });
+$('#fsBtn').addEventListener('click', () => { try { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen().catch(() => {}); } catch (e) {} });
+
+// finish line
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function drawBoard() {
+  const rows = [...T.finishers].sort((a, b) => a.finish - b.finish || a.hints - b.hints);
+  $('#lbBody').innerHTML = rows.length ? rows.map((f, i) => `<tr class="${i === 0 ? 'first' : ''}"><td class="rank">${i === 0 ? '🏆' : i + 1}</td><td>${esc(f.team)}</td>
+      <td class="t">${f.finish >= T.start ? fmt(f.finish - T.start) : '—'}</td><td>${f.hints}</td>
+      <td><button class="x" title="Remove" data-del="${esc(f.code)}">✕</button></td></tr>`).join('')
+    : `<tr><td colspan="5" class="empty">No teams have escaped yet.</td></tr>`;
+  document.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => { T.finishers = T.finishers.filter(f => f.code !== b.dataset.del); persist(); drawBoard(); }));
+}
+$('#finForm').addEventListener('submit', e => { e.preventDefault();
+  const msg = $('#finMsg'), team = $('#finTeam').value.trim(), raw = $('#finCode').value.trim().toUpperCase();
+  const r = parseFinishCode(raw); msg.className = 'msg bad';
+  if (!team) { msg.textContent = 'Type the team name.'; return; }
+  if (!r) { msg.textContent = 'That finish code is not valid. Check it on their certificate.'; return; }
+  const code = cleanCode(raw);
+  if (T.finishers.some(f => f.code === code)) { msg.textContent = 'That finish code is already on the board.'; return; }
+  T.finishers.push({ team, code, finish: r.finish, hints: r.hints }); persist(); drawBoard();
+  msg.className = 'msg good'; msg.textContent = `${team} added: ${r.finish >= T.start ? fmt(r.finish - T.start) : 'finished before the timer started'}.`;
+  $('#finTeam').value = ''; $('#finCode').value = ''; $('#finTeam').focus();
+});
+show();
+</script>
+</body>
+</html>

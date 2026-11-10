@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Escape Room · Kinematics · VECTOR's Speed Trap</title>
+<style>
+:root{
+  --ink:#14213d; --ink-2:#3d4a66; --paper:#fbf8f1; --card:#ffffff; --line:#d9d2c3;
+  --teal:#0f8b8d; --teal-d:#0b6b6d; --amber:#f4a259; --red:#d1495b; --green:#3a9d5d;
+  --night:#0d1b2a; --night-2:#1b263b; --glow:#7ee8e0;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  --sans:"Avenir Next","Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:var(--sans);color:var(--ink);background:var(--night);
+  background-image:linear-gradient(rgba(126,232,224,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(126,232,224,.06) 1px,transparent 1px);
+  background-size:28px 28px;min-height:100vh;line-height:1.5}
+.wrap{max-width:980px;margin:0 auto;padding:20px 18px 60px}
+header.top{display:flex;align-items:center;gap:14px;color:#e8f1f2;flex-wrap:wrap}
+header.top .unit{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--glow)}
+header.top h1{margin:0;font-size:26px;letter-spacing:.01em}
+header.top .spacer{flex:1}
+.hud{display:flex;gap:10px;font-family:var(--mono);font-size:13px}
+.hud span{background:var(--night-2);border:1px solid #2f3e5a;color:#e8f1f2;padding:5px 10px;border-radius:8px}
+.hud b{color:var(--glow);font-weight:600}
+
+/* progress hallway */
+.hall{display:flex;gap:8px;margin:18px 0 18px;flex-wrap:wrap}
+.door-pill{flex:1;min-width:120px;background:var(--night-2);border:1px solid #2f3e5a;color:#8fa0b8;border-radius:10px;padding:8px 10px;font-size:13px;display:flex;gap:8px;align-items:center}
+.door-pill .n{font-family:var(--mono);font-size:11px;border:1px solid currentColor;border-radius:5px;padding:0 5px}
+.door-pill.open{color:#bff3ee;border-color:var(--teal)}
+.door-pill.current{color:#fff;border-color:var(--amber);box-shadow:0 0 0 2px rgba(244,162,89,.25)}
+.door-pill.open .lock::before{content:"🔓"} .door-pill .lock::before{content:"🔒"}
+
+.panel{background:var(--paper);border-radius:16px;padding:22px 24px;box-shadow:0 18px 50px rgba(0,0,0,.35);position:relative}
+.panel h2{margin:0 0 4px;font-size:22px}
+.tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;background:#e7f4f4;color:var(--teal-d);border-radius:6px;padding:2px 8px;margin-bottom:10px}
+.vector{text-align:left;display:flex;gap:14px;align-items:flex-start;background:var(--night);color:#e8f1f2;border-radius:12px;padding:12px 14px;margin:10px 0 16px}
+.vector svg{flex:0 0 auto}
+.vector p{margin:0}
+.vector .who{font-family:var(--mono);font-size:11px;color:var(--glow);letter-spacing:.12em;text-transform:uppercase}
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.card h4{margin:0 0 6px;font-size:15px}
+.badge{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;background:var(--ink);color:#fff;font-weight:700;font-family:var(--mono);margin-right:8px}
+.fd{text-align:center}
+.fd .badge{background:var(--teal)}
+table.data{border-collapse:collapse;margin:8px 0;font-family:var(--mono);font-size:14px}
+table.data th,table.data td{border:1px solid var(--line);padding:6px 12px;text-align:center;background:#fff}
+table.data th{background:#eef2f6}
+ol.problems{padding-left:0;list-style:none;margin:0}
+ol.problems li{display:flex;gap:10px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+ol.problems .slot{flex:0 0 auto;font-family:var(--mono);font-weight:700;background:var(--amber);color:var(--ink);border-radius:6px;padding:0 8px;height:26px;line-height:26px}
+.stmt{display:flex;gap:10px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin-bottom:7px}
+.stmt .num{flex:0 0 auto;min-width:34px;text-align:center;font-family:var(--mono);font-weight:700;background:#efe7d6;border-radius:6px;padding:1px 6px}
+
+/* roles */
+.roles{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
+.roles button{font:inherit;font-size:14px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;cursor:pointer}
+.roles button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.rolecard{border-left:5px solid var(--amber)}
+.note{font-size:14px;color:var(--ink-2)}
+
+/* lock */
+.lockbox{margin-top:18px;background:var(--night-2);color:#e8f1f2;border-radius:14px;padding:16px}
+.lockbox .lbl{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--glow);margin-bottom:8px}
+.fields{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:4px;font-size:13px;color:#b9c6d6}
+.field input{font-family:var(--mono);font-size:22px;letter-spacing:.12em;width:var(--w,150px);padding:8px 10px;border-radius:9px;border:2px solid #3b4d6b;background:#0d1b2a;color:#fff;text-transform:uppercase}
+.field input:focus{outline:none;border-color:var(--amber)}
+.btn{font:inherit;font-weight:700;border:0;border-radius:10px;padding:11px 18px;cursor:pointer;background:var(--amber);color:var(--ink)}
+.btn:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent;color:#cfe0ea;border:1px solid #3b4d6b;font-weight:500}
+.btn.dark{background:var(--ink);color:#fff}
+.feedback{margin-top:10px;min-height:24px;font-size:15px}
+.feedback.bad{color:#ffb3bd}.feedback.good{color:#9ff0b8}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.hints{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.hinttext{background:#fff7e8;border:1px dashed var(--amber);border-radius:10px;padding:8px 12px;margin-top:8px;font-size:14px;color:var(--ink)}
+
+/* intro / finale */
+.center{text-align:center}
+.setup{display:grid;gap:12px;max-width:520px;margin:14px auto 0;text-align:left}
+.setup label{font-size:14px;font-weight:600}
+.setup input,.setup select{font:inherit;width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:#fff}
+.cert{border:3px double var(--ink);border-radius:14px;padding:22px;background:#fff;max-width:620px;margin:16px auto 0}
+.cert .pw{font-family:var(--mono);font-size:30px;letter-spacing:.25em;background:var(--ink);color:var(--glow);display:inline-block;padding:6px 16px;border-radius:10px;margin:6px 0}
+.stats{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:10px 0}
+.stats div{background:#f2efe6;border-radius:10px;padding:8px 14px;font-size:14px}
+.stats b{display:block;font-family:var(--mono);font-size:20px}
+.foot{color:#7f90a8;font-size:12px;text-align:center;margin-top:22px}
+.foot a{color:#9fd9d4}
+.reset{background:none;border:0;color:#7f90a8;text-decoration:underline;cursor:pointer;font:inherit;font-size:12px}
+.confirm{display:none;margin-top:8px;color:#e8f1f2;font-size:13px}
+.confirm.on{display:block}
+svg text{font-family:var(--sans)}
+.tchip{cursor:pointer;font:inherit;font-family:var(--mono);font-size:13px;background:var(--night-2);border:1px solid #2f3e5a;color:#e8f1f2;padding:5px 10px;border-radius:8px}
+.tchip b{color:var(--amber)} .tchip.low{border-color:var(--red);animation:pulse 1s infinite} .tchip.low b{color:#ffb3bd}
+@keyframes pulse{50%{box-shadow:0 0 0 3px rgba(209,73,91,.35)}}
+#timerBox{display:none;margin-top:12px;background:var(--night-2);border:1px solid #3b4d6b;border-radius:12px;padding:12px 14px;color:#e8f1f2}
+#timerBox.on{display:block}
+#timerBox form{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#timerBox input{font-family:var(--mono);font-size:18px;letter-spacing:.1em;width:160px;padding:7px 10px;border-radius:8px;border:2px solid #3b4d6b;background:#0d1b2a;color:#fff;text-transform:uppercase}
+#timerMsg{font-size:14px;margin-top:6px;min-height:20px}
+.timeup{text-align:center}
+.timeup h2{font-size:40px;color:var(--red);margin:6px 0}
+.fcode{font-family:var(--mono);font-size:26px;letter-spacing:.12em;background:#fff7e8;border:2px dashed var(--amber);display:inline-block;padding:4px 14px;border-radius:10px;margin:4px 0}
+@media print{body{background:#fff}.hall,.hud,.foot,.no-print{display:none!important}.panel{box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="unit">Physics of the Universe · Kinematics</div>
+      <h1>VECTOR's Speed Trap</h1>
+    </div>
+    <div class="spacer"></div>
+    <div class="hud" id="hud"></div>
+  </header>
+  <div id="timerBox" class="no-print">
+    <form id="timerForm" autocomplete="off"><span>⏲ Class timer code (from the board):</span>
+      <input id="timerInput" placeholder="1452-AB" aria-label="Class timer code">
+      <button class="btn" type="submit" style="padding:8px 14px">Set</button>
+      <button class="btn ghost" type="button" id="timerClose" style="padding:8px 12px">Close</button></form>
+    <div id="timerMsg" aria-live="polite"></div>
+  </div>
+  <nav class="hall" id="hall" aria-label="Door progress"></nav>
+  <main class="panel" id="stage"></main>
+  <div class="foot">
+    Mr. C's Science · <a href="index.html">All escape rooms</a> ·
+    <button class="reset" id="resetBtn">Reset this device</button>
+    <div class="confirm" id="confirmBox">Erase all progress on this device?
+      <button class="btn ghost" id="resetYes" style="padding:4px 10px">Yes, reset</button>
+      <button class="btn ghost" id="resetNo" style="padding:4px 10px">Cancel</button></div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   ESCAPE ROOM ENGINE (reusable). To make a new unit, copy this file and
+   replace the ROOM object below. Answers are stored only as salted
+   hashes (cyrb53); generate them with the helper in the teacher guide.
+   ===================================================================== */
+function cyrb53(str, seed = 0) {
+  let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+  for (let i = 0, ch; i < str.length; i++) { ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507); h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507); h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+
+/* ---------- CLASS TIMER + FINISH CODES (shared with teacher.html; keep identical) ---------- */
+const TALPH = 'ACDEFGHJKMNPQRTUVWXY34679';
+const pad2 = n => String(n).padStart(2, '0');
+function dayKey(d = new Date()) { return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+function tmac(s, day) { const h = parseInt(cyrb53('mrc-class-timer::' + (day || dayKey()) + '::' + s), 36); return TALPH[h % 25] + TALPH[Math.floor(h / 25) % 25]; }
+function timerCode(endMs) { const d = new Date(endMs), t = pad2(d.getHours()) + pad2(d.getMinutes()); return t + '-' + tmac('T' + t); }
+function offCode() { return 'OFF-' + tmac('OFF'); }
+function finishCode(ms, hints) { const d = new Date(ms), t = pad2(d.getHours()) + pad2(d.getMinutes()) + pad2(d.getSeconds()); return t + '-' + hints + '-' + tmac('F' + t + '-' + hints); }
+function cleanCode(raw) { return String(raw || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
+// -> {type:'end', end:ms} | {type:'off'} | null
+function parseTimerCode(raw) {
+  const c = cleanCode(raw); let m;
+  if ((m = c.match(/^OFF([A-Z0-9]{2})$/)) && m[1] === tmac('OFF')) return { type: 'off' };
+  if ((m = c.match(/^(\d{4})([A-Z0-9]{2})$/)) && m[2] === tmac('T' + m[1])) {
+    const hh = +m[1].slice(0, 2), mm = +m[1].slice(2); if (hh > 23 || mm > 59) return null;
+    const d = new Date(); d.setHours(hh, mm, 0, 0); return { type: 'end', end: d.getTime() };
+  }
+  return null;
+}
+// -> {finish:ms, hints:n} | null
+function parseFinishCode(raw) {
+  const c = String(raw || '').toUpperCase().replace(/\s/g, ''); const m = c.match(/^(\d{6})-?(\d{1,2})-?([A-Z0-9]{2})$/);
+  if (!m || m[3] !== tmac('F' + m[1] + '-' + (+m[2]))) return null;
+  const d = new Date(); d.setHours(+m[1].slice(0, 2), +m[1].slice(2, 4), +m[1].slice(4), 0);
+  return { finish: d.getTime(), hints: +m[2] };
+}
+
+/* ---------- drawing helpers ---------- */
+const sub = (main, s) => `${main}<tspan dy="4" font-size="10">${s}</tspan><tspan dy="-4"></tspan>`;
+// Force diagram: dot on a dashed grid, arrows measured in grid units
+function forceDiagram(forces, opts = {}) {
+  const u = 16, size = opts.size || 176, c = size / 2;
+  let g = '';
+  for (let x = c % u; x <= size; x += u) g += `<line x1="${x}" y1="0" x2="${x}" y2="${size}" stroke="#b9c3cf" stroke-dasharray="3 3" stroke-width="1"/>`;
+  for (let y = c % u; y <= size; y += u) g += `<line x1="0" y1="${y}" x2="${size}" y2="${y}" stroke="#b9c3cf" stroke-dasharray="3 3" stroke-width="1"/>`;
+  let a = '';
+  const dirs = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+  forces.forEach(f => {
+    const [dx, dy] = dirs[f.dir], L = f.len * u, x2 = c + dx * L, y2 = c + dy * L;
+    a += `<line x1="${c}" y1="${c}" x2="${x2 - dx * 7}" y2="${y2 - dy * 7}" stroke="#14213d" stroke-width="3"/>`;
+    const p = dx ? `${x2},${y2} ${x2 - dx * 10},${y2 - 6} ${x2 - dx * 10},${y2 + 6}` : `${x2},${y2} ${x2 - 6},${y2 - dy * 10} ${x2 + 6},${y2 - dy * 10}`;
+    a += `<polygon points="${p}" fill="#14213d"/>`;
+    // vertical arrows: label beside the tip; horizontal arrows: label above the tip, pulled inward
+    const out = !!f.mag; // labels with magnitudes go outward past the tip (canvas is padded)
+    const lx = dx ? x2 + (out ? dx * 8 : 0) : c + 8, ly = dy ? y2 + (dy > 0 ? 14 : -4) : (out ? c + 5 : c - 12);
+    const anchor = out ? (dx < 0 ? 'end' : 'start') : (dx > 0 ? 'end' : 'start');
+    a += `<text x="${lx}" y="${ly}" font-size="14" font-style="italic" fill="#0b6b6d" text-anchor="${anchor}">${sub('F', f.lab)}${f.mag ? ` = ${f.mag}` : ''}</text>`;
+  });
+  const px = opts.padX || 0;
+  return `<svg viewBox="${-px} 0 ${size + 2 * px} ${size}" width="${size + 2 * px}" height="${size}" style="max-width:100%;height:auto" role="img" aria-label="force diagram"><rect width="${size}" height="${size}" fill="#fff"/>${g}${a}<circle cx="${c}" cy="${c}" r="5.5" fill="#d1495b"/></svg>`;
+}
+// Line graph on a grid. pts in data units.
+function graph({ pts, xmax, ymax, xstep, ystep, xlab, ylab, w = 420, h = 250, ticks = true }) {
+  const L = 48, B = 36, T = 12, R = 14, W = w - L - R, H = h - T - B;
+  const X = x => L + x / xmax * W, Y = y => T + H - y / ymax * H;
+  let s = `<rect width="${w}" height="${h}" fill="#fff"/>`;
+  for (let x = 0; x <= xmax + 1e-9; x += xstep) s += `<line x1="${X(x)}" y1="${T}" x2="${X(x)}" y2="${T + H}" stroke="#dde3ea"/>` + (ticks ? `<text x="${X(x)}" y="${T + H + 16}" font-size="12" text-anchor="middle" fill="#3d4a66">${+x.toFixed(2)}</text>` : '');
+  for (let y = 0; y <= ymax + 1e-9; y += ystep) s += `<line x1="${L}" y1="${Y(y)}" x2="${L + W}" y2="${Y(y)}" stroke="#dde3ea"/>` + (ticks ? `<text x="${L - 7}" y="${Y(y) + 4}" font-size="12" text-anchor="end" fill="#3d4a66">${+y.toFixed(2)}</text>` : '');
+  s += `<line x1="${L}" y1="${T + H}" x2="${L + W}" y2="${T + H}" stroke="#14213d" stroke-width="2"/><line x1="${L}" y1="${T}" x2="${L}" y2="${T + H}" stroke="#14213d" stroke-width="2"/>`;
+  s += `<polyline points="${pts.map(p => X(p[0]) + ',' + Y(p[1])).join(' ')}" fill="none" stroke="#d1495b" stroke-width="3.5" stroke-linejoin="round"/>`;
+  s += `<text x="${L + W / 2}" y="${h - 3}" font-size="13" text-anchor="middle" fill="#14213d">${xlab}</text>`;
+  s += `<text x="13" y="${T + H / 2}" font-size="13" text-anchor="middle" fill="#14213d" transform="rotate(-90 13 ${T + H / 2})">${ylab}</text>`;
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;height:auto" role="img" aria-label="graph">${s}</svg>`;
+}
+function vectorBot(mood = 'smug') {
+  const eyes = mood === 'mad' ? '<path d="M18 22 l8 3 M42 22 l-8 3" stroke="#0d1b2a" stroke-width="3" stroke-linecap="round"/>' : '';
+  const mouth = mood === 'happy' ? '<path d="M22 36 q8 7 16 0" stroke="#0d1b2a" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    : mood === 'mad' ? '<path d="M22 39 q8 -6 16 0" stroke="#0d1b2a" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    : '<path d="M23 37 h14" stroke="#0d1b2a" stroke-width="3" stroke-linecap="round"/>';
+  return `<svg width="60" height="60" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="32" r="25" fill="#7ee8e0"/><circle cx="30" cy="32" r="25" fill="none" stroke="#0f8b8d" stroke-width="3"/><rect x="14" y="20" width="32" height="12" rx="6" fill="#0d1b2a" opacity=".12"/><circle cx="22" cy="27" r="4" fill="#0d1b2a"/><circle cx="38" cy="27" r="4" fill="#0d1b2a"/>${eyes}${mouth}<line x1="30" y1="7" x2="30" y2="1" stroke="#0f8b8d" stroke-width="3"/><circle cx="30" cy="1.5" r="3" fill="#f4a259"/></svg>`;
+}
+const say = (html, mood) => `<div class="vector">${vectorBot(mood)}<div><div class="who">VECTOR</div><p>${html}</p></div></div>`;
+
+// Generic plot with optional negative axes. Multiple curves: curves=[{pts,color,dash}]
+function plot({ pts, curves, xmin = 0, xmax, ymin = 0, ymax, xstep, ystep, xlab, ylab, w = 420, h = 250, ticks = true }) {
+  const L = ticks ? 48 : 30, B = ticks ? 36 : 24, T = 12, R = 14, W = w - L - R, H = h - T - B;
+  const X = x => L + (x - xmin) / (xmax - xmin) * W, Y = y => T + H - (y - ymin) / (ymax - ymin) * H;
+  let s = `<rect width="${w}" height="${h}" fill="#fff"/>`;
+  for (let x = xmin; x <= xmax + 1e-9; x += xstep) s += `<line x1="${X(x)}" y1="${T}" x2="${X(x)}" y2="${T + H}" stroke="#dde3ea"/>` + (ticks ? `<text x="${X(x)}" y="${T + H + 16}" font-size="12" text-anchor="middle" fill="#3d4a66">${+x.toFixed(2)}</text>` : '');
+  for (let y = ymin; y <= ymax + 1e-9; y += ystep) s += `<line x1="${L}" y1="${Y(y)}" x2="${L + W}" y2="${Y(y)}" stroke="#dde3ea"/>` + (ticks ? `<text x="${L - 7}" y="${Y(y) + 4}" font-size="12" text-anchor="end" fill="#3d4a66">${+y.toFixed(2)}</text>` : '');
+  const y0 = Y(Math.max(ymin, Math.min(0, ymax)));
+  s += `<line x1="${L}" y1="${y0}" x2="${L + W}" y2="${y0}" stroke="#14213d" stroke-width="2"/><line x1="${L}" y1="${T}" x2="${L}" y2="${T + H}" stroke="#14213d" stroke-width="2"/>`;
+  (curves || [{ pts }]).forEach(c => {
+    s += `<polyline points="${c.pts.map(p => X(p[0]).toFixed(1) + ',' + Y(p[1]).toFixed(1)).join(' ')}" fill="none" stroke="${c.color || '#d1495b'}" stroke-width="3.5" stroke-linejoin="round" ${c.dash ? 'stroke-dasharray="7 5"' : ''}/>`;
+  });
+  s += `<text x="${L + W / 2}" y="${h - 3}" font-size="13" text-anchor="middle" fill="#14213d">${xlab}</text>`;
+  s += `<text x="13" y="${T + H / 2}" font-size="13" text-anchor="middle" fill="#14213d" transform="rotate(-90 13 ${T + H / 2})">${ylab}</text>`;
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;height:auto" role="img" aria-label="graph">${s}</svg>`;
+}
+const fpts = (f, a, b, n = 40) => [...Array(n + 1)].map((_, i) => { const t = a + (b - a) * i / n; return [t, f(t)]; });
+// Motion map: dots at equal time intervals; each velocity arrow starts at its dot, sits at dot level,
+// and reaches almost to the next dot. `last` = where the next (unseen) dot would be (null = stopped).
+function motionMap(xs, last, opts = {}) {
+  const u = opts.u || 30, x0 = 22, w = opts.w || 440, h = 78, ly = 30, ay = 60;
+  const P = x => x0 + x * u;
+  let s = `<rect width="${w}" height="${h}" fill="#fff"/>`;
+  for (let x = 0; x <= 13; x++) s += `<line x1="${P(x)}" y1="${ay - 4}" x2="${P(x)}" y2="${ay + 4}" stroke="#14213d" stroke-width="1.5"/>`;
+  s += `<line x1="${P(0)}" y1="${ay}" x2="${P(13.4)}" y2="${ay}" stroke="#14213d" stroke-width="1.5"/><polygon points="${P(13.4) + 8},${ay} ${P(13.4)},${ay - 4} ${P(13.4)},${ay + 4}" fill="#14213d"/>`;
+  s += `<text x="${P(0)}" y="${ay + 17}" font-size="12" text-anchor="middle" fill="#3d4a66">0</text><text x="${P(13.4) + 6}" y="${ay + 17}" font-size="12" text-anchor="middle" fill="#3d4a66">+x</text>`;
+  const nexts = xs.slice(1).concat([last]);
+  xs.forEach((x, i) => {
+    const nx = nexts[i];
+    if (nx !== null && nx !== undefined && Math.abs(nx - x) > 0.2) {
+      const dir = Math.sign(nx - x), x1 = P(x), x2 = P(nx) - dir * 9;
+      s += `<line x1="${x1}" y1="${ly}" x2="${x2 - dir * 7}" y2="${ly}" stroke="#14213d" stroke-width="2.5"/>`;
+      s += `<polygon points="${x2},${ly} ${x2 - dir * 9},${ly - 5} ${x2 - dir * 9},${ly + 5}" fill="#14213d"/>`;
+    }
+    s += `<circle cx="${P(x)}" cy="${ly}" r="5" fill="#d1495b"/>`;
+  });
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;height:auto" role="img" aria-label="motion map">${s}</svg>`;
+}
+
+/* =====================================================================
+   ROOM DATA: Kinematics (constant velocity & constant acceleration)
+   ===================================================================== */
+const ROOM = {
+  id: 'gp-kinematics',
+  salt: 'gp-kinematics::',
+  title: "VECTOR's Speed Trap",
+  intro: `The class robot vacuum, <b>VECTOR</b>, has declared itself <i>the fastest thing in Room 652</i>. It has turned
+    the hallway into a racetrack, set up speed traps, and locked the lab doors. Nobody leaves until your team can
+    describe <b>motion</b> better than VECTOR can: motion maps, graphs, slopes, areas, and falling things.
+    Five doors stand between you and the hallway. Each one needs a code.`,
+  finaleCipher: [33, 34, 104, 46, 47, 47, 41, 33], // teacher password, XOR-locked with the final door's code
+  wrongLines: [
+    "Nope. That code has zero velocity. It's going nowhere.",
+    "Denied! Your displacement from the right answer is... large.",
+    "Wrong. The slope of your success is negative.",
+    "Incorrect. Even Duchess the tortoise accelerates faster than that guess.",
+    "That's not it. Check your units, your signs, and your teammates.",
+    "Nope! That answer is in free fall. Straight down."
+  ],
+  doors: [
+    /* ---------------- DOOR 1 ---------------- */
+    {
+      name: 'Motion Map Mixup', tag: 'Motion maps ↔ x-t graphs',
+      render: () => `
+        ${say(`I filmed four of my hallway laps as <b>motion maps</b> (a dot every 1 second). Match each motion map to its
+          <b>position-time graph</b>. The graph letters, in order 1 → 4, spell my <b>4-letter</b> code. Two graphs are decoys. Obviously.`)}
+        <p class="note">Each dot is VECTOR's position, one second apart. Each arrow is VECTOR's velocity at that dot. Positive is to the right.</p>
+        <div class="grid" style="gap:8px">
+          ${[
+            [[1, 3, 5, 7, 9], 11],
+            [[0, 0.5, 2, 4.5, 8], 12.5],
+            [[10, 8, 6, 4, 2], 0],
+            [[0, 4, 7, 9, 10], null],
+          ].map(([xs, last], k) => `<div class="card" style="display:flex;gap:10px;align-items:center;padding:6px 12px"><span class="badge" style="background:var(--amber);color:var(--ink)">${k + 1}</span>${motionMap(xs, last)}</div>`).join('')}
+        </div>
+        <p class="note" style="margin-top:14px">Position-time graphs (same 0 to 4 s, same scale):</p>
+        <div class="grid g3">
+          ${[
+            ['R', t => 10 - 0.5 * t * t],
+            ['T', t => 4.5 * t - 0.5 * t * t],
+            ['F', t => 1 + 2 * t],
+            ['E', t => 6],
+            ['A', t => 0.5 * t * t],
+            ['S', t => 10 - 2 * t],
+          ].map(([k, f]) => `<div class="card fd"><span class="badge">${k}</span>${plot({ pts: fpts(f, 0, 4), xmax: 4, ymax: 12, xstep: 1, ystep: 2, xlab: 'time (s)', ylab: 'position (m)', w: 250, h: 180 })}</div>`).join('')}
+        </div>`,
+      fields: [{ label: 'Code word', w: 170, kind: 'word' }],
+      answers: ['24qz2czgsfm'],
+      hints: [
+        'Evenly spaced dots = constant velocity = a straight line on an x-t graph. Spacing that grows or shrinks = a curve.',
+        'Where does each map START (position at t = 0)? Moving left means position is decreasing. A curve that gets steeper = speeding up; one that flattens out = slowing down.'
+      ],
+      success: 'Hmph. You read my laps like a book. Door 1 unlocked.'
+    },
+    /* ---------------- DOOR 2 ---------------- */
+    {
+      name: 'Graph Gossip', tag: 'Slope & area of a v-t graph',
+      render: () => `
+        ${say(`Here is my velocity-time graph from this morning's patrol. Positive velocity means I'm heading <b>east</b>, toward the cafeteria.
+          My robot friends are gossiping about it, but some of them are <i>lying</i>. <b>Add up the numbers</b> of the TRUE statements. That sum is the code.`)}
+        <div class="card">${plot({ pts: [[0, 0], [4, 8], [10, 8], [14, 0], [18, -4]], xmax: 18, ymin: -6, ymax: 10, xstep: 2, ystep: 2, xlab: 'time (s)', ylab: 'velocity (m/s)', w: 560, h: 290 })}</div>
+        ${[
+          [3, 'From 0 s to 4 s, VECTOR\'s acceleration is 2 m/s².'],
+          [8, 'From 4 s to 10 s, VECTOR is standing still.'],
+          [11, 'VECTOR\'s displacement from 0 s to 4 s is 16 m.'],
+          [20, 'From 10 s to 14 s, VECTOR moves west, because the line slopes downward.'],
+          [6, 'VECTOR turns around at t = 14 s.'],
+          [5, 'From 14 s to 18 s, VECTOR is speeding up.'],
+          [17, 'From 0 s to 14 s, VECTOR travels a total of 64 m.'],
+          [13, 'VECTOR\'s acceleration is the same from 10 s all the way to 18 s.'],
+          [12, 'At t = 18 s, VECTOR is 72 m east of where it started.'],
+        ].map(([n, t]) => `<div class="stmt"><span class="num">${n}</span><span>${t}</span></div>`).join('')}`,
+      fields: [{ label: 'Sum', w: 120, kind: 'num' }],
+      answers: ['21gw542d3ei'],
+      hints: [
+        'Slope of a v-t graph = acceleration. Area between the line and the time axis = displacement (area BELOW the axis counts as negative). A flat line on a v-t graph means constant velocity, not "stopped."',
+        'Areas: 0–4 s is a triangle, 4–10 s a rectangle, 10–14 s a triangle, 14–18 s a triangle below the axis. The sign of the velocity (above or below the axis) tells direction. Speeding up means the SIZE of the velocity is growing. There are five true statements.'
+      ],
+      success: 'Gossip confirmed. My robot friends are fired. Door 2 unlocked.'
+    },
+    /* ---------------- DOOR 3 ---------------- */
+    {
+      name: 'Hallway Grand Prix', tag: 'Catching up · team relay',
+      roles: true,
+      render: () => `
+        ${say(`Race day! I challenged <b>Duchess</b>, a very proper tortoise on rocket-powered roller skates. I took a head start, because I'm a gentleman. This door needs <b>every</b> player: each of you picks a different card on your own Chromebook, and your answers feed each other. Team of 3? Card D is solved by the whole team together.`)}
+        <p class="note"><b>The setup:</b> The race runs along a straight hallway. Position is measured from Duchess's starting line (x = 0), and the finish line is on Card C. Both racers start at the same instant, t = 0.</p>
+        <div class="roles" data-roles></div>
+        <div data-rolecard></div>`,
+      roleCards: {
+        A: `<div class="card rolecard"><h4>Card A · VECTOR's Position Spy</h4>
+            <p>A sensor recorded VECTOR's position for the first 6 seconds. VECTOR keeps this exact same motion for the whole race.</p>
+            ${plot({ pts: [[0, 15], [6, 45]], xmax: 6, ymax: 50, xstep: 1, ystep: 5, xlab: 'time (s)', ylab: 'VECTOR position (m)', w: 440, h: 270 })}
+            <p><b>Your question:</b> What is VECTOR's <b>velocity</b>, in m/s? Also tell Card D where VECTOR started (its head start).</p></div>`,
+        B: `<div class="card rolecard"><h4>Card B · Duchess's Speedometer</h4>
+            <p>Duchess's rocket skates fire for 5 seconds, then she cruises. Here is her velocity-time graph for the first 8 seconds. She keeps cruising at that speed for the rest of the race.</p>
+            ${plot({ pts: [[0, 0], [5, 10], [8, 10]], xmax: 8, ymax: 12, xstep: 1, ystep: 2, xlab: 'time (s)', ylab: 'Duchess velocity (m/s)', w: 440, h: 270 })}
+            <p><b>Your question:</b> How far does Duchess travel during the first <b>5 seconds</b>, in meters? Tell Cards C and D your answer AND her cruising speed.</p></div>`,
+        C: `<div class="card rolecard"><h4>Card C · The Finish Line Judge</h4>
+            <p>The finish line is at <b>x = 75 m</b>, measured from Duchess's starting line.</p>
+            <p>You need Card B's answer (how far Duchess goes in the first 5 s) and Duchess's cruising speed.</p>
+            <p><b>Your question:</b> At what <b>time</b> does Duchess cross the finish line, in seconds? Tell Card D the finish line position.</p></div>`,
+        D: `<div class="card rolecard"><h4>Card D · The Photo-Finish Camera</h4>
+            <p>At the start, Duchess is behind VECTOR. Your job is to catch the exact moment she <b>passes</b> him.</p>
+            <p>You need Card A (VECTOR's head start and velocity) and Card B (Duchess's distance after 5 s and her cruising speed). Hint: check that Duchess is still behind at t = 5 s, then write a position equation for each racer after that.</p>
+            <p><b>Your question:</b> At what <b>time</b> does Duchess pass VECTOR, in seconds?</p></div>`
+      },
+      fields: [
+        { label: 'A · VECTOR v (m/s)', w: 120, kind: 'num' }, { label: 'B · distance (m)', w: 120, kind: 'num' },
+        { label: 'C · finish time (s)', w: 120, kind: 'num' }, { label: 'D · pass time (s)', w: 120, kind: 'num' }
+      ],
+      answers: ['1s0n8h2rvuu'],
+      hints: [
+        'Card A: velocity = slope of the x-t graph (rise ÷ run), and the head start is where the line crosses t = 0. Card B: distance = area under the v-t graph (a triangle). Card C: after 5 s Duchess still has (75 − her 5-second distance) meters to go at her cruising speed.',
+        'Card D: for t ≥ 5 s, VECTOR is at x = 15 + 5t and Duchess is at x = 25 + 10(t − 5). Set them equal and solve for t. Every answer is a whole number.'
+      ],
+      success: 'Photo finish confirmed: Duchess wins and curtsies politely. VECTOR demands a rematch. Door 3 unlocked.'
+    },
+    /* ---------------- DOOR 4 ---------------- */
+    {
+      name: 'Photogate Pit Stop', tag: 'Analyze lab data',
+      render: () => `
+        ${say(`My pit crew ran a <b>real experiment</b> on my racing cart. Figure out its acceleration and I'll let you through. You'll need graph paper, because the raw data is <i>curvy</i>. Mwahaha.`)}
+        <p>A cart was released <b>from rest</b> at the top of a tilted track. A photogate (which reads the cart's <b>velocity</b> as it passes through) was placed at different distances <i>d</i> down the track from the release point. One run per distance.</p>
+        <div class="grid g2" style="align-items:start">
+          <div>
+            <table class="data"><tr><th>Distance from release d (m)</th><th>Photogate velocity v (m/s)</th></tr>
+              <tr><td>0.20</td><td>0.495</td></tr><tr><td>0.40</td><td>0.686</td></tr><tr><td>0.60</td><td>0.853</td></tr>
+              <tr><td>0.80</td><td>0.974</td></tr><tr><td>1.00</td><td>1.101</td></tr></table>
+          </div>
+          <div class="card">
+            <h4>Your mission</h4>
+            <ol style="margin:0;padding-left:18px">
+              <li>Graph v vs. d. Is it a straight line?</li>
+              <li><b>Linearize</b>: think about the equation v² = v₀² + 2a·d. What should you graph to get a straight line?</li>
+              <li>Draw a best-fit line, find its <b>slope</b>, and use it to find the cart's <b>acceleration</b>.</li>
+            </ol>
+            <p class="note" style="margin-bottom:0">Enter the acceleration in <b>cm/s²</b> (1 m/s² = 100 cm/s²), rounded to a whole number.</p>
+          </div>
+        </div>`,
+      fields: [{ label: 'Acceleration (cm/s²)', w: 160, kind: 'num' }],
+      answers: ['14bgerxo02a',  '1ivfwynfvaq',  '1x2f62476e5',  '1fy0j4ezvcs',  '1u4hmpmuzz0',  '1u451wklhsa',  '1ecv825fll5',  '1ljbfgxr577',  '2ewa70wm9g4',  '224mrghah63',  '19ohiupbn86'],
+      hints: [
+        'Starting from rest, v₀ = 0, so v² = 2a·d. Make a new column of v² values and graph v² (y-axis) vs. d (x-axis). That graph is a straight line through the origin.',
+        'The slope of v² vs. d equals 2a, so a = slope ÷ 2. Your slope should come out a little over 1.2 m²/s². Then convert m/s² to cm/s².'
+      ],
+      success: "Correct! My cart's acceleration checks out. The pit crew is impressed. Door 4 unlocked."
+    },
+    /* ---------------- DOOR 5 ---------------- */
+    {
+      name: 'Water Balloon Ambush', tag: 'Free fall · team relay',
+      roles: true,
+      render: () => `
+        ${say(`Last door, and I'm parked right under the balcony. <b>Pip</b>, a mischievous pigeon, is about to drop a water balloon on me. But I have a <b>slime cannon</b> that fires straight up. Ha! Each of you picks a different card; the answers chain together. Team of 3? Card D is solved by the whole team together.`, 'mad')}
+        <p class="note"><b>The setup:</b> Pip <b>drops</b> the balloon from rest at the exact instant VECTOR fires a slime ball straight up from the ground, directly below. Ignore air resistance and use <b>g = 9.8 m/s²</b>.</p>
+        <div class="roles" data-roles></div>
+        <div data-rolecard></div>`,
+      roleCards: {
+        A: `<div class="card rolecard"><h4>Card A · The Stopwatch Scout</h4>
+            <p>Earlier, Pip tested the balcony by dropping a pebble from rest. Three stopwatch trials of the fall time:</p>
+            <table class="data"><tr><th>Trial</th><th>1</th><th>2</th><th>3</th></tr><tr><th>Fall time (s)</th><td>3.96</td><td>4.05</td><td>3.99</td></tr></table>
+            <p>Use the <b>average</b> fall time (round it to the nearest 0.1 s).</p>
+            <p><b>Your question:</b> How high is the balcony above the ground, in meters? Tell Card C.</p></div>`,
+        B: `<div class="card rolecard"><h4>Card B · The Cannon Engineer</h4>
+            <p>The dial on VECTOR's slime cannon says the slime ball leaves the cannon at <b>39.2 m/s</b>, straight up.</p>
+            <p><b>Your question:</b> If nothing got in its way, how long would the slime ball take to reach its <b>highest point</b>, in seconds? Tell Card C the launch speed.</p></div>`,
+        C: `<div class="card rolecard"><h4>Card C · The Collision Calculator</h4>
+            <p>You need the balcony height (Card A) and the launch speed (Card B).</p>
+            <p>Write a height equation for each object, measured up from the ground:<br>
+              balloon: y = H − ½(9.8)t² &nbsp;&nbsp; slime: y = v₀t − ½(9.8)t²</p>
+            <p><b>Your question:</b> At what <b>time</b> do the balloon and the slime ball meet, in seconds? Tell Card D.</p></div>`,
+        D: `<div class="card rolecard"><h4>Card D · The Splash Reporter</h4>
+            <p>You need the meeting time from Card C. Remember: the balloon was dropped from rest.</p>
+            <p><b>Your question:</b> How <b>fast</b> is the water balloon falling at the moment it meets the slime ball, in m/s? (Round to a whole number.)</p></div>`
+      },
+      fields: [
+        { label: 'A · height (m)', w: 120, kind: 'num' }, { label: 'B · time to top (s)', w: 120, kind: 'num' },
+        { label: 'C · meet time (s)', w: 120, kind: 'num' }, { label: 'D · balloon speed (m/s)', w: 120, kind: 'num' }
+      ],
+      answers: ['1y7jx3qbjxc'],
+      hints: [
+        'Card A: dropped from rest, so d = ½gt². Card B: at the highest point the velocity is zero, so t = v₀ ÷ g.',
+        'Card C: set the two equations equal. The ½(9.8)t² terms cancel, leaving H = v₀t. Card D: dropped from rest, v = g·t. Round your final answers to whole numbers.'
+      ],
+      success: 'SPLAT! The slime ball pops the balloon in midair... and it rains on ME. NOOO!'
+    }
+  ]
+};
+
+/* =====================================================================
+   ENGINE
+   ===================================================================== */
+const KEY = 'escape:' + ROOM.id;
+const store = {
+  get() { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch (e) { return null; } },
+  set(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} },
+  clear() { try { localStorage.removeItem(KEY); } catch (e) {} }
+};
+let S = store.get() || { started: false, team: '', size: 4, start: 0, end: 0, door: 0, hints: {}, wrong: 0, role: 'A', timer: null };
+const save = () => store.set(S);
+const $ = (q, el = document) => el.querySelector(q);
+const fmt = ms => { const s = Math.max(0, Math.floor(ms / 1000)); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
+const hintsUsed = () => Object.values(S.hints).reduce((a, b) => a + b, 0);
+
+function timerLive() { return S.timer && S.timer.end && S.timer.day === dayKey(); }
+function timeUp() { return timerLive() && Date.now() >= S.timer.end && !S.end; }
+function hud() {
+  const t = S.started ? fmt((S.end || Date.now()) - S.start) : '00:00';
+  let chip;
+  if (timerLive() && !S.end) { const left = S.timer.end - Date.now();
+    chip = `<button class="tchip ${left < 5 * 60000 ? 'low' : ''}" id="tchip" title="Class timer">⏳ Class <b>${left > 0 ? fmt(left) : '0:00'}</b></button>`; }
+  else chip = `<button class="tchip" id="tchip" title="Enter class timer code">⏲ ${S.timer && S.timer.off && S.timer.day === dayKey() ? 'Timer off' : 'Timer code'}</button>`;
+  $('#hud').innerHTML = `${chip}<span title="Your team's time">⏱ <b>${t}</b></span><span title="Hints used">💡 <b>${hintsUsed()}</b></span><span title="Wrong codes">✖ <b>${S.wrong}</b></span>`;
+  $('#tchip').onclick = () => { $('#timerBox').classList.toggle('on'); $('#timerInput').focus(); };
+}
+let shownTimeUp = false;
+setInterval(() => { hud(); const up = timeUp() && S.started; if (up !== shownTimeUp) render(); }, 1000);
+function applyTimerCode(raw, msgEl) {
+  const r = parseTimerCode(raw);
+  if (!r) { if (msgEl) { msgEl.style.color = '#ffb3bd'; msgEl.textContent = "That timer code isn't valid. Check the board and try again."; } return false; }
+  S.timer = r.type === 'off' ? { off: true, end: null, day: dayKey() } : { off: false, end: r.end, day: dayKey() };
+  save();
+  if (msgEl) { msgEl.style.color = '#9ff0b8'; msgEl.textContent = r.type === 'off' ? 'Timer turned off. Keep going!' : `Timer set: ends at ${new Date(r.end).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}.`; }
+  render(); return true;
+}
+
+function hall() {
+  $('#hall').innerHTML = ROOM.doors.map((d, i) => {
+    const cls = i < S.door ? 'open' : (i === S.door && S.started && !S.end ? 'current' : '');
+    return `<div class="door-pill ${cls}"><span class="lock"></span><span class="n">${i + 1}</span>${d.name}</div>`;
+  }).join('');
+}
+
+function normalize(v, f) {
+  v = String(v).trim();
+  if (f.kind === 'word') return v.toUpperCase().replace(/[^A-Z]/g, '');
+  const n = parseFloat(v.replace(/,/g, '').replace(/[^0-9.\-]/g, ''));
+  if (isNaN(n)) return '';
+  const r = f.roundTo || 1;
+  return String(Math.round(Math.abs(n) / r) * r);
+}
+
+function render() {
+  hud(); hall();
+  const st = $('#stage');
+  if (!S.started) return renderIntro(st);
+  if (S.door >= ROOM.doors.length) { shownTimeUp = false; return renderFinale(st); }
+  shownTimeUp = timeUp();
+  if (shownTimeUp) return renderTimeUp(st);
+  const i = S.door, d = ROOM.doors[i];
+  st.innerHTML = `<span class="tag">Door ${i + 1} of ${ROOM.doors.length} · ${d.tag}</span><h2>${d.name}</h2>${d.render()}
+    <div class="lockbox">
+      <div class="lbl">🔒 Door ${i + 1} lock</div>
+      <form class="fields" id="lockForm" autocomplete="off">
+        ${d.fields.map((f, k) => `<label class="field">${f.label}<input style="--w:${f.w}px" name="f${k}" inputmode="${f.kind === 'num' ? 'decimal' : 'text'}" required></label>`).join('')}
+        <button class="btn" type="submit">Try code</button>
+      </form>
+      <div class="feedback" id="fb" aria-live="polite"></div>
+      <div class="hints no-print">${d.hints.map((h, k) => `<button class="btn ghost" data-hint="${k}" ${k > (S.hints[i] || 0) ? 'disabled style="opacity:.4"' : ''}>💡 Hint ${k + 1}</button>`).join('')}</div>
+      <div id="hintOut">${d.hints.slice(0, S.hints[i] || 0).map(h => `<div class="hinttext">${h}</div>`).join('')}</div>
+    </div>`;
+  if (d.roles) setupRoles(st, d);
+  $('#lockForm').addEventListener('submit', e => { e.preventDefault(); check(d, i); });
+  st.querySelectorAll('[data-hint]').forEach(b => b.addEventListener('click', () => {
+    const k = +b.dataset.hint; if ((S.hints[i] || 0) <= k) { S.hints[i] = k + 1; save(); render(); }
+  }));
+  const first = st.querySelector('#lockForm input'); if (first && document.activeElement === document.body) first.focus({ preventScroll: true });
+}
+
+function setupRoles(st, d) {
+  const box = $('[data-roles]', st), out = $('[data-rolecard]', st);
+  const keys = Object.keys(d.roleCards);
+  const draw = () => {
+    box.innerHTML = '<span class="note" style="align-self:center;margin-right:4px">I am holding:</span>' + keys.map(k => `<button type="button" class="${k === S.role ? 'on' : ''}" data-r="${k}">Card ${k}</button>`).join('');
+    out.innerHTML = d.roleCards[S.role] || '';
+    box.querySelectorAll('[data-r]').forEach(b => b.addEventListener('click', () => { S.role = b.dataset.r; save(); draw(); }));
+  };
+  draw();
+}
+
+function check(d, i) {
+  const form = $('#lockForm'), fb = $('#fb');
+  const vals = d.fields.map((f, k) => normalize(form.elements['f' + k].value, f));
+  const h = cyrb53(ROOM.salt + 'd' + (i + 1) + '::' + vals.join('|'));
+  if (d.answers.includes(h)) {
+    S.door = i + 1;
+    if (S.door >= ROOM.doors.length) { S.end = Date.now(); S.key = vals.join('|'); }
+    save();
+    fb.className = 'feedback good'; fb.textContent = '✔ ' + d.success;
+    form.querySelector('button').disabled = true;
+    setTimeout(render, 1400);
+  } else {
+    S.wrong++; save(); hud();
+    fb.className = 'feedback bad';
+    fb.textContent = '✖ ' + ROOM.wrongLines[Math.floor(Math.random() * ROOM.wrongLines.length)];
+    form.classList.remove('shake'); void form.offsetWidth; form.classList.add('shake');
+  }
+}
+
+function renderIntro(st) {
+  st.innerHTML = `<div class="center">
+      <span class="tag">Escape Room · Teams of 3–4</span>
+      <h2>${ROOM.title}</h2></div>
+      ${say(ROOM.intro + ' <br><br>The clock starts when you press the button. Hints are free, but I <i>count</i> them. Mwahaha.')}
+      <div class="setup">
+        <div><label for="team">Team name</label><input id="team" maxlength="40" placeholder="e.g., The Free Fallers" value="${S.team || ''}"></div>
+        <div><label for="names">Team members</label><input id="names" maxlength="120" placeholder="First names" value="${S.names || ''}"></div>
+        <div><label for="size">Players</label><select id="size"><option value="3">3 players</option><option value="4" selected>4 players</option></select></div>
+        <div><label for="tcode">Class timer code <span class="note">(from the board, if your teacher posted one)</span></label><input id="tcode" maxlength="12" placeholder="e.g., 1452-AB" style="font-family:var(--mono);text-transform:uppercase"></div>
+        <div id="tcodeMsg" class="note"></div>
+        <p class="note" style="margin:0">Every player opens this page on their own Chromebook and enters the <b>same</b> team name. Bring paper, a pencil, and a calculator.</p>
+        <button class="btn dark" id="go">Start the clock ▶</button>
+      </div>`;
+  $('#size').value = S.size || 4;
+  $('#go').addEventListener('click', () => {
+    const tc = $('#tcode').value.trim();
+    if (tc && !parseTimerCode(tc)) { $('#tcodeMsg').style.color = '#d1495b'; $('#tcodeMsg').textContent = "That timer code isn't valid. Fix it or leave it blank."; return; }
+    S.team = $('#team').value.trim() || 'Unnamed Team'; S.names = $('#names').value.trim(); S.size = +$('#size').value;
+    if (tc) { const r = parseTimerCode(tc); S.timer = r.type === 'off' ? { off: true, end: null, day: dayKey() } : { off: false, end: r.end, day: dayKey() }; }
+    S.started = true; S.start = Date.now(); save(); render();
+  });
+}
+
+function renderFinale(st) {
+  const t = fmt(S.end - S.start);
+  st.innerHTML = `<div class="center">
+      ${say(`Fine. FINE. You escaped, and I'm soaked. I'll go back to vacuuming. Slowly. Show this screen to your teacher.`, 'happy')}
+      <div class="cert">
+        <div class="tag">Certificate of Escape</div>
+        <h2 style="margin:4px 0">${escapeHtml(S.team)}</h2>
+        <div class="note">${escapeHtml(S.names || '')}</div>
+        <div class="stats"><div>Time<b>${t}</b></div><div>Hints<b>${hintsUsed()}</b></div><div>Wrong codes<b>${S.wrong}</b></div></div>
+        <div class="note">Finish code (your teacher types this in)</div>
+        <div class="fcode">${finishCode(S.end, Math.min(99, hintsUsed()))}</div>
+        <div class="note" style="margin-top:8px">Teacher password</div>
+        <div class="pw">${unlockPw()}</div>
+        <div class="note">${new Date(S.end).toLocaleString()} · Kinematics · ${ROOM.title}</div>
+      </div>
+      <p class="no-print"><button class="btn dark" onclick="window.print()">Print certificate</button></p>
+    </div>`;
+}
+function renderTimeUp(st) {
+  const opened = S.door;
+  st.innerHTML = `<div class="timeup">
+      ${say(`Beep boop... <b>TIME'S UP!</b> The lab stays locked. Show this screen to your teacher.`, 'happy')}
+      <h2>⏰ Time's Up</h2>
+      <div class="cert">
+        <h2 style="margin:4px 0;color:var(--ink);font-size:24px">${escapeHtml(S.team)}</h2>
+        <div class="note">${escapeHtml(S.names || '')}</div>
+        <div class="stats"><div>Doors opened<b>${opened} / ${ROOM.doors.length}</b></div><div>Hints<b>${hintsUsed()}</b></div><div>Wrong codes<b>${S.wrong}</b></div></div>
+        <div class="note">Stopped on Door ${Math.min(opened + 1, ROOM.doors.length)}: ${ROOM.doors[Math.min(opened, ROOM.doors.length - 1)].name}</div>
+      </div>
+      <p class="note">Did your teacher give more time? Type the new code from the board:</p>
+      <form id="moreTime" autocomplete="off" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <input id="moreInput" placeholder="1505-AB" style="font-family:var(--mono);font-size:20px;letter-spacing:.1em;width:180px;padding:8px 10px;border-radius:9px;border:2px solid var(--line);text-transform:uppercase">
+        <button class="btn dark" type="submit">Keep going</button></form>
+      <div id="moreMsg" class="note" style="margin-top:6px"></div>
+    </div>`;
+  $('#moreTime').addEventListener('submit', e => { e.preventDefault(); const m = $('#moreMsg'); applyTimerCode($('#moreInput').value, m); if (m.textContent.startsWith('That')) m.style.color = '#d1495b'; });
+}
+function unlockPw() { const k = ROOM.salt + (S.key || ''); return ROOM.finaleCipher.map((b, i) => String.fromCharCode(b ^ k.charCodeAt(i % k.length))).join(''); }
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+$('#timerForm').addEventListener('submit', e => { e.preventDefault(); if (applyTimerCode($('#timerInput').value, $('#timerMsg'))) { $('#timerInput').value = ''; setTimeout(() => $('#timerBox').classList.remove('on'), 1600); } });
+$('#timerClose').addEventListener('click', () => $('#timerBox').classList.remove('on'));
+$('#resetBtn').addEventListener('click', () => $('#confirmBox').classList.add('on'));
+$('#resetNo').addEventListener('click', () => $('#confirmBox').classList.remove('on'));
+$('#resetYes').addEventListener('click', () => { store.clear(); S = { started: false, team: '', size: 4, start: 0, end: 0, door: 0, hints: {}, wrong: 0, role: 'A', timer: null }; $('#confirmBox').classList.remove('on'); render(); });
+render();
+</script>
+</body>
+</html>
