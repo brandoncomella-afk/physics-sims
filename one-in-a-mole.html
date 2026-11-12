@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>One in a Mole — Unit 4 Review</title>
+<style>
+:root{
+  --bg1:#061a33; --bg2:#020814; --ink:#eaf4ff; --muted:#9db4cc; --card:rgba(255,255,255,.07);
+  --card-b:rgba(255,255,255,.14); --accent:#ffcf4a; --accent-ink:#2a1d00; --bad:#ff7a7a; --good:#6fe3a5;
+}
+body.reverse{
+  --bg1:#bfe6ff; --bg2:#fff5e6; --ink:#1b2a3a; --muted:#4e6378; --card:rgba(255,255,255,.65);
+  --card-b:rgba(27,42,58,.14); --accent:#ff7a59; --accent-ink:#fff;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);
+  background:linear-gradient(180deg,var(--bg1),var(--bg2)) fixed;transition:background .6s,color .6s;min-height:100vh}
+h1,h2,h3,.fred{font-family:ui-rounded,"SF Pro Rounded","Arial Rounded MT Bold",system-ui,sans-serif;letter-spacing:.2px}
+button{font:inherit;cursor:pointer}
+.wrap{max-width:1100px;margin:0 auto;padding:20px 18px 40px}
+header{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+header h1{margin:0;font-size:30px}
+header .sub{color:var(--muted);font-size:14px}
+.card{background:var(--card);border:1px solid var(--card-b);border-radius:18px;padding:20px;backdrop-filter:blur(6px)}
+.hidden{display:none!important}
+
+/* start */
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:6px 0 18px}
+.mode{text-align:left;border-radius:18px;padding:18px;border:2px solid var(--card-b);background:var(--card);color:var(--ink)}
+.mode.sel{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 35%,transparent)}
+.mode h3{margin:0 0 6px;font-size:22px}
+.mode p{margin:0;color:var(--muted);font-size:14.5px;line-height:1.45}
+.settings{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.settings label{display:block;font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:6px}
+select,input[type=text]{font:inherit;width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--card-b);background:rgba(255,255,255,.92);color:#122}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.tag{padding:7px 12px;border-radius:999px;border:1px solid var(--card-b);background:transparent;color:var(--ink);font-weight:700;font-size:14px}
+.tag.on{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.big{display:inline-block;padding:13px 26px;border-radius:14px;border:0;background:var(--accent);color:var(--accent-ink);font-weight:800;font-size:18px}
+.ghost{padding:10px 16px;border-radius:12px;border:1px solid var(--card-b);background:transparent;color:var(--ink);font-weight:700}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.note{color:var(--muted);font-size:13.5px}
+
+/* play */
+.game{display:grid;grid-template-columns:1fr 150px;gap:16px;align-items:start}
+.topline{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;color:var(--muted);font-weight:700}
+.prompt{font-family:ui-rounded,"SF Pro Rounded","Arial Rounded MT Bold",system-ui,sans-serif;font-size:clamp(26px,4vw,40px);line-height:1.15;margin:4px 0 16px}
+.timer{height:10px;border-radius:99px;background:rgba(128,128,128,.25);overflow:hidden;margin-bottom:16px}
+.timer>div{height:100%;width:100%;background:var(--accent);transition:width .1s linear}
+.timer.low>div{background:var(--bad)}
+.answer-row{display:flex;gap:10px}
+.answer-row input{font-size:22px;padding:14px 16px}
+.answer-row .big{white-space:nowrap}
+.banner{display:flex;gap:14px;align-items:center;border-radius:16px;padding:14px 16px;margin:4px 0 14px;border:1px solid var(--card-b)}
+.banner .pts{font-family:ui-rounded,"SF Pro Rounded","Arial Rounded MT Bold",system-ui,sans-serif;font-size:34px;font-weight:700;min-width:84px;text-align:center}
+.banner .what{font-size:15px}
+.banner .what b{font-family:ui-rounded,"SF Pro Rounded","Arial Rounded MT Bold",system-ui,sans-serif;font-size:21px;display:block}
+.molly{display:flex;gap:10px;align-items:flex-start;margin:6px 0 14px}
+.bubble{background:rgba(255,255,255,.92);color:#1b2a3a;border-radius:14px;padding:9px 13px;font-weight:700;font-size:14.5px;position:relative}
+.bubble:before{content:"";position:absolute;left:-7px;top:14px;border:7px solid transparent;border-right-color:rgba(255,255,255,.92);border-left:0}
+.bank h3{margin:6px 0 8px;font-size:17px}
+.tierrow{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px}
+.tiername{min-width:150px;font-weight:800;font-size:13.5px;padding-top:5px}
+.tiername small{display:block;color:var(--muted);font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:4px 10px;border-radius:999px;font-size:14px;font-weight:700;background:rgba(128,128,128,.18)}
+.chip.me{outline:3px solid var(--accent);background:var(--accent);color:var(--accent-ink)}
+.traps{margin-top:10px}
+.trap{font-size:14px;margin:4px 0}
+.trap b{color:var(--bad)}
+body.reverse .trap b{color:#c0392b}
+
+/* gauge */
+.gauge{position:relative;height:560px;border-radius:18px;overflow:hidden;border:1px solid var(--card-b)}
+body.dive .gauge{background:linear-gradient(180deg,#4fb3ff 0%,#1468b8 8%,#0b3a75 25%,#071d42 55%,#030a1a 85%,#000 100%)}
+body.reverse .gauge{background:linear-gradient(0deg,#7ccf6b 0%,#9edcff 6%,#5aa9f0 30%,#2f63c4 60%,#16205c 85%,#060a24 100%)}
+.zone{position:absolute;left:0;right:0;border-top:1px dashed rgba(255,255,255,.35);font-size:10.5px;font-weight:800;color:rgba(255,255,255,.85);padding:2px 6px;text-transform:uppercase;letter-spacing:.4px}
+.marker{position:absolute;left:50%;transform:translate(-50%,-50%);transition:top 1.2s cubic-bezier(.3,1.4,.5,1);font-size:34px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
+.readout{text-align:center;margin-top:8px;font-family:ui-rounded,"SF Pro Rounded","Arial Rounded MT Bold",system-ui,sans-serif;font-size:20px}
+.readout small{display:block;font-family:system-ui,sans-serif;color:var(--muted);font-size:12px;font-weight:700}
+
+/* end */
+.score-big{font-family:ui-rounded,"SF Pro Rounded","Arial Rounded MT Bold",system-ui,sans-serif;font-size:60px;font-weight:700;margin:0}
+.grid-emoji{font-size:30px;letter-spacing:4px;margin:8px 0}
+table{width:100%;border-collapse:collapse;font-size:14.5px;margin-top:10px}
+td,th{text-align:left;padding:7px 8px;border-bottom:1px solid var(--card-b)}
+th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+textarea{width:100%;height:90px;margin-top:8px;border-radius:12px;padding:10px;font:14px/1.4 ui-monospace,monospace}
+
+@media (max-width:760px){
+  .modes,.settings{grid-template-columns:1fr}
+  .game{grid-template-columns:1fr}
+  .gauge{height:170px}
+  .tiername{min-width:110px}
+  .answer-row{flex-direction:column}
+}
+</style>
+</head>
+<body class="dive">
+<div class="wrap">
+  <header>
+    <svg width="58" height="58" viewBox="0 0 64 64" aria-hidden="true" id="logo"></svg>
+    <div>
+      <h1 id="title">One in a Mole</h1>
+      <div class="sub">Unit 4 Review · Balanced Forces &amp; Energy Transfer — where the <i>rare</i> right answer wins… or does it?</div>
+    </div>
+  </header>
+
+  <!-- START -->
+  <section id="start" class="card">
+    <div class="modes">
+      <button class="mode sel" data-mode="dive">
+        <h3>🔬 One in a Mole</h3>
+        <p>Name a correct answer that <b>nobody else will think of</b>. The rarer your right answer, the deeper your bathysphere sinks. "Rope" is fine. "Spider silk" is glorious.</p>
+      </button>
+      <button class="mode" data-mode="reverse">
+        <h3>🎈 Elom a ni Eno</h3>
+        <p>The backwards version: give the <b>most obvious</b> correct answer — the one the whole class would say. Common answers launch your balloon highest. Being clever costs you.</p>
+      </button>
+    </div>
+    <div class="settings">
+      <div>
+        <label for="rounds">Prompts</label>
+        <select id="rounds"><option>5</option><option>7</option><option selected>10</option><option>15</option></select>
+      </div>
+      <div>
+        <label for="timer">Timer</label>
+        <select id="timer"><option value="15">15 s</option><option value="25" selected>25 s</option><option value="40">40 s</option><option value="0">Off (class discussion)</option></select>
+      </div>
+      <div>
+        <label for="seed">Game code</label>
+        <input type="text" id="seed" maxlength="30">
+      </div>
+    </div>
+    <div style="margin-top:14px">
+      <label class="note" style="font-weight:800;text-transform:uppercase;letter-spacing:.6px;font-size:13px">Unit 4 objectives</label>
+      <div class="tags" id="tags"></div>
+    </div>
+    <p class="note" style="margin:14px 0 16px">Same game code + same topics = same prompts for everyone, so the whole class can play the same round on their own devices and compare. Answers are matched loosely (plurals, small typos, "force"/"energy" endings are forgiven).</p>
+    <div class="row">
+      <button class="big" id="go">Start diving</button>
+      <span class="note" id="poolinfo"></span>
+    </div>
+  </section>
+
+  <!-- PLAY -->
+  <section id="play" class="hidden">
+    <div class="game">
+      <div class="card">
+        <div class="topline"><span id="qnum"></span><span id="qtag"></span></div>
+        <div class="prompt" id="prompt"></div>
+        <div id="askArea">
+          <div class="timer" id="timerbar"><div></div></div>
+          <form class="answer-row" id="form" autocomplete="off">
+            <input type="text" id="answer" placeholder="Type one answer…" aria-label="Your answer" autocomplete="off" spellcheck="false">
+            <button class="big" type="submit">Lock it in</button>
+          </form>
+          <div class="row" style="margin-top:10px"><button class="ghost" id="skip" type="button">Skip</button><span class="note">Press Enter to submit.</span></div>
+        </div>
+        <div id="revealArea" class="hidden">
+          <div class="banner" id="banner"></div>
+          <div class="molly"><svg width="46" height="46" viewBox="0 0 64 64" class="mollysvg" aria-hidden="true"></svg><div class="bubble" id="quip"></div></div>
+          <div class="row" style="margin-bottom:12px">
+            <button class="big" id="next">Next prompt →</button>
+            <button class="ghost hidden" id="override" title="Your teacher rules the answer is valid">✅ Teacher says it counts (+40)</button>
+          </div>
+          <div class="bank" id="bank"></div>
+        </div>
+      </div>
+      <div>
+        <div class="gauge" id="gauge"><div class="marker" id="marker">🟡</div></div>
+        <div class="readout" id="readout"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- END -->
+  <section id="end" class="hidden card">
+    <div class="row" style="justify-content:space-between;align-items:flex-start">
+      <div>
+        <div class="note" id="endmode"></div>
+        <p class="score-big" id="endscore"></p>
+        <h2 style="margin:0" id="endtitle"></h2>
+        <div class="grid-emoji" id="endgrid"></div>
+        <div class="note" id="enddepth"></div>
+      </div>
+      <div class="molly" style="max-width:340px"><svg width="64" height="64" viewBox="0 0 64 64" class="mollysvg" aria-hidden="true"></svg><div class="bubble" id="endquip"></div></div>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <button class="big" id="copy">Copy results</button>
+      <button class="ghost" id="again">Play again (new code)</button>
+      <button class="ghost" id="settingsBtn">Change settings</button>
+      <span class="note" id="copied"></span>
+    </div>
+    <textarea id="copybox" class="hidden" readonly></textarea>
+    <table id="endtable"></table>
+  </section>
+</div>
+
+<script>
+/* ============ Molly the Mole (mascot) ============ */
+const MOLLY = `<circle cx="32" cy="36" r="24" fill="#8a5a3b"/><ellipse cx="32" cy="44" rx="14" ry="10" fill="#c9926a"/>
+<circle cx="22" cy="30" r="8" fill="#bfe9ff" stroke="#333" stroke-width="3"/><circle cx="42" cy="30" r="8" fill="#bfe9ff" stroke="#333" stroke-width="3"/>
+<path d="M14 28 Q32 18 50 28" stroke="#333" stroke-width="3" fill="none"/><circle cx="23" cy="31" r="3" fill="#222"/><circle cx="41" cy="31" r="3" fill="#222"/>
+<ellipse cx="32" cy="41" rx="5" ry="4" fill="#ff8fb1"/><path d="M27 49 Q32 53 37 49" stroke="#5a341f" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+<rect x="28" y="49" width="3.5" height="4" fill="#fff"/><rect x="32.5" y="49" width="3.5" height="4" fill="#fff"/>`;
+document.getElementById('logo').innerHTML = MOLLY;
+document.querySelectorAll('.mollysvg').forEach(s => s.innerHTML = MOLLY);
+
+/* ============ Prompt bank ============
+   a: tier -> "Display|alias|alias; Next|alias"   (tier 1 = most common … 6 = rarest)
+   nope: [ "trap|alias", "explanation" ]  — plausible-but-wrong answers with a teaching note */
+const TAGS = {o41:"4-1 Force diagrams", o42:"4-2 Balanced forces", o43:"4-3 F = kx & Fg = mg", o44:"4-4 Spring energy"};
+
+const PROMPTS = [
+/* ---------- 4-1 Forces as interactions / force diagrams ---------- */
+{q:"Name a contact force", tags:["o41"], strip:["force"], a:{
+ 1:"Normal; Friction",
+ 2:"Tension; Applied|push|pull; Air resistance|air friction",
+ 3:"Spring|elastic; Static friction; Kinetic friction|sliding friction; Drag",
+ 4:"Buoyant|buoyancy; Rolling friction|rolling resistance",
+ 5:"Thrust; Lift; Water resistance",
+ 6:"Surface tension; Viscous|viscosity|fluid friction"},
+ nope:[["Gravity|gravitational|weight","Gravity acts at a distance — Earth doesn't have to touch you to pull on you!"],
+       ["Magnetic|electric|electrostatic","That one acts at a distance (no touching needed)."],
+       ["Contact","Ha — name a specific one!"],
+       ["Inertia|momentum|force of motion|motion","Not a force at all! Inertia is just an object's tendency to keep doing what it's doing."]]},
+
+{q:"You're sitting still in a chair. Name a force acting on YOU.", tags:["o41"], strip:["force","from","on","me","you"], a:{
+ 1:"Gravity|gravitational|weight|earth pulling; Normal (from the chair)|normal|chair|seat|chair pushing up",
+ 3:"Normal (from the floor on your feet)|floor|ground|normal from the floor; Static friction|friction",
+ 4:"Normal (from the desk or chair back)|desk|table|backrest|chair back",
+ 6:"Buoyant force from the air|buoyant|buoyancy"},
+ nope:[["Inertia","Inertia isn't a force!"],
+       ["Net|net force","Net force is the SUM of the forces — and it's zero because you're sitting still."],
+       ["Air resistance|drag","You're not moving through the air, so there's no air resistance."],
+       ["Tension","Nothing is pulling on you with a rope… hopefully."],
+       ["Air pressure","Air pushes on you from ALL sides, so those pushes nearly cancel. (The tiny leftover is the buoyant force!)"]]},
+
+{q:"Name an object that can pull with a TENSION force", tags:["o41"], a:{
+ 1:"Rope; String",
+ 2:"Cable; Chain; Cord; Wire",
+ 3:"Rubber band; Bungee cord|bungee; Thread; Fishing line",
+ 4:"Leash|dog leash; Elevator cable; Kite string; Guitar string; Shoelace|shoe lace",
+ 5:"Tow strap|tow rope; Zip line; Tightrope; Strap; Belt; Yarn",
+ 6:"Spider silk|spider web|web; Tendon; Dental floss|floss; Hair; Suspenders; Bridge cable|suspension cable; Spaghetti noodle|spaghetti"},
+ nope:[["Magnet","A magnet pulls without touching — that's not tension."]]},
+
+{q:"A box is pushed across the floor at constant speed. Name a force on its force diagram.", tags:["o41","o42"], strip:["force","on","box","the","by"], a:{
+ 1:"Gravity|gravitational|weight; Normal|floor pushing up; Applied|push|pushing|hand|person",
+ 2:"Friction|kinetic friction|sliding friction",
+ 5:"Air resistance|drag"},
+ nope:[["Force of motion|motion|momentum|inertia|forward","There's no \"force of motion\"! At constant speed, the push just balances friction."],
+       ["Net|net force","Net force is ZERO here — constant speed means balanced forces."],
+       ["Static friction","It's sliding, so it's KINETIC friction."],
+       ["Tension","No rope in this problem!"]]},
+
+/* ---------- 4-2 Balanced forces ---------- */
+{q:"A skydiver falls at constant (terminal) speed. Name a force acting on them.", tags:["o42"], strip:["force","from","on","the"], a:{
+ 1:"Gravity|gravitational|weight; Air resistance|air friction",
+ 3:"Drag",
+ 4:"Tension from the parachute|tension|parachute|harness|straps",
+ 6:"Buoyant force from the air|buoyant|buoyancy"},
+ nope:[["Acceleration|velocity|speed","Not a force! (And at terminal speed, the acceleration is zero.)"],
+       ["Normal","Nothing solid is touching them — no normal force… until the landing!"],
+       ["Friction","Close! Use the specific name: air resistance."],
+       ["Wind|lift","Falling straight down at constant speed, it's just gravity vs. air resistance."]]},
+
+{q:"Name an object that's in equilibrium (ΣF = 0)", tags:["o42"], strip:["on","of","in","at","that","is"], a:{
+ 1:"Book on a table|book|book on a desk|book resting on a table; Hanging lamp|lamp|light fixture|hanging light|chandelier; Parked car|car parked|car at rest",
+ 2:"Picture on a wall|picture|painting|picture frame; Person standing still|person standing|person sitting|you|me; Building|house; Table|desk|chair",
+ 3:"Bridge; Car at constant velocity|car constant speed|car at constant speed|car constant velocity|car cruising; Mass hanging from a spring|hanging mass|mass on a spring",
+ 4:"Elevator at constant speed|elevator|elevator moving constant speed|elevator constant velocity; Skydiver at terminal velocity|skydiver|terminal velocity",
+ 5:"Airplane cruising|airplane|plane|plane cruising; Puck sliding on frictionless ice|hockey puck|puck sliding; Floating boat|boat|boat floating|floating object",
+ 6:"Sleeping cat|cat|sleeping dog|dog; Tightrope walker; Spacecraft coasting in deep space|spaceship coasting|spacecraft|voyager; Hovering helicopter|helicopter hovering|hovering drone|drone|hot air balloon hovering"},
+ nope:[["Ball at the top of its throw|ball at top|ball at the peak|ball thrown up","Trap! Its velocity is zero for an instant, but gravity is unbalanced — it's still accelerating."],
+       ["Car speeding up|accelerating car|rocket launching|falling rock|falling ball|dropped ball","Speeding up means the forces are unbalanced."],
+       ["Car turning|car going around a curve|merry go round|ferris wheel","Changing direction is acceleration too — unbalanced forces!"]]},
+
+{q:"Name another way of saying an object has BALANCED forces", tags:["o42"], strip:["the","is","are","it","object","has"], a:{
+ 1:"Net force is zero|net force zero|net force 0|fnet 0|no net force|zero net force; Equilibrium|in equilibrium",
+ 2:"Forces cancel out|forces cancel|cancel out|equal and opposite|forces are equal and opposite; At rest|not moving|stationary",
+ 3:"Constant velocity|moving at constant velocity|constant speed in a straight line|constant speed; No change in motion|motion doesnt change|unchanging motion",
+ 4:"ΣF = 0|sum of forces equals zero|sum of forces is zero|sigma f 0|sum f 0|f 0; No acceleration|zero acceleration|a 0|acceleration is zero",
+ 5:"Newton's first law|newtons first law|first law|law of inertia",
+ 6:"Static equilibrium; Dynamic equilibrium|translational equilibrium"},
+ nope:[["Speeding up|slowing down|accelerating","That's what UNbalanced forces do!"],
+       ["No forces|no forces acting","Trap! Balanced doesn't mean NO forces — a book on a table has two forces that cancel."]]},
+
+/* ---------- 4-3 Quantitative relationships: F = kx, Fg = mg ---------- */
+{q:"Name a unit of force", tags:["o43"], strip:["unit","of"], a:{
+ 1:"Newton|n",
+ 2:"Pound|lb|lbs|pound force|lbf",
+ 3:"Kilonewton|kn; kg·m/s²|kg m s2|kg m/s^2|kilogram meter per second squared",
+ 4:"Millinewton|mn; Ounce|oz",
+ 5:"Dyne; Kilogram-force|kgf|kilopond; Meganewton",
+ 6:"Kip; Poundal; Gram-force|gf"},
+ nope:[["Kilogram|kg|gram","That's MASS. Weight is a force: Fg = mg, in newtons."],
+       ["Joule|j","Joules measure ENERGY."],
+       ["N/m|newtons per meter","That's the unit of the spring constant k."],
+       ["N/kg|newtons per kilogram","That's the unit of g (gravitational field strength), not force."]]},
+
+{q:"Name a unit of MASS", tags:["o43"], strip:["unit","of"], a:{
+ 1:"Kilogram|kg; Gram|g",
+ 2:"Milligram|mg",
+ 3:"Ton|tons; Ounce|oz",
+ 4:"Metric ton|tonne; Microgram",
+ 5:"Carat; Stone",
+ 6:"Slug; Atomic mass unit|amu|dalton; Grain; Pound-mass|lbm"},
+ nope:[["Newton|n","Newtons measure FORCE (like weight), not mass!"],
+       ["Pound|lb|lbs","Careful: in physics class the pound is usually a FORCE unit (weight). The mass version is the rare \"pound-mass.\""],
+       ["Liter|milliliter|ml","That's volume, not mass."]]},
+
+{q:"Name a quantity measured in newtons", tags:["o43"], strip:["force"], a:{
+ 1:"Force; Weight",
+ 2:"Tension; Normal; Friction",
+ 3:"Net; Applied|push|pull; Spring|elastic|restoring",
+ 4:"Air resistance; Drag; Gravitational|gravity",
+ 5:"Buoyant|buoyancy; Thrust; Lift; Static friction; Kinetic friction",
+ 6:"Spring scale reading|spring scale"},
+ nope:[["Mass|kilogram","Mass is in kilograms."],
+       ["Energy|elastic energy|work|kinetic energy","Energy and work are in joules."],
+       ["Spring constant|k","k is in newtons PER METER (N/m)."],
+       ["g|gravitational field strength|little g","g is in N/kg."]]},
+
+{q:"Name an everyday object that weighs about 1 newton (mass ≈ 100 g)", tags:["o43"], strip:["of"], a:{
+ 1:"Apple|small apple|medium apple",
+ 2:"100 g hooked mass|100 g mass|100 gram mass|hooked mass|100g mass; Stick of butter|butter",
+ 3:"Banana; Bar of soap|soap; Deck of cards|cards|playing cards",
+ 4:"Chocolate bar|candy bar|bar chocolate; Tomato; Lemon; Orange|small orange; Pear",
+ 5:"Two eggs|2 eggs; Hamster; Computer mouse|mouse; Baseball",
+ 6:"20 nickels|twenty nickels; Four AA batteries|4 aa batteries|four aa batteries"},
+ nope:[["Paperclip|paper clip|feather|penny|pencil","Way too light — a paperclip weighs about 0.01 N!"],
+       ["Phone|cell phone|iphone","Close-ish, but a phone is about 2 N (≈ 200 g)."],
+       ["Textbook|book|laptop|chromebook|backpack","Too heavy — that's anywhere from 5 to 50+ N."],
+       ["1 kg mass|kilogram|1 kg","A 1 kg mass weighs about 10 N!"]]},
+
+{q:"Name a tool you could use to collect data on forces, masses, or springs", tags:["o43"], a:{
+ 1:"Spring scale|newton meter|force meter; Ruler|meter stick|meterstick|tape measure|measuring tape",
+ 2:"Balance|scale|electronic balance|digital scale; Hooked masses|masses|mass set|weights",
+ 3:"Force sensor|force probe; Triple beam balance|triple beam",
+ 4:"Bathroom scale; Spring|springs; Ring stand|clamp|ring stand and clamp",
+ 5:"Mass hanger|hanger; Graphing software|logger pro|graphical analysis|computer|graph",
+ 6:"Rubber bands|rubber band; Pulley"},
+ nope:[["Thermometer","That measures temperature — not much help here!"],
+       ["Stopwatch|timer|motion detector","Timing was Units 2–3. Balanced-force data is about force, mass, and stretch!"]]},
+
+{q:"Name a place where your MASS stays the same but your WEIGHT would be different", tags:["o43"], strip:["on","the","planet","at"], a:{
+ 1:"The Moon|moon; Mars",
+ 2:"Jupiter",
+ 3:"Venus; Mercury; Saturn; The Sun|sun",
+ 4:"Neptune; Uranus; Pluto",
+ 5:"Titan; Europa; Io; Ganymede; Ceres",
+ 6:"Callisto; Enceladus; Top of Mount Everest|mount everest|everest; North Pole|south pole; A neutron star|neutron star; Deep space far from everything|deep space|far from any planet"},
+ nope:[["Earth","You're already here!"],
+       ["Space|outer space|iss|space station","Careful! Gravity doesn't switch off in space — on the ISS it's still about 90% of Earth's. Astronauts float because they're falling around Earth."]]},
+
+/* ---------- 4-3 / 4-4 equations ---------- */
+{q:"Name an equation (or law) from this unit", tags:["o43","o44"], a:{
+ 1:"F = kx|fkx|fs kx|fsp kx|hookes law|hooke law|hookes; Fg = mg|fg mg|w mg|weight mg|f mg|weight equals mass times gravity",
+ 2:"ΣF = 0|net force 0|fnet 0|sum f 0|f net 0|sum of forces equals zero",
+ 3:"Eel = ½kx²|e 1/2kx^2|eel 1/2kx^2|e .5kx^2|e 0.5kx^2|ee 1/2kx2|pe 1/2kx^2|u 1/2kx^2|1/2kx^2|1/2 k x squared|elastic energy equation",
+ 4:"k = F/x|k f/x|x f/k; g = Fg/m|g fg/m|m fg/g|g w/m; Newton's first law|newtons first law|law of inertia; Newton's third law|newtons third law|fab fba",
+ 5:"Energy = area under the F vs. x graph|area under the graph|area under f vs x|area under force vs stretch"},
+ nope:[["F = ma|f ma|fnet ma|newtons second law|second law","That's Unit 5 (unbalanced forces)! In Unit 4, ΣF = 0."],
+       ["Universal gravitation|f gmm/r^2|coulombs law|f kqq/r^2|inverse square law","Forces at a distance aren't on this review!"],
+       ["Ek = ½mv²|ke 1/2mv^2|ek 1/2mv^2|e 1/2mv^2","That's kinetic energy — from the earlier energy and motion units."]]},
+
+/* ---------- 4-4 Spring energy / energy storage & transfer ---------- */
+{q:"Name something that acts like a spring (stores elastic energy)", tags:["o44"], a:{
+ 1:"Spring; Rubber band",
+ 2:"Trampoline; Bungee cord|bungee; Spring scale",
+ 3:"Slinky; Diving board|springboard; Bow|bow and arrow|archery bow; Slingshot",
+ 4:"Pogo stick; Mattress|bed; Car suspension|shock absorber|suspension; Bouncy ball|ball|basketball|tennis ball; Hair tie|scrunchie; Cushion|couch cushion|pillow",
+ 5:"Sponge; Ruler|twanged ruler; Pole vault pole|vaulting pole; Guitar string; Balloon; Mousetrap|mouse trap; Yoga ball|exercise ball; Tennis racket|racket",
+ 6:"Tendon|achilles tendon; Sneaker sole|shoe sole|sneakers|running shoe; Kangaroo legs|kangaroo; Wind-up toy|wind up toy|clock spring; Clicky pen|click pen|pen; Stapler; Gummy bear; Spider web"},
+ nope:[["Battery","Batteries store CHEMICAL energy, not elastic."],
+       ["Magnet","Magnets store energy in a field — not on this review!"]]},
+
+{q:"Name a way energy can be STORED in a system (an energy account)", tags:["o44"], strip:["energy","potential"], a:{
+ 1:"Kinetic|ek|ke; Elastic|eel|spring",
+ 2:"Gravitational|eg|gpe",
+ 3:"Thermal|eth|internal thermal; Chemical|ech",
+ 5:"Internal|eint; Dissipated|ediss|edis",
+ 6:"Nuclear; Electric|electrical"},
+ nope:[["Heat|heating","Heating is a TRANSFER (Q). Once it's in, it's stored as thermal energy."],
+       ["Work|working","Work is a transfer (W), not a storage mode."],
+       ["Power","Power is the RATE of energy transfer."],
+       ["Force","Force isn't energy at all!"]]},
+
+{q:"Name a way energy is TRANSFERRED into or out of a system", tags:["o44"], strip:["by","energy","transfer","the"], a:{
+ 1:"Working|work|w|pushing|pulling",
+ 2:"Heating|heat|q",
+ 3:"Radiating|radiation|r|light",
+ 5:"Conduction; Convection; Sound",
+ 6:"Electrical working|electricity|electric current|electrical"},
+ nope:[["Kinetic|elastic|gravitational|thermal|chemical","That's a STORAGE mode — energy sitting in an account. Transfers move energy between systems (working, heating, radiating)."]]},
+
+{q:"Name something that INCREASES when you stretch a spring farther", tags:["o44","o43"], a:{
+ 1:"Spring force|force|f|pull; Stretch|displacement|x|extension|length",
+ 2:"Elastic energy|eel|energy|elastic potential energy|stored energy",
+ 3:"Spring scale reading|reading|scale reading; Tension",
+ 4:"Area under the F vs. x graph|area under the graph|area",
+ 5:"Work you do|work",
+ 6:"Chance of permanently bending it|elastic limit|permanent deformation"},
+ nope:[["Spring constant|k|stiffness","Trick! k stays the same — it's a property of the spring, not of how far you stretch it."],
+       ["Mass|weight of the spring","The spring's mass doesn't change when you stretch it."]]},
+];
+
+/* ============ Matching ============ */
+const ARTICLES = new Set(['the','a','an']);
+function norm(s){return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/['’`]/g,'').replace(/&/g,' and ').replace(/[^a-z0-9]+/g,' ').trim();}
+function sing(t){
+  if(t.length>4 && t.endsWith('ies')) return t.slice(0,-3)+'y';
+  if(t.length>3 && t.endsWith('s') && !/(ss|us|is)$/.test(t)) return t.slice(0,-1);
+  return t;
+}
+function keyOf(s, strip){
+  const toks = norm(s).split(' ').filter(Boolean).map(sing);
+  const f = toks.filter(t => !ARTICLES.has(t) && !strip.has(t));
+  return (f.length ? f : toks).join('');
+}
+function lev(a,b){
+  const m=a.length,n=b.length; let prev=Array.from({length:n+1},(_,j)=>j);
+  for(let i=1;i<=m;i++){const cur=[i];for(let j=1;j<=n;j++){cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));}prev=cur;}
+  return prev[n];
+}
+PROMPTS.forEach((p,i)=>{
+  p.id=i; p.stripSet=new Set((p.strip||[]).map(w=>sing(norm(w))));
+  p.entries=[]; p.groups={};
+  for(const t in p.a){
+    p.a[t].split(';').map(x=>x.trim()).filter(Boolean).forEach(e=>{
+      const al=e.split('|').map(x=>x.trim()); const g={tier:+t, display:al[0]};
+      (p.groups[t]=p.groups[t]||[]).push(g);
+      al.forEach(a=>p.entries.push({key:keyOf(a,p.stripSet), kind:'ans', g}));
+    });
+  }
+  (p.nope||[]).forEach(([als,note])=>{
+    const al=als.split('|').map(x=>x.trim()); const g={display:al[0], note};
+    al.forEach(a=>p.entries.push({key:keyOf(a,p.stripSet), kind:'nope', g}));
+  });
+});
+function match(input,p){
+  const k=keyOf(input,p.stripSet); if(!k) return null;
+  let hit=p.entries.find(e=>e.kind==='ans'&&e.key===k)||p.entries.find(e=>e.kind==='nope'&&e.key===k);
+  if(hit) return hit;
+  if(k.length<5) return null;
+  const tol = k.length>=9?2:1; let best=null, bd=99;
+  for(const e of p.entries){ if(e.key.length<4) continue; const d=lev(k,e.key); if(d<bd || (d===bd && best && best.kind==='nope' && e.kind==='ans')){bd=d;best=e;} }
+  return bd<=tol?best:null;
+}
+
+/* ============ Modes & scoring ============ */
+const DIVE_T = [null,
+ {name:"Ground State", pts:10, c:"#9fb3c8"},
+ {name:"Excited State", pts:25, c:"#5ed6a0"},
+ {name:"Quantum Leap", pts:40, c:"#4fa8ff"},
+ {name:"Deep Cut", pts:60, c:"#b07cff"},
+ {name:"Rare Isotope", pts:80, c:"#ff9f43"},
+ {name:"One in a Mole", pts:100, c:"#ff5d73"}];
+const REV_T = [null,
+ {name:"Hivemind", pts:100, c:"#ff5d73"},
+ {name:"Crowd Favorite", pts:80, c:"#ff9f43"},
+ {name:"Popular Vote", pts:60, c:"#b07cff"},
+ {name:"Coin Flip", pts:40, c:"#4fa8ff"},
+ {name:"Too Clever", pts:25, c:"#5ed6a0"},
+ {name:"Galaxy Brain", pts:10, c:"#9fb3c8"}];
+const SQ = {0:"⬛",10:"⬜",25:"🟩",40:"🟦",60:"🟪",80:"🟧",100:"🟥"};
+const TEACHER_PTS = 40;
+const tierInfo = t => (S.mode==='dive'?DIVE_T:REV_T)[t];
+
+const QUIPS = {
+ diveHi:["Six-point-oh-two times ten to the twenty-third to one! Nobody else said that.","My goggles are fogging up. That was DEEP.","I'm framing that answer and hanging it in my burrow."],
+ diveMid:["Respectable! A little off the beaten burrow.","Solid dig. Not the obvious tunnel, either.","Ooh, a bit of spice. I like it."],
+ diveLo:["Correct! …and also what the entire class said.","Right answer, crowded neighborhood.","Textbook. Literally — page one of the textbook."],
+ revHi:["Perfectly average. In this mode, that's the highest compliment.","You and the hivemind are ONE.","That's the answer printed on the poster in every physics room."],
+ revMid:["Correct, but a little too interesting for this mode.","Not bad! Could've been more boring, though.","The crowd half agrees with you."],
+ revLo:["Technically right — the worst kind of right in this mode.","Galaxy brain move. The hivemind is disappointed.","Too clever! Nobody else in the room went there."],
+ nope:["Ooh, a trap answer! Read the note — that one's on the test.","Common mix-up! Peek at the note below.","Close, but physics says no. Here's why ↓"],
+ miss:["Not in my burrow's answer list. If you think it's valid, ask your teacher for a ruling!","Hmm, I don't recognize that one. Typo? Or are you smarter than my list?"],
+ time:["Time's up! Even photons have deadlines.","The clock ran out — and time only goes one direction."],
+ teacher:["Overruled! The teacher has spoken. I'm adding it to my notes.","Teacher-approved. My list is humbled."]
+};
+const pick = a => a[Math.floor(Math.random()*a.length)];
+
+/* ============ State ============ */
+const $ = id => document.getElementById(id);
+let S = {mode:'dive', rounds:10, timer:25, tags:new Set(Object.keys(TAGS)), seed:''};
+let G = null, tick=null;
+
+try{ const saved=JSON.parse(localStorage.getItem('oiam-u4-settings')||'null');
+  if(saved){S.mode=saved.mode||S.mode;S.rounds=saved.rounds||S.rounds;S.timer=saved.timer??S.timer;if(saved.tags&&saved.tags.length)S.tags=new Set(saved.tags.filter(t=>TAGS[t]));} }catch(e){}
+function save(){try{localStorage.setItem('oiam-u4-settings',JSON.stringify({mode:S.mode,rounds:S.rounds,timer:S.timer,tags:[...S.tags]}));}catch(e){}}
+function todayCode(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+
+function hashStr(s){let h=1779033703^s.length;for(let i=0;i<s.length;i++){h=Math.imul(h^s.charCodeAt(i),3432918353);h=h<<13|h>>>19;}return h>>>0;}
+function rng(seed){let a=seed;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+
+/* ============ Start screen ============ */
+function setMode(m){
+  S.mode=m; document.body.className=m;
+  document.querySelectorAll('.mode').forEach(b=>b.classList.toggle('sel',b.dataset.mode===m));
+  $('title').textContent = m==='dive'?'One in a Mole':'Elom a ni Eno';
+  $('go').textContent = m==='dive'?'Start diving 🔬':'Start floating 🎈';
+}
+document.querySelectorAll('.mode').forEach(b=>b.onclick=()=>{setMode(b.dataset.mode);save();});
+function pool(){return PROMPTS.filter(p=>p.tags.some(t=>S.tags.has(t)));}
+function renderTags(){
+  $('tags').innerHTML='';
+  for(const [k,v] of Object.entries(TAGS)){
+    const b=document.createElement('button'); b.className='tag'+(S.tags.has(k)?' on':''); b.textContent=v; b.type='button';
+    b.onclick=()=>{ if(S.tags.has(k)){ if(S.tags.size>1) S.tags.delete(k);} else S.tags.add(k); renderTags(); save(); };
+    $('tags').appendChild(b);
+  }
+  const n=pool().length; $('poolinfo').textContent=`${n} prompt${n===1?'':'s'} in the pool`;
+}
+$('rounds').value=String(S.rounds); $('timer').value=String(S.timer); $('seed').value=todayCode();
+$('rounds').onchange=e=>{S.rounds=+e.target.value;save();};
+$('timer').onchange=e=>{S.timer=+e.target.value;save();};
+setMode(S.mode); renderTags();
+
+$('go').onclick=startGame;
+function startGame(){
+  S.seed=($('seed').value.trim()||todayCode());
+  const r=rng(hashStr(S.seed.toLowerCase()+'|'+[...S.tags].sort().join(',')));
+  const list=pool().slice();
+  for(let i=list.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[list[i],list[j]]=[list[j],list[i]];}
+  G={list:list.slice(0,Math.min(S.rounds,list.length)), idx:0, results:[], total:0};
+  $('start').classList.add('hidden'); $('end').classList.add('hidden'); $('play').classList.remove('hidden');
+  buildGauge(); updateGauge(); showPrompt();
+}
+
+/* ============ Gauge ============ */
+function maxVal(){return G.list.length*100;}
+function units(total){return S.mode==='dive'?{v:total*10,u:'m',label:'deep'}:{v:total,u:'km',label:'up'};}
+function frac(v){const mx=S.mode==='dive'?maxVal()*10:maxVal();return Math.sqrt(Math.min(v,mx)/mx);}
+function posTop(f){return S.mode==='dive'? (4+f*90) : (96-f*90);}
+function buildGauge(){
+  const g=$('gauge'); g.querySelectorAll('.zone').forEach(z=>z.remove());
+  const zones = S.mode==='dive'
+   ? [[0,'Sunlight zone'],[200,'Twilight zone'],[1000,'Midnight zone'],[4000,'Abyssal zone'],[6000,'Hadal zone']]
+   : [[0,'Troposphere'],[12,'Stratosphere'],[50,'Mesosphere'],[100,'Kármán line'],[400,'ISS altitude'],[600,'Exosphere']];
+  const mx=S.mode==='dive'?maxVal()*10:maxVal();
+  zones.filter(z=>z[0]<=mx).forEach(([v,name])=>{
+    const d=document.createElement('div'); d.className='zone'; d.textContent=name;
+    const top=posTop(Math.sqrt(v/mx)); d.style.top=(S.mode==='dive'?top-4:top-4)+'%';
+    if(v===0){d.style.top=S.mode==='dive'?'0%':'92%';d.style.borderTop='none';}
+    g.appendChild(d);
+  });
+  $('marker').textContent = S.mode==='dive'?'🟡':'🎈';
+}
+function updateGauge(){
+  const u=units(G.total); $('marker').style.top=posTop(frac(u.v))+'%';
+  $('readout').innerHTML=`${u.v.toLocaleString()} ${u.u} ${u.label}<small>${G.total} pts</small>`;
+}
+
+/* ============ Play ============ */
+function showPrompt(){
+  const p=G.list[G.idx];
+  $('qnum').textContent=`Prompt ${G.idx+1} of ${G.list.length}`;
+  $('qtag').textContent=p.tags.map(t=>TAGS[t]).join(' · ');
+  $('prompt').textContent=p.q;
+  $('askArea').classList.remove('hidden'); $('revealArea').classList.add('hidden');
+  $('answer').value=''; $('answer').disabled=false; setTimeout(()=>$('answer').focus(),30);
+  startTimer();
+}
+function startTimer(){
+  clearInterval(tick); const bar=$('timerbar');
+  if(!S.timer){bar.classList.add('hidden');return;}
+  bar.classList.remove('hidden','low'); const t0=performance.now(), dur=S.timer*1000;
+  bar.firstElementChild.style.width='100%';
+  tick=setInterval(()=>{
+    const left=Math.max(0,dur-(performance.now()-t0)); bar.firstElementChild.style.width=(left/dur*100)+'%';
+    bar.classList.toggle('low',left<5000);
+    if(left<=0){clearInterval(tick); submit(true);}
+  },100);
+}
+$('form').onsubmit=e=>{e.preventDefault(); if($('answer').value.trim()) submit(false);};
+$('skip').onclick=()=>submit(false,true);
+
+function submit(timedOut,skipped){
+  if(!$('revealArea').classList.contains('hidden')) return;
+  clearInterval(tick);
+  const p=G.list[G.idx], text=skipped?'':$('answer').value.trim();
+  let res;
+  if(!text) res={kind:timedOut?'time':'skip', pts:0, text:''};
+  else{
+    const m=match(text,p);
+    if(!m) res={kind:'miss', pts:0, text};
+    else if(m.kind==='nope') res={kind:'nope', pts:0, text, g:m.g};
+    else { const ti=tierInfo(m.g.tier); res={kind:'ans', pts:ti.pts, text, g:m.g, tier:m.g.tier}; }
+  }
+  G.results.push(res); G.total+=res.pts; updateGauge(); reveal();
+}
+
+function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+function reveal(){
+  const p=G.list[G.idx], r=G.results[G.idx];
+  $('askArea').classList.add('hidden'); $('revealArea').classList.remove('hidden');
+  const bn=$('banner'); let pts=`+${r.pts}`, title='', sub='', col='rgba(128,128,128,.25)', quip='';
+  if(r.kind==='ans'){
+    const ti=tierInfo(r.tier); title=ti.name; col=ti.c;
+    sub=`“${esc(r.text)}” → <b style="display:inline;font-family:system-ui,sans-serif;font-size:inherit">${esc(r.g.display)}</b>`;
+    const hi=ti.pts>=80, lo=ti.pts<=25;
+    quip=pick(S.mode==='dive'?(hi?QUIPS.diveHi:lo?QUIPS.diveLo:QUIPS.diveMid):(hi?QUIPS.revHi:lo?QUIPS.revLo:QUIPS.revMid));
+  } else if(r.kind==='teacher'){
+    title='Teacher Approved'; col='#6fe3a5'; sub=`“${esc(r.text)}” — ruled valid by the teacher`; quip=pick(QUIPS.teacher);
+  } else if(r.kind==='nope'){
+    pts='0'; title='Trap answer!'; col='#ff7a7a'; sub=`“${esc(r.text)}” — ${esc(r.g.note)}`; quip=pick(QUIPS.nope);
+  } else if(r.kind==='miss'){
+    pts='0'; title='Not in the answer bank'; col='#c9a227'; sub=`“${esc(r.text)}”`; quip=pick(QUIPS.miss);
+  } else {
+    pts='0'; title=r.kind==='time'?"Time's up":'Skipped'; quip=r.kind==='time'?pick(QUIPS.time):'No shame in a skip. Check out the answer bank below!';
+  }
+  bn.style.background=`color-mix(in srgb, ${col} 28%, transparent)`; bn.style.borderColor=col;
+  bn.innerHTML=`<div class="pts" style="color:${col}">${pts}</div><div class="what"><b>${title}</b>${sub}</div>`;
+  $('quip').textContent=quip;
+  $('override').classList.toggle('hidden', r.kind!=='miss');
+  $('next').textContent = G.idx+1<G.list.length?'Next prompt →':'See results 🏁';
+
+  // answer bank: highest-scoring tier first for the current mode
+  const order = S.mode==='dive'?[6,5,4,3,2,1]:[1,2,3,4,5,6];
+  let h=`<h3>Answer bank</h3>`;
+  order.forEach(t=>{ const gs=p.groups[t]; if(!gs) return; const ti=tierInfo(t);
+    h+=`<div class="tierrow"><div class="tiername" style="color:${ti.c}">${ti.name}<small>${ti.pts} pts</small></div><div class="chips">`+
+      gs.map(g=>`<span class="chip${r.g===g?' me':''}">${esc(g.display)}</span>`).join('')+`</div></div>`; });
+  if(p.nope&&p.nope.length){
+    h+=`<div class="traps"><h3>Trap answers</h3>`+p.nope.map(([als,note])=>{
+      const names=als.split('|').slice(0,4).map(s=>s.trim()).join(', ');
+      return `<div class="trap"><b>✗ ${esc(names)}</b> — ${esc(note)}</div>`;}).join('')+`</div>`;
+  }
+  $('bank').innerHTML=h;
+  setTimeout(()=>$('next').focus(),50);
+}
+
+$('override').onclick=()=>{
+  const r=G.results[G.idx]; if(r.kind!=='miss') return;
+  r.kind='teacher'; r.pts=TEACHER_PTS; G.total+=TEACHER_PTS; updateGauge(); reveal();
+};
+$('next').onclick=()=>{ G.idx++; if(G.idx<G.list.length) showPrompt(); else endGame(); };
+
+/* ============ End ============ */
+const TITLES = {
+ dive:["Tide-Pool Tourist","Snorkel Scholar","Twilight Zoner","Midnight Diver","Abyssal Ace","Hadal Legend"],
+ reverse:["Lonely Outlier","Contrarian Cloud","Crowd Surfer","Stratospheric Normie","Orbiting Consensus","Hivemind Supreme"]};
+function endGame(){
+  $('play').classList.add('hidden'); $('end').classList.remove('hidden');
+  const mx=maxVal(), f=G.total/mx, ti=Math.min(5,Math.floor(f*6.0001));
+  const u=units(G.total);
+  $('endmode').textContent=`${S.mode==='dive'?'One in a Mole (rare answers win)':'Elom a ni Eno (common answers win)'} · game code ${S.seed}`;
+  $('endscore').textContent=`${G.total} / ${mx}`;
+  $('endtitle').textContent=TITLES[S.mode][ti];
+  const grid=G.results.map(r=>r.kind==='teacher'?'✅':SQ[r.pts]||'⬛').join('');
+  $('endgrid').textContent=grid;
+  $('enddepth').textContent=`Final ${S.mode==='dive'?'depth':'altitude'}: ${u.v.toLocaleString()} ${u.u}`;
+  $('endquip').textContent = f>=.6?"Outstanding! Even my whiskers are impressed.": f>=.35?"Nice run! Check the table below for the answers you could've snagged.":"Every great physicist starts at the surface. Study the answer banks and dive again!";
+  let t=`<tr><th>#</th><th>Prompt</th><th>Your answer</th><th>Result</th><th>Pts</th></tr>`;
+  G.results.forEach((r,i)=>{
+    const p=G.list[i]; let res;
+    if(r.kind==='ans') res=tierInfo(r.tier).name+` (${esc(r.g.display)})`;
+    else res={teacher:'Teacher approved',nope:'Trap answer',miss:'Not in bank',time:"Time's up",skip:'Skipped'}[r.kind];
+    t+=`<tr><td>${i+1}</td><td>${esc(p.q)}</td><td>${r.text?esc(r.text):'—'}</td><td>${res}</td><td>${r.pts}</td></tr>`;
+  });
+  $('endtable').innerHTML=t;
+  G.share=`${S.mode==='dive'?'One in a Mole 🔬':'Elom a ni Eno 🎈'} · code ${S.seed}\n${grid}\n${G.total}/${mx} pts · ${u.v.toLocaleString()} ${u.u} ${u.label} · ${TITLES[S.mode][ti]}`;
+  $('copied').textContent=''; $('copybox').classList.add('hidden');
+}
+$('copy').onclick=async()=>{
+  try{ await navigator.clipboard.writeText(G.share); $('copied').textContent='Copied! Paste it to your teacher.'; }
+  catch(e){ const b=$('copybox'); b.value=G.share; b.classList.remove('hidden'); b.select(); $('copied').textContent='Copy the text below:'; }
+};
+$('again').onclick=()=>{ $('seed').value=Math.random().toString(36).slice(2,7).toUpperCase(); startGame(); };
+$('settingsBtn').onclick=()=>{ $('end').classList.add('hidden'); $('start').classList.remove('hidden'); };
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter' && !$('play').classList.contains('hidden') && !$('revealArea').classList.contains('hidden') && document.activeElement!==$('override')){ e.preventDefault(); $('next').click(); }
+});
+</script>
+</body>
+</html>
