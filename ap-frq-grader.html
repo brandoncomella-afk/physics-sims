@@ -444,6 +444,8 @@ P3,Hopper,Grace</pre>
       <li>Scanning tip: most copiers can scan a stack into one PDF per student if you put a separator sheet between booklets, or you can split a class scan afterward in Preview or Adobe Acrobat.</li>
     </ul>
 
+    <p><b>Question in the filename:</b> end the name with the question, like <code>Curie Marie_Q2.pdf</code> or <code>Curie Marie - Q2.pdf</code> (for physics, <code>TBR</code> etc. also work). Each PDF is filed under that question, the menu switches to it, and the list shows only that question's PDFs. You can load Q1 and Q2 for the same students together and switch between them with the question menu. PDFs without a question follow whatever question is selected.</p>
+
     <p>Pick one period at the top to see only that class's PDFs (plus any not matched to a student yet), or choose <b>All periods</b> to grade a mix of classes, grouped by period.</p>
 
     <h3 class="hh">4. Scoring guidelines (optional)</h3>
@@ -612,6 +614,24 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
   }
   function maxFor(type) { return pointIds(type).length; }
 
+  // ---------- Question from the filename ----------
+  // "Curie Marie_Q2.pdf", "Curie Marie - Q2.pdf", "Curie_Marie_FRQ2.pdf", "Curie Marie TBR.pdf" -> that question of the selected course.
+  function detectQuestion(fn) {
+    var base = String(fn).replace(/\.[a-z0-9]+$/i, "");
+    var re = /(?:^|[^a-z0-9])(?:q|frq|question)[\s_#-]*(\d{1,2})(?![0-9])/gi, m, last = null;
+    while ((m = re.exec(base))) last = m[1];
+    if (last) return resolveType("Q" + last);
+    var ph = base.match(/(?:^|[^a-z])(MR|TBR|LAB|QQT|EDA)(?![a-z])/i);
+    return ph && state.subject === "PHYS" ? resolveType(ph[1]) : null;
+  }
+  // The question a PDF belongs to: its tag if it's one of the selected course's questions, otherwise whatever is selected.
+  function taggedType(f) {
+    var q = gradesOf(f).qtype;
+    return q && TYPES[q] && TYPES[q].subject === state.subject ? q : null;
+  }
+  function fileType(f) { return taggedType(f) || state.type; }
+  function inCurrentQuestion(f) { var q = taggedType(f); return !q || q === state.type; }
+
   // ---------- Session ----------
   var files = [];          // { name, url }
   var currentIndex = -1;
@@ -654,6 +674,7 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     state.subject = subjectSelect.value; state.type = typeOrder()[0]; save();
     prefillAll();
     buildRubric(); refreshRubric(); renderFileList(); refreshGuide();
+    showQuestionFiles();
     subjectSelect.blur();
     toast("Now grading: " + SUBJ[state.subject].name + ", " + TYPES[state.type].name);
   });
@@ -668,6 +689,7 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     state.type = typeSelect.value; save();
     prefillAll();
     buildRubric(); refreshRubric(); renderFileList(); refreshGuide();
+    showQuestionFiles();
     typeSelect.blur();
     toast("Now grading: " + TYPES[state.type].name);
   });
@@ -907,6 +929,18 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
       added.push(file);
     });
     fileInput.value = "";
+    var qs = {};
+    added.forEach(function (file) {
+      var f = files.find(function (x) { return x.name === file.name; }), q = detectQuestion(file.name);
+      if (q && !gradesOf(f).qtype) gradesOf(f).qtype = q;
+      if (q) qs[q] = 1;
+    });
+    var qList = typeOrder().filter(function (t) { return qs[t]; });
+    if (qList.length && qs[state.type] === undefined) {
+      state.type = qList[0]; currentIndex = -1;
+      buildRubric(); refreshGuide();
+    }
+    if (qList.length > 1) setTimeout(function () { toast("Loaded PDFs for " + qList.map(function (t) { return TYPES[t].short; }).join(", ") + ". Switch questions in the menu to grade each one."); }, 2200);
     var nAuto = autoMatchFiles();
     prefillAll();
     save();
@@ -930,11 +964,21 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     var pers = Object.keys(state.rosters), rank = {};
     pers.forEach(function (p, i) { rank[p] = i; });
     var idx = files.map(function (f, i) { return i; });
+    idx = idx.filter(function (i) { return inCurrentQuestion(files[i]); });
     if (state.period !== ALL) idx = idx.filter(function (i) { var gp = gradesOf(files[i]).period; return !gp || gp === state.period || !state.rosters[gp]; });
     function key(i) { var g = gradesOf(files[i]); var gp = g.name && g.period && rank[g.period] !== undefined ? rank[g.period] : 9999; return gp; }
     return idx.sort(function (a, b) {
       return (key(a) - key(b)) || String(gradesOf(files[a]).name || files[a].name).localeCompare(String(gradesOf(files[b]).name || files[b].name));
     });
+  }
+  // After the question changes, make sure the open PDF belongs to it.
+  function showQuestionFiles() {
+    var v = viewOrder();
+    if (v.indexOf(currentIndex) >= 0) return;
+    if (v.length) { selectFile(v[0]); return; }
+    currentIndex = -1; student.clear();
+    document.getElementById("gradePanel").style.display = "none";
+    showMode("student"); renderFileList();
   }
   function stepFile(d) {
     var v = viewOrder(), pos = v.indexOf(currentIndex);
@@ -946,7 +990,10 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     list.innerHTML = "";
     var max = maxFor(state.type);
     var view = viewOrder(), lastGroup = null;
-    if (!view.length && files.length) list.innerHTML = '<div class="file-group">No PDFs for ' + esc(state.period) + ' yet. Choose All periods to see every PDF.</div>';
+    var otherQ = files.filter(function (f) { return !inCurrentQuestion(f); }).length;
+    if (!view.length && files.length) list.innerHTML = '<div class="file-group">' + (files.length === otherQ
+      ? "No " + esc(TYPES[state.type].short) + " PDFs loaded. Pick another question in the menu to see the other PDFs."
+      : 'No PDFs for ' + esc(state.period) + ' yet. Choose All periods to see every PDF.') + '</div>';
     view.forEach(function (i, pos) {
       var f = files[i];
       var g = gradesOf(f);
@@ -975,6 +1022,8 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     if (i < 0 || i >= files.length) return;
     currentIndex = i;
     var f = files[i];
+    var tq = taggedType(f);
+    if (tq && tq !== state.type) { state.type = tq; save(); buildRubric(); refreshGuide(); }
     var gp = gradesOf(f).period;
     if (state.period !== ALL && gp && state.rosters[gp] && gp !== state.period) { state.period = gp; save(); renderPeriodSelect(); }
     document.getElementById("gradePanel").style.display = "flex";
@@ -1345,7 +1394,7 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
   // Assign roster names to PDFs that don't have one yet, best matches first, each student once.
   function autoMatchFiles() {
     var entries = allRosterEntries(), taken = {};
-    files.forEach(function (f) { var g = gradesOf(f); if (g.name) taken[(g.period || "") + "|" + g.name.toLowerCase()] = 1; });
+    files.forEach(function (f) { var g = gradesOf(f); if (g.name) taken[fileType(f) + "|" + (g.period || "") + "|" + g.name.toLowerCase()] = 1; });
     var open = files.filter(function (f) { return !gradesOf(f).name; });
     if (!open.length || !entries.length) return { tried: open.length && entries.length ? open.length : 0, matched: 0 };
     var pairs = [];
@@ -1356,7 +1405,7 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     pairs.sort(function (x, y) { return y.sc - x.sc; });
     var done = {}, matched = 0;
     pairs.forEach(function (pr) {
-      var key = pr.e.period + "|" + pr.e.name.toLowerCase();
+      var key = fileType(pr.f) + "|" + pr.e.period + "|" + pr.e.name.toLowerCase();
       if (done[pr.f.name] || taken[key]) return;
       var g = gradesOf(pr.f);
       g.name = pr.e.name; g.period = pr.e.period; g.auto = true; g.autoScore = Math.round(pr.sc * 100) / 100;
@@ -1381,7 +1430,7 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     // returns the file name (other than current) that already has this student
     var cur = files[currentIndex] && files[currentIndex].name;
     var hit = null;
-    files.forEach(function (f) { if (f.name !== cur && (gradesOf(f).name || "").toLowerCase() === name.toLowerCase()) hit = f.name; });
+    files.forEach(function (f) { if (f.name !== cur && inCurrentQuestion(f) && (gradesOf(f).name || "").toLowerCase() === name.toLowerCase()) hit = f.name; });
     return hit;
   }
   function norm(s) { return s.toLowerCase().replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim(); }
@@ -1477,7 +1526,7 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     if (!ents.length) { el.innerHTML = 'No roster loaded. <button class="link" id="rosterInline">Import one</button> to pick names from a list.'; }
     else {
       var assigned = {};
-      files.forEach(function (f) { var g = gradesOf(f), n = (g.name || "").toLowerCase(); if (n) assigned[(g.period || "") + "|" + n] = 1; });
+      files.forEach(function (f) { if (!inCurrentQuestion(f)) return; var g = gradesOf(f), n = (g.name || "").toLowerCase(); if (n) assigned[(g.period || "") + "|" + n] = 1; });
       var left = ents.filter(function (e) { return !assigned[e.period + "|" + e.name.toLowerCase()]; }).map(function (e) { return (state.period === ALL ? e.period + " · " : "") + e.name; });
       var label = state.period === ALL ? "All periods" : state.period;
       el.innerHTML = esc(label) + ': ' + ents.length + ' students · ' + (ents.length - left.length) + ' matched to a PDF' +
@@ -1762,13 +1811,19 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     });
     if (types.length > 1) header.push("Grand Total");
     var table = [header];
-    var order = files.map(function (f, i) { return i; });
+    // One row per student: a student with a Q1 PDF and a Q2 PDF gets both questions on the same row.
+    var groups = [], byKey = {};
+    files.forEach(function (f) {
+      var g = gradesOf(f), k = g.name ? (g.period || "") + "|" + g.name.toLowerCase() : "file|" + f.name;
+      if (!byKey[k]) { byKey[k] = { files: [], g: g }; groups.push(byKey[k]); }
+      byKey[k].files.push(f);
+    });
     var per = Object.keys(state.rosters), rk = {}; per.forEach(function (p, i) { rk[p] = i; });
-    order.sort(function (a, b) { var ga = gradesOf(files[a]), gb = gradesOf(files[b]); var ra = rk[ga.period] !== undefined ? rk[ga.period] : 9999, rb = rk[gb.period] !== undefined ? rk[gb.period] : 9999; return (ra - rb) || String(ga.name || files[a].name).localeCompare(String(gb.name || files[b].name)); });
-    order.forEach(function (fi) {
-      var f = files[fi];
-      var row = [f.name, gradesOf(f).period || "", gradesOf(f).name || ""], grand = 0;
+    groups.sort(function (a, b) { var ga = a.g, gb = b.g; var ra = rk[ga.period] !== undefined ? rk[ga.period] : 9999, rb = rk[gb.period] !== undefined ? rk[gb.period] : 9999; return (ra - rb) || String(ga.name || a.files[0].name).localeCompare(String(gb.name || b.files[0].name)); });
+    groups.forEach(function (grp) {
+      var row = [grp.files.map(function (x) { return x.name; }).join("; "), grp.g.period || "", grp.g.name || ""], grand = 0;
       types.forEach(function (t) {
+        var f = grp.files.find(function (x) { return touched(x, t); }) || grp.files.find(function (x) { return taggedType(x) === t; }) || grp.files[0];
         var p = gradesOf(f)[t] || {};
         pointIds(t).forEach(function (k) { row.push(p[k] ? 1 : 0); });
         partsFor(t).forEach(function (pt) { var s = 0; for (var i = 1; i <= pt.pts; i++) if (p[pt.id + i]) s++; row.push(s); });
