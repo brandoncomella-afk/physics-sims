@@ -182,6 +182,7 @@ const store = {
 };
 
 let DATA = null, CLASS = null, ME = null, ST = null, VIEW = null, zoom = 1;
+let PEER = { on: false, count: 0 }, pollT = null;   // classmate grading, switched on from the sheet's Settings tab
 const pageUrls = new Map();
 
 // ---------- crypto: same as make_calibration.mjs ----------
@@ -257,6 +258,7 @@ const stKey = () => `fsg2|${TEST}|${ME.period}|${ME.number}`;
 function loadState() {
   const s = store.get(stKey()) || {};
   for (const q of DATA.questions) s[q.id] ||= { cal: {}, unlocked: null, own: null };
+  s.peer ||= {};   // { P1: { Q1: {pts, ts}, Q2: … }, P2: … }
   return s;
 }
 const saveState = () => store.set(stKey(), ST);
@@ -278,12 +280,25 @@ function stepsFor(qid) {
   return { out, maybeExtra: !s.cal.C };
 }
 function isDone(st) {
+  if (st.kind === "peer") return !!ST.peer[st.label]?.[st.q];
   const s = ST[st.q];
   if (st.kind === "cal") return !!s.cal[st.label];
   if (st.kind === "gate") return !!s.unlocked;
   return !!s.own;
 }
-const allSteps = () => DATA.questions.flatMap(q => stepsFor(q.id).out);
+const mainDone = () => DATA.questions.every(q => ST[q.id].own);
+// Classmates' papers come after both of their own questions, and only while Mr. C has them turned on.
+function peerSteps() {
+  const papers = (ME.peer || []).length;
+  if (!papers || !mainDone()) return [];
+  const n = PEER.on ? Math.min(PEER.count, papers) : 0, out = [];
+  for (let i = 1; i <= papers; i++) for (const q of DATA.questions) {
+    const st = { q: q.id, kind: "peer", label: "P" + i };
+    if (i <= n || isDone(st)) out.push(st);
+  }
+  return out;
+}
+const allSteps = () => [...DATA.questions.flatMap(q => stepsFor(q.id).out), ...peerSteps()];
 const currentStep = () => allSteps().find(st => !isDone(st)) || null;
 const sameStep = (a, b) => !!a && !!b && a.q === b.q && a.kind === b.kind && a.label === b.label;
 
@@ -321,7 +336,9 @@ async function pullProgress() {
     const p = new URLSearchParams({ action: "progress", test: TEST, period: ME.period, number: ME.number, token: ME.token });
     const j = await (await fetch(`${DATA.sheet}?${p}`)).json();
     if (!j.ok) return;
+    if (j.settings) PEER = { on: !!j.settings.peer, count: Math.max(0, Math.min(3, Number(j.settings.peerCount) || 0)) };
     for (const ev of j.events || []) {
+      if (ev.kind === "peer") { const pts = String(ev.points || "").split(/\s+/).filter(Boolean); (ST.peer[ev.label] ||= {})[ev.question] ||= { pts, ts: ev.ts }; continue; }
       const s = ST[ev.question]; if (!s) continue;
       const pts = String(ev.points || "").split(/\s+/).filter(Boolean);
       if (ev.kind === "cal" && !s.cal[ev.label]) s.cal[ev.label] = { pts, ts: ev.ts };
@@ -346,7 +363,7 @@ async function startApp() {
 }
 function signOut() { store.del("fsg-signin-" + TEST, sessionStorage); location.reload(); }
 
-function stepLabel(st) { return st.kind === "cal" ? "Exam " + st.label : st.kind === "gate" ? "See Mr. C" : "Your " + st.q; }
+function stepLabel(st) { return st.kind === "cal" ? "Exam " + st.label : st.kind === "gate" ? "See Mr. C" : st.kind === "peer" ? `Paper ${st.label.slice(1)} ${st.q}` : "Your " + st.q; }
 function renderSteps(cur, view) {
   const chips = [];
   for (const q of DATA.questions) {
@@ -362,6 +379,13 @@ function renderSteps(cur, view) {
       chips.push(`<span class="${cls}" data-step="${esc(JSON.stringify(st))}">${esc(stepLabel(st))}${done ? " ✓" : ""}</span>`);
       if (st.kind === "cal" && st.label === "C" && maybeExtra) chips.push(`<span class="chip later" title="Only if your Exam C total is ${OFF_BY}+ points from Mr. C's">D, E if needed</span>`);
     }
+  }
+  const ps = peerSteps();
+  if (ps.length) chips.push('<span class="grp">Classmates</span>');
+  for (const st of ps) {
+    const done = isDone(st);
+    const cls = "chip" + (done ? " done" : sameStep(st, cur) ? " now" : " later") + (sameStep(st, view) ? " viewing" : "");
+    chips.push(`<span class="${cls}" data-step="${esc(JSON.stringify(st))}">${esc(stepLabel(st))}${done ? " ✓" : ""}</span>`);
   }
   $("#steps").innerHTML = chips.join("");
   $("#steps").querySelectorAll(".chip.done, .chip.off, .chip.now").forEach(el => el.onclick = () => { VIEW = JSON.parse(el.dataset.step); render(); });
@@ -385,6 +409,7 @@ function hidePaper() { showPaper.n = (showPaper.n || 0) + 1; document.body.class
 function applyZoom() { $("#pages").querySelectorAll("img").forEach(i => i.style.width = (zoom * 100) + "%"); }
 
 function render() {
+  clearTimeout(pollT);
   const cur = currentStep();
   const view = VIEW && !sameStep(VIEW, cur) ? VIEW : cur;
   renderSteps(cur, view);
@@ -393,23 +418,24 @@ function render() {
   const q = qById(view.q);
   if (view.kind === "gate") return renderGate(q);
   if (!isDone(view)) return renderGrade(q, view);
-  return view.kind === "cal" ? renderCompare(q, view.label, cur) : renderOwnDone(q, cur);
+  return view.kind === "cal" ? renderCompare(q, view.label, cur) : renderOwnDone(q, cur, view);
 }
 function nextButton(cur) {
   if (!cur) return `<button class="primary" id="next">Finish →</button>`;
-  const t = cur.kind === "cal" ? `Next: ${cur.q} Exam ${cur.label}` : cur.kind === "gate" ? "Next" : `Next: grade your own ${cur.q}`;
+  const t = cur.kind === "cal" ? `Next: ${cur.q} Exam ${cur.label}` : cur.kind === "gate" ? "Next" : cur.kind === "peer" ? `Next: classmate's paper ${cur.label.slice(1)}, ${cur.q}` : `Next: grade your own ${cur.q}`;
   return `<button class="primary" id="next">${esc(t)} →</button>`;
 }
 function wireNext() { const n = $("#next"); if (n) n.onclick = () => { VIEW = null; render(); }; }
 
 function renderGrade(q, st) {
-  const isCal = st.kind === "cal";
-  const title = isCal ? `${q.id} · Exam ${st.label}` : `${q.id} · Your own answer`;
-  showPaper(isCal ? exam(st.label)[q.id].pages : ME.own[q.id], title);
-  const draftKey = `fsg2d|${TEST}|${ME.period}|${ME.number}|${q.id}|${isCal ? st.label : "own"}`;
+  const isCal = st.kind === "cal", isPeer = st.kind === "peer";
+  const title = isCal ? `${q.id} · Exam ${st.label}` : isPeer ? `${q.id} · Classmate's paper ${st.label.slice(1)}` : `${q.id} · Your own answer`;
+  showPaper(isCal ? exam(st.label)[q.id].pages : isPeer ? ME.peer[+st.label.slice(1) - 1][q.id] : ME.own[q.id], title);
+  const draftKey = `fsg2d|${TEST}|${ME.period}|${ME.number}|${q.id}|${isCal || isPeer ? st.label : "own"}`;
   const picked = new Set(store.get(draftKey, sessionStorage) || []);
   const intro = isCal
     ? "This answer is from a student in another class. Check every point the work earns, using the criteria below. After you lock in, you'll see how your scoring compares with Mr. C's."
+    : isPeer ? "This is a classmate's answer. Grade it carefully, the same way you graded the practice exams. Mr. C will compare your scoring with his."
     : "Grade your own answer the same way you graded the practice exams: check only the points your work actually shows. Mr. C will compare your scores with his.";
   $("#main").innerHTML = `
     <h2 class="title">${esc(title)}</h2>
@@ -418,8 +444,8 @@ function renderGrade(q, st) {
       `<div class="pt${picked.has(x.id) ? " on" : ""}" data-id="${esc(x.id)}" role="checkbox" aria-checked="${picked.has(x.id)}" tabindex="0"><div class="cb">✓</div><div class="txt"><span class="pid">${esc(x.id)}</span>${esc(x.criterion)}</div></div>`).join("")}</div>`).join("")}
       <div class="total"><span>Points checked</span><b id="tot">${picked.size} / ${q.total}</b></div>
     </div>
-    ${isCal ? "" : `<div class="box" style="padding:12px 14px"><label class="f" style="margin-top:0" for="note">Anything you want Mr. C to know? (optional)</label><textarea id="note" maxlength="500"></textarea></div>`}
-    <div class="actions"><button class="primary" id="lock">Lock in ${esc(isCal ? "Exam " + st.label : "my score")}</button></div>
+    ${isCal || isPeer ? "" : `<div class="box" style="padding:12px 14px"><label class="f" style="margin-top:0" for="note">Anything you want Mr. C to know? (optional)</label><textarea id="note" maxlength="500"></textarea></div>`}
+    <div class="actions"><button class="primary" id="lock">Lock in ${esc(isCal ? "Exam " + st.label : isPeer ? "this paper" : "my score")}</button></div>
     <div class="intro" style="margin-top:8px">You can't change your scores after you lock in.</div>`;
   const toggle = el => {
     const id = el.dataset.id;
@@ -434,7 +460,7 @@ function renderGrade(q, st) {
   });
   $("#lock").onclick = () => {
     const ids = allPts(q), pts = ids.filter(id => picked.has(id));
-    if (!confirm(`Lock in ${pts.length}/${q.total} for ${isCal ? "Exam " + st.label : "your own " + q.id}? You can't change it after this.`)) return;
+    if (!confirm(`Lock in ${pts.length}/${q.total} for ${isCal ? "Exam " + st.label : isPeer ? "this paper's " + q.id : "your own " + q.id}? You can't change it after this.`)) return;
     const ts = new Date().toISOString();
     if (isCal) {
       ST[q.id].cal[st.label] = { pts, ts };
@@ -442,6 +468,9 @@ function renderGrade(q, st) {
       report({ kind: "cal", question: q.id, label: st.label, points: pts.join(" "), total: pts.length, outOf: q.total,
         mrcPoints: ids.filter(id => mrc[id]).join(" "), mrcTotal: mrcTotal(q.id, st.label),
         matched: ids.filter(id => picked.has(id) === !!mrc[id]).length });
+    } else if (isPeer) {
+      (ST.peer[st.label] ||= {})[q.id] = { pts, ts };
+      report({ kind: "peer", question: q.id, label: st.label, points: pts.join(" "), total: pts.length, outOf: q.total });
     } else {
       const note = ($("#note").value || "").trim();
       ST[q.id].own = { pts, note, ts };
@@ -520,12 +549,14 @@ function renderGate(q) {
   $("#unlockInput").onkeydown = e => { if (e.key === "Enter") tryUnlock(); };
 }
 
-function renderOwnDone(q, cur) {
-  const o = ST[q.id].own, mine = new Set(o.pts);
-  showPaper(ME.own[q.id], `${q.id} · Your own answer`);
+function renderOwnDone(q, cur, st) {
+  const isPeer = st.kind === "peer";
+  const o = isPeer ? ST.peer[st.label][q.id] : ST[q.id].own, mine = new Set(o.pts);
+  const title = isPeer ? `${q.id} · Classmate's paper ${st.label.slice(1)}` : `${q.id} · Your own answer`;
+  showPaper(isPeer ? ME.peer[+st.label.slice(1) - 1][q.id] : ME.own[q.id], title);
   $("#main").innerHTML = `
-    <h2 class="title">${esc(q.id)} · Your own answer</h2>
-    <div class="banner good">Locked in: you gave yourself <b>${o.pts.length}/${q.total}</b>. Mr. C will compare this with his scoring.</div>
+    <h2 class="title">${esc(title)}</h2>
+    <div class="banner good">Locked in: you gave ${isPeer ? "this paper" : "yourself"} <b>${o.pts.length}/${q.total}</b>. Mr. C will compare this with his scoring.</div>
     <div class="box">${q.parts.map(p => `<div class="part"><h3>Part ${esc(p.label)}</h3>${p.points.map(x =>
       `<div class="own-row"><span class="tag ${mine.has(x.id) ? "y" : "n"}">${mine.has(x.id) ? "✓" : "✗"}</span><span><span class="pid">${esc(x.id)}</span>${esc(x.criterion)}</span></div>`).join("")}</div>`).join("")}</div>
     ${o.note ? `<div class="intro"><b>Your note:</b> ${esc(o.note)}</div>` : ""}
@@ -539,7 +570,10 @@ function renderFinished() {
   $("#main").innerHTML = `
     <h2 class="title">All done</h2>
     <div class="banner good">You've finished the practice grading and graded your own ${DATA.questions.map(q => esc(q.id)).join(" and ")}. ${waiting ? "Keep this page open until it says “All results sent” at the top." : "Your results have gone to Mr. C."}</div>
-    <div class="intro">Your self-scores: ${DATA.questions.map(q => `${esc(q.id)} ${ST[q.id].own.pts.length}/${q.total}`).join(" · ")}. Click any step above to look back at it.</div>`;
+    <div class="intro">Your self-scores: ${DATA.questions.map(q => `${esc(q.id)} ${ST[q.id].own.pts.length}/${q.total}`).join(" · ")}. Click any step above to look back at it.</div>
+    ${DATA.sheet && (ME.peer || []).length && !peerSteps().length ? `<div class="intro">If Mr. C turns on classmate grading, it will show up here on its own.</div>` : ""}`;
+  // Check every 20 s whether Mr. C has turned on (more) classmate grading.
+  if (DATA.sheet && (ME.peer || []).length) pollT = setTimeout(async () => { const before = allSteps().length; await pullProgress(); if (allSteps().length !== before) { VIEW = null; render(); } else renderFinished(); }, 20000);
 }
 
 // ---------- wiring ----------
