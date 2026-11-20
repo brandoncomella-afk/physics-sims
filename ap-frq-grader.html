@@ -186,6 +186,9 @@
   .test-card .tact { display: flex; gap: 4px; }
   .new-test-row { display: flex; gap: 8px; margin-top: 12px; }
   .new-test-row input { flex: 1; font: inherit; padding: 7px 9px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
+  .qnum-row { display: grid; grid-template-columns: 70px 1fr; gap: 10px; align-items: center; margin-bottom: 8px; font-size: 14px; }
+  .qnum-row b { text-align: right; }
+  .qnum-row select { font: inherit; font-size: 13px; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
   .score-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
   .score-table th, .score-table td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--border); }
   .score-table th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); position: sticky; top: 0; background: var(--panel-bg); }
@@ -267,6 +270,7 @@
     <button id="rosterBtn">Edit roster</button>
     <select id="subjectSelect" title="AP course"></select>
     <select id="typeSelect" title="Question"></select>
+    <button id="qnumBtn" title="Choose which question type Q1, Q2 … in your PDF filenames mean for this test">Question numbers</button>
     <button id="editPartsBtn" title="Change how this type's points are split across parts">Edit parts</button>
     <label class="file-btn" for="suggInput" title="Import scores from any source (an AI grader, student self-grading, a TA or co-grader) to check and confirm">Import scores</label>
     <input type="file" id="suggInput" accept=".csv,text/csv">
@@ -391,6 +395,21 @@
   </div>
 </div>
 
+<!-- Question numbers modal -->
+<div class="overlay" id="qnumModal">
+  <div class="modal">
+    <h2 id="qnumTitle">Question numbers</h2>
+    <p>Choose what <b>Q1</b>, <b>Q2</b> … in your PDF filenames (and in imported score files) mean for <b id="qnumTest"></b>. Your own tests don't have to follow the AP exam order, so Q2 might be a QQT question rather than TBR. PDFs already loaded move to the question you pick, and any points already entered move with them.</p>
+    <div id="qnumRows"></div>
+    <div class="actions">
+      <button id="qnumReset">Reset to AP order</button>
+      <div class="spacer"></div>
+      <button id="qnumCancel">Cancel</button>
+      <button id="qnumSave" class="primary">Save</button>
+    </div>
+  </div>
+</div>
+
 <!-- Parts modal -->
 <div class="overlay" id="partsModal">
   <div class="modal">
@@ -444,7 +463,7 @@ P3,Hopper,Grace</pre>
       <li>Scanning tip: most copiers can scan a stack into one PDF per student if you put a separator sheet between booklets, or you can split a class scan afterward in Preview or Adobe Acrobat.</li>
     </ul>
 
-    <p><b>Question in the filename:</b> end the name with the question, like <code>Curie Marie_Q2.pdf</code> or <code>Curie Marie - Q2.pdf</code> (for physics, <code>TBR</code> etc. also work). Each PDF is filed under that question, the menu switches to it, and the list shows only that question's PDFs. You can load Q1 and Q2 for the same students together and switch between them with the question menu. PDFs without a question follow whatever question is selected.</p>
+    <p><b>Question in the filename:</b> end the name with the question, like <code>Curie Marie_Q2.pdf</code> or <code>Curie Marie - Q2.pdf</code> (for physics, <code>TBR</code> etc. also work). Each PDF is filed under that question, the menu switches to it, and the list shows only that question's PDFs. You can load Q1 and Q2 for the same students together and switch between them with the question menu. Q numbers follow the AP exam order (for physics Q1 = MR, Q2 = TBR, Q3 = LAB, Q4 = QQT) unless you change them for a test with <b>Question numbers</b>. PDFs without a question follow whatever question is selected.</p>
 
     <p>Pick one period at the top to see only that class's PDFs (plus any not matched to a student yet), or choose <b>All periods</b> to grade a mix of classes, grouped by period.</p>
 
@@ -616,17 +635,24 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
 
   // ---------- Question from the filename ----------
   // "Curie Marie_Q2.pdf", "Curie Marie - Q2.pdf", "Curie_Marie_FRQ2.pdf", "Curie Marie TBR.pdf" -> that question of the selected course.
-  function detectQuestion(fn) {
+  function qNumOf(fn) {
     var base = String(fn).replace(/\.[a-z0-9]+$/i, "");
     var re = /(?:^|[^a-z0-9])(?:q|frq|question)[\s_#-]*(\d{1,2})(?![0-9])/gi, m, last = null;
     while ((m = re.exec(base))) last = m[1];
+    return last ? String(+last) : "";
+  }
+  function detectQuestion(fn) {
+    var base = String(fn).replace(/\.[a-z0-9]+$/i, "");
+    var last = qNumOf(fn);
     if (last) return resolveType("Q" + last);
     var ph = base.match(/(?:^|[^a-z])(MR|TBR|LAB|QQT|EDA)(?![a-z])/i);
     return ph && state.subject === "PHYS" ? resolveType(ph[1]) : null;
   }
   // The question a PDF belongs to: its tag if it's one of the selected course's questions, otherwise whatever is selected.
   function taggedType(f) {
-    var q = gradesOf(f).qtype;
+    var g = gradesOf(f);
+    if (g.qnum === undefined) g.qnum = qNumOf(f.name);   // PDFs loaded before question numbers were kept
+    var q = g.qnum ? resolveType("Q" + g.qnum) : g.qtype;
     return q && TYPES[q] && TYPES[q].subject === state.subject ? q : null;
   }
   function fileType(f) { return taggedType(f) || state.type; }
@@ -852,6 +878,7 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     var subj = SUBJ_ALIASES[String(subjVal || "").trim().toUpperCase()] || state.subject;
     if (v.indexOf(":") > 0) { var sp = v.split(":"); subj = SUBJ_ALIASES[sp[0].trim()] || subj; v = sp[1].trim(); }
     var num = (v.match(/^(?:Q|QUESTION|FRQ)?\s*(\d+)$/) || [])[1];
+    if (num) { var qm = qmapOf(subj)[String(+num)]; if (qm && TYPES[qm]) return qm; }
     var cands = typeOrder(subj);
     var hit = cands.filter(function (k) {
       var t = TYPES[k];
@@ -932,6 +959,7 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     var qs = {};
     added.forEach(function (file) {
       var f = files.find(function (x) { return x.name === file.name; }), q = detectQuestion(file.name);
+      if (gradesOf(f).qnum === undefined) gradesOf(f).qnum = qNumOf(file.name);
       if (q && !gradesOf(f).qtype) gradesOf(f).qtype = q;
       if (q) qs[q] = 1;
     });
@@ -940,7 +968,9 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
       state.type = qList[0]; currentIndex = -1;
       buildRubric(); refreshGuide();
     }
-    if (qList.length > 1) setTimeout(function () { toast("Loaded PDFs for " + qList.map(function (t) { return TYPES[t].short; }).join(", ") + ". Switch questions in the menu to grade each one."); }, 2200);
+    var nums = {}; added.forEach(function (file) { var n = qNumOf(file.name); if (n) nums[n] = resolveType("Q" + n); });
+    var numText = Object.keys(nums).sort().map(function (n) { return "Q" + n + " = " + (nums[n] ? TYPES[nums[n]].short.replace(/^Q\d+\s*/, "") || TYPES[nums[n]].short : "?"); }).join(", ");
+    if (numText) setTimeout(function () { toast("Read filenames as " + numText + ". Not right? Click Question numbers."); }, 2200);
     var nAuto = autoMatchFiles();
     prefillAll();
     save();
@@ -1696,6 +1726,69 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     save(); rosterModal.classList.remove("open"); renderPeriodSelect(); renderFileList();
     markNameMatch(); updateRosterStatus();
     toast(state.period + ": " + roster().length + " students");
+  });
+
+  // ---------- Question numbers (what Q1, Q2 … mean in this test) ----------
+  function qmapOf(subj) { var t = curTest(); return (t && t.qmap && t.qmap[subj]) || {}; }
+  function apTypeForNum(n, subj) {   // the AP exam order, ignoring this test's mapping
+    var t = curTest(), saved = t.qmap; t.qmap = null;
+    var r = resolveType("Q" + n, subj); t.qmap = saved; return r;
+  }
+  var qnumModal = document.getElementById("qnumModal"), qnumDraft = {};
+  function openQnum() {
+    var subj = state.subject, n = typeOrder().length, cur = qmapOf(subj);
+    qnumDraft = {};
+    for (var i = 1; i <= n; i++) qnumDraft[i] = cur[i] || apTypeForNum(i, subj) || typeOrder()[0];
+    document.getElementById("qnumTest").textContent = curTest().name;
+    renderQnum();
+    qnumModal.classList.add("open");
+  }
+  function renderQnum() {
+    var box = document.getElementById("qnumRows"); box.innerHTML = "";
+    Object.keys(qnumDraft).forEach(function (n) {
+      var row = document.createElement("div"); row.className = "qnum-row";
+      row.innerHTML = '<b>Q' + n + ' →</b><select>' + typeOrder().map(function (t) {
+        return '<option value="' + t + '"' + (t === qnumDraft[n] ? " selected" : "") + '>' + esc(TYPES[t].name) + ' (' + maxFor(t) + ' pts)</option>';
+      }).join("") + '</select>';
+      row.querySelector("select").addEventListener("change", function () { qnumDraft[n] = this.value; });
+      box.appendChild(row);
+    });
+  }
+  function moveGrades(g, from, to, fname) {
+    if (!from || !to || from === to) return;
+    var src = g[from] || {}, dst = g[to] || {};
+    var has = function (o) { return Object.keys(o).some(function (k) { return o[k]; }); };
+    if (has(src) && !has(dst)) {
+      var ok = {}; pointIds(to).forEach(function (k) { ok[k] = 1; });
+      var out = {}; Object.keys(src).forEach(function (k) { if (src[k] && ok[k]) out[k] = 1; });
+      g[to] = out; delete g[from];
+      var c = state.confirmed[fname];
+      if (c && c[from]) { c[to] = true; delete c[from]; }
+    }
+  }
+  document.getElementById("qnumBtn").addEventListener("click", function () { openQnum(); this.blur(); });
+  document.getElementById("qnumCancel").addEventListener("click", function () { qnumModal.classList.remove("open"); });
+  document.getElementById("qnumReset").addEventListener("click", function () {
+    Object.keys(qnumDraft).forEach(function (n) { qnumDraft[n] = apTypeForNum(n, state.subject) || qnumDraft[n]; });
+    renderQnum();
+  });
+  document.getElementById("qnumSave").addEventListener("click", function () {
+    var subj = state.subject, t = curTest();
+    var before = {}; Object.keys(qnumDraft).forEach(function (n) { before[n] = resolveType("Q" + n, subj); });
+    var curFile = files[currentIndex], curNum = curFile ? gradesOf(curFile).qnum : "";
+    t.qmap = t.qmap || {};
+    var m = {}; Object.keys(qnumDraft).forEach(function (n) { if (qnumDraft[n] !== apTypeForNum(n, subj)) m[n] = qnumDraft[n]; });
+    if (Object.keys(m).length) t.qmap[subj] = m; else delete t.qmap[subj];
+    var moved = 0;
+    Object.keys(state.grades).forEach(function (fn) {
+      var g = state.grades[fn]; if (!g.qnum || !before[g.qnum]) return;
+      var to = resolveType("Q" + g.qnum, subj);
+      if (before[g.qnum] !== to) { moveGrades(g, before[g.qnum], to, fn); moved++; }
+    });
+    if (curNum && before[curNum] === state.type) state.type = resolveType("Q" + curNum, subj);
+    save(); qnumModal.classList.remove("open");
+    buildRubric(); refreshRubric(); renderFileList(); refreshGuide(); showQuestionFiles();
+    toast(moved ? "Moved " + moved + " PDF" + (moved === 1 ? "" : "s") + " to the questions you picked" : "Question numbers saved");
   });
 
   // ---------- Parts editor ----------
