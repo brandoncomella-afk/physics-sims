@@ -306,6 +306,7 @@ const sameStep = (a, b) => !!a && !!b && a.q === b.q && a.kind === b.kind && a.l
 const qKey = () => `fsg2q|${TEST}|${ME.period}|${ME.number}`;
 const queue = () => store.get(qKey()) || [];
 function report(ev) {
+  if (ME.demo) return;   // Mr. C's demo sign-in: nothing goes to the sheet
   store.set(qKey(), [...queue(), { test: TEST, period: ME.period, number: ME.number, name: ME.name, token: ME.token, ...ev, ts: new Date().toISOString(), id: crypto.randomUUID() }]);
   flush();
 }
@@ -325,12 +326,14 @@ async function flush() {
 }
 function syncLabel() {
   if (!ME) return;
+  if (ME.demo) { $("#sync").className = ""; $("#sync").textContent = "Demo · nothing is sent"; return; }
   const n = queue().length, el = $("#sync");
   el.className = n ? "bad" : "";
   el.textContent = !DATA.sheet ? (n ? "Saved on this device" : "") : n ? `Sending ${n} result${n > 1 ? "s" : ""} to Mr. C…` : "All results sent";
 }
 // What this student already turned in, from any device, so starting over somewhere else doesn't reset anything.
 async function pullProgress() {
+  if (ME.demo) { PEER = { on: true, count: 1 }; return; }
   if (!DATA.sheet) return;
   try {
     const p = new URLSearchParams({ action: "progress", test: TEST, period: ME.period, number: ME.number, token: ME.token });
@@ -351,6 +354,7 @@ async function pullProgress() {
 
 // ---------- app ----------
 async function startApp() {
+  if (ME.demo) store.del(stKey());   // the demo starts from Exam A every time
   ST = loadState();
   $("#signin").style.display = "none"; $("#app").style.display = "block";
   $("#who").textContent = `${ME.name} · ${ME.period} · #${ME.number}`;
