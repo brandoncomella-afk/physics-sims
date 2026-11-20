@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FRQ Self-Grade</title>
-<meta name="description" content="Grade your own AP Physics free-response answers against the scoring criteria, then compare with your teacher's scores and feedback.">
+<meta name="description" content="Grade your own AP Physics free-response answers against the scoring criteria and turn in your self-scores.">
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#3d5afe">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9C%85%3C/text%3E%3C/svg%3E">
@@ -125,7 +125,7 @@
 <div id="gate">
   <div class="card">
     <h2>Grade your own FRQs</h2>
-    <p>Enter the code from your slip. You'll score your own answers point by point first. Then you'll see your teacher's scores and feedback next to yours.</p>
+    <p>Enter the code from your slip. You'll go through the scoring criteria and score your own answers point by point, then turn in your self-scores.</p>
     <input id="codeInput" maxlength="9" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX" aria-label="Your code">
     <div class="row"><button class="primary" id="openBtn">Open</button></div>
     <div id="gateMsg" role="status"></div>
@@ -224,7 +224,6 @@
   });
 
   // ---------- Rendering ----------
-  function teacherPts(q) { return (REC.q[q.id] || {}).pts || {}; }
   function sum(obj, ids) { return ids.reduce(function (s, k) { return s + (obj[k] ? 1 : 0); }, 0); }
   function ids(list) { return list.map(function (p) { return p.id; }); }
   function allIds(q) { var o = []; q.parts.forEach(function (p) { o = o.concat(ids(p.points)); }); return o; }
@@ -232,7 +231,7 @@
   function render() { if (ST.locked) renderResults(); else renderSelf(); window.scrollTo(0, 0); }
 
   function renderSelf() {
-    var html = '<p class="intro">Go through each point. Tick it only if your answer clearly does what the point describes. When you\'re done, lock in your scores to see your teacher\'s. ' +
+    var html = '<p class="intro">Go through each point. Tick it only if your answer clearly does what the point describes. When you\'re done, lock in your scores and download the file to turn in. ' +
       '<b>You can\'t change your scores after you lock them in.</b> Have your paper in front of you, or use <b>Open my paper</b> at the top. It stays on your device.</p>';
     DATA.questions.forEach(function (q) {
       html += '<section class="q"><h2>' + esc(q.name) + '<span class="score" data-qs="' + esc(q.id) + '"></span></h2>';
@@ -263,7 +262,7 @@
     lb.addEventListener("click", function () {
       if (lb.dataset.armed !== "1") { lb.dataset.armed = "1"; lb.textContent = "Sure? Click again to lock in"; return; }
       ST.locked = true; ST.lockedAt = new Date().toISOString(); save(); render();
-      toast("Locked in. Here's how you compare.");
+      toast("Locked in. Now download your self-grade to turn in.");
     });
     updateSelfTotals();
   }
@@ -281,40 +280,29 @@
   }
 
   function renderResults() {
-    var gs = 0, gt = 0, max = 0, agree = 0, n = 0, html = "";
-    DATA.questions.forEach(function (q) {
-      var tp = teacherPts(q), a = allIds(q);
-      gs += sum(ST.self[q.id], a); gt += sum(tp, a); max += q.total;
-      a.forEach(function (k) { n++; if (!!ST.self[q.id][k] === !!tp[k]) agree++; });
-    });
+    var gs = 0, max = 0, html = "";
+    DATA.questions.forEach(function (q) { gs += sum(ST.self[q.id], allIds(q)); max += q.total; });
     html += '<div class="summary">' +
-      DATA.questions.map(function (q) { var a = allIds(q); return '<div class="stat"><div class="lbl">' + esc(q.id) + '</div><div class="val">' + sum(teacherPts(q), a) + ' <small>/ ' + q.total + ' · you said ' + sum(ST.self[q.id], a) + '</small></div></div>'; }).join("") +
-      '<div class="stat"><div class="lbl">Total</div><div class="val">' + gt + ' <small>/ ' + max + ' · you said ' + gs + '</small></div></div>' +
-      '<div class="stat"><div class="lbl">Points you called the same</div><div class="val">' + agree + ' <small>of ' + n + '</small></div></div></div>';
-    html += '<p class="intro">Rows highlighted in yellow are points where your call and your teacher\'s differ. Read the feedback under each part to see why.</p>';
+      DATA.questions.map(function (q) { return '<div class="stat"><div class="lbl">' + esc(q.id) + '</div><div class="val">' + sum(ST.self[q.id], allIds(q)) + ' <small>/ ' + q.total + '</small></div></div>'; }).join("") +
+      '<div class="stat"><div class="lbl">Your total</div><div class="val">' + gs + ' <small>/ ' + max + '</small></div></div></div>';
+    html += '<div id="reflect"><h2>Your scores are locked in</h2><p><b>Download your self-grade and turn it in where your teacher asks.</b> This is your own score; your teacher will compare it with theirs.</p>' +
+      '<p>Optional: which point were you least sure about, and why?</p>' +
+      '<textarea id="reflectText" placeholder="I wasn\'t sure about B2 because…"></textarea>' +
+      '<div class="actions"><button class="primary" id="dlBtn">Download my self-grade</button><button id="printBtn">Print</button></div></div>';
     DATA.questions.forEach(function (q) {
-      var tp = teacherPts(q), qd = REC.q[q.id] || {}, a = allIds(q);
-      html += '<section class="q"><h2>' + esc(q.name) + '<span class="score">Teacher ' + sum(tp, a) + ' / ' + q.total + ' · You ' + sum(ST.self[q.id], a) + '</span></h2>';
+      html += '<section class="q"><h2>' + esc(q.name) + '<span class="score">You: ' + sum(ST.self[q.id], allIds(q)) + ' / ' + q.total + '</span></h2>';
       q.parts.forEach(function (p) {
         var pi = ids(p.points);
-        html += '<div class="part"><h3>Part ' + esc(p.label) + '<span class="sub">Teacher ' + sum(tp, pi) + ' / ' + pi.length + ' · You ' + sum(ST.self[q.id], pi) + '</span></h3>';
-        html += '<div class="colhead"><span>Point</span><span>You</span><span>Teacher</span></div>';
+        html += '<div class="part"><h3>Part ' + esc(p.label) + '<span class="sub">' + sum(ST.self[q.id], pi) + ' / ' + pi.length + '</span></h3>';
         p.points.forEach(function (pt) {
-          var me = !!ST.self[q.id][pt.id], t = !!tp[pt.id], note = (qd.notes || {})[pt.id];
-          html += '<div class="res ' + (me === t ? "agree" : "diff") + '"><span><span class="pid" style="font-weight:700;margin-right:6px">' + esc(pt.id) + '</span>' + esc(pt.criterion) + '</span>' +
-            '<span class="tag ' + (me ? "y" : "n") + '">' + (me ? "✓ earned" : "✗ not") + '</span>' +
-            '<span class="tag ' + (t ? "y" : "n") + '">' + (t ? "✓ earned" : "✗ not") + '</span>' +
-            (note ? '<span class="note">Teacher\'s note: ' + esc(note) + '</span>' : '') + '</div>';
+          var me = !!ST.self[q.id][pt.id];
+          html += '<div class="res agree" style="grid-template-columns:1fr auto"><span><span class="pid" style="font-weight:700;margin-right:6px">' + esc(pt.id) + '</span>' + esc(pt.criterion) + '</span>' +
+            '<span class="tag ' + (me ? "y" : "n") + '">' + (me ? "✓ earned" : "✗ not") + '</span></div>';
         });
-        var fb = (qd.fb || {})[p.label];
-        if (fb) html += '<div class="fb"><b>Feedback</b>' + esc(fb) + '</div>';
         html += '</div>';
       });
       html += '</section>';
     });
-    html += '<div id="reflect"><h2>Reflection</h2><p>Pick one point you didn\'t earn. What exactly would your answer need to say to earn it next time?</p>' +
-      '<textarea id="reflectText" placeholder="For B2, I needed to…"></textarea>' +
-      '<div class="actions"><button class="primary" id="dlBtn">Download my self-grade</button><button id="printBtn">Print</button></div></div>';
     $("gradeView").innerHTML = html;
     var rt = $("reflectText"); rt.value = ST.reflection || "";
     rt.addEventListener("input", function () { ST.reflection = rt.value; save(); });
@@ -323,19 +311,15 @@
   }
 
   function download() {
-    var rows = [["Test", "Period", "Student #", "Question", "Point", "Criterion", "My score", "Teacher score", "Same?"]];
+    var rows = [["Test", "Period", "Student #", "Question", "Grader question", "Points earned", "Total", "Out of", "Locked at", "Note"]];
     DATA.questions.forEach(function (q) {
-      var tp = teacherPts(q);
-      q.parts.forEach(function (p) { p.points.forEach(function (pt) {
-        var me = ST.self[q.id][pt.id] ? 1 : 0, t = tp[pt.id] ? 1 : 0;
-        rows.push([DATA.title, REC.period, REC.number, q.id, pt.id, pt.criterion, me, t, me === t ? "yes" : "no"]);
-      }); });
+      var earned = allIds(q).filter(function (k) { return ST.self[q.id][k]; });
+      rows.push([DATA.test, REC.period, REC.number, q.id, q.type || q.id, earned.join(" "), earned.length, q.total, ST.lockedAt || "", ST.reflection || ""]);
     });
-    rows.push([]); rows.push(["Reflection", ST.reflection || ""]);
     var csv = rows.map(function (r) { return r.map(function (c) { c = String(c == null ? "" : c); return /[",\n]/.test(c) ? '"' + c.replace(/"/g, '""') + '"' : c; }).join(","); }).join("\n");
     var name = DATA.test + "_selfgrade_" + REC.period + "_" + REC.number + ".csv";
     try {
-      var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" }));
+      var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" }));
       a.download = name; document.body.appendChild(a); a.click(); a.remove();
       toast("Downloaded " + name + ". Turn it in where your teacher asks.");
     } catch (e) { toast("Your browser blocked the download. Use Print instead."); }
