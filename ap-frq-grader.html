@@ -1823,7 +1823,8 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     groups.forEach(function (grp) {
       var row = [grp.files.map(function (x) { return x.name; }).join("; "), grp.g.period || "", grp.g.name || ""], grand = 0;
       types.forEach(function (t) {
-        var f = grp.files.find(function (x) { return touched(x, t); }) || grp.files.find(function (x) { return taggedType(x) === t; }) || grp.files[0];
+        // The PDF tagged with this question wins; an untagged PDF with scores comes next.
+        var f = grp.files.find(function (x) { return taggedType(x) === t; }) || grp.files.find(function (x) { return !taggedType(x) && touched(x, t); }) || grp.files[0];
         var p = gradesOf(f)[t] || {};
         pointIds(t).forEach(function (k) { row.push(p[k] ? 1 : 0); });
         partsFor(t).forEach(function (pt) { var s = 0; for (var i = 1; i <= pt.pts; i++) if (p[pt.id + i]) s++; row.push(s); });
