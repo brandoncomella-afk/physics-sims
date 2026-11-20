@@ -173,6 +173,26 @@
   #partSum { font-size: 13px; margin-top: 4px; }
   #partSum.off { color: var(--warn); font-weight: 600; }
 
+  #testSelect { max-width: 230px; font-weight: 600; }
+  .test-list { display: flex; flex-direction: column; gap: 8px; margin: 6px 0 4px 0; }
+  .test-card { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; }
+  .test-card:hover { background: var(--sidebar-hover); }
+  .test-card.current { border-color: var(--accent); background: var(--sidebar-selected); }
+  .test-card .tmain { flex: 1; min-width: 0; }
+  .test-card .tname { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .test-card .tmeta { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+  .test-card .tstat { text-align: right; font-size: 12px; color: var(--text-dim); white-space: nowrap; }
+  .test-card .tstat b { font-size: 16px; color: var(--text); }
+  .test-card .tact { display: flex; gap: 4px; }
+  .new-test-row { display: flex; gap: 8px; margin-top: 12px; }
+  .new-test-row input { flex: 1; font: inherit; padding: 7px 9px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
+  .score-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+  .score-table th, .score-table td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--border); }
+  .score-table th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); position: sticky; top: 0; background: var(--panel-bg); }
+  .score-table td.num, .score-table th.num { text-align: right; }
+  .score-table tr.clickable { cursor: pointer; }
+  .score-table tr.clickable:hover { background: var(--sidebar-hover); }
+
   #toast {
     position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg);
     padding: 10px 18px; border-radius: 8px; font-size: 13px; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; z-index: 60;
@@ -239,6 +259,8 @@
 <div id="app">
   <header>
     <h1>📝 AP FRQ Grader</h1>
+    <select id="testSelect" title="Which test you're grading. Each test keeps its own PDFs and scores."></select>
+    <button id="testsBtn" title="See all your saved tests, their scores, and rename or delete them">Tests</button>
     <label class="file-btn" for="fileInput">Load PDFs</label>
     <input type="file" id="fileInput" accept="application/pdf" multiple>
     <select id="periodSelect" title="Class period"></select>
@@ -343,6 +365,32 @@
   </div>
 </div>
 
+<!-- Tests modal -->
+<div class="overlay" id="testsModal">
+  <div class="modal" style="width:min(680px,100%)">
+    <div id="testsHome">
+      <h2>Your tests</h2>
+      <p>Each test keeps its own student PDFs, scores, part splits and scoring guide, so grading a new TBR question never shows last test's scores. Your class rosters are shared by every test. Click a test to open it.</p>
+      <div class="test-list" id="testList"></div>
+      <div class="new-test-row">
+        <input type="text" id="newTestName" placeholder="New test name, e.g. Unit 3 TBR (Momentum)">
+        <button class="primary" id="newTestBtn">+ New test</button>
+      </div>
+    </div>
+    <div id="testDetail" style="display:none">
+      <h2 id="detailTitle"></h2>
+      <p id="detailMeta"></p>
+      <div style="max-height:52vh;overflow-y:auto"><table class="score-table" id="detailTable"></table></div>
+    </div>
+    <div class="actions">
+      <button id="detailBack" style="display:none">← All tests</button>
+      <div class="spacer"></div>
+      <button id="detailOpen" class="primary" style="display:none">Open this test</button>
+      <button id="testsClose">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- Parts modal -->
 <div class="overlay" id="partsModal">
   <div class="modal">
@@ -366,6 +414,9 @@
   <div class="modal" style="width:min(760px,100%)">
     <h2>How to set up your files</h2>
     <p>Everything stays in this browser: your rosters, the PDFs you load and the scores you enter are not uploaded anywhere. Export a CSV when you're done grading.</p>
+
+    <h3 class="hh">0. Make a test</h3>
+    <p>Use the test menu at the top left (or <b>Tests</b>) to start a <b>new test</b> each time you grade a new question, e.g. <i>Unit 3 TBR</i>. A test saves its own PDFs, scores, part splits and scoring guide in this browser, so you can come back later, click the test, and see every student's work and score. Rosters are shared across all tests.</p>
 
     <h3 class="hh">1. Pick the course and question</h3>
     <p>Choose your AP course (Physics, Chemistry, Biology or Environmental Science) and the question you're grading at the top. Each question comes with its point split already set (A, B, C …). If your question splits its points differently, click <b>Edit parts</b> and match it to your scoring guidelines.</p>
@@ -392,6 +443,8 @@ P3,Hopper,Grace</pre>
       <li>Scan pages right side up if you can. If one comes out upside down, press <b>R</b> or use the rotate buttons on the page.</li>
       <li>Scanning tip: most copiers can scan a stack into one PDF per student if you put a separator sheet between booklets, or you can split a class scan afterward in Preview or Adobe Acrobat.</li>
     </ul>
+
+    <p><b>Question in the filename:</b> end the name with the question, like <code>Curie Marie_Q2.pdf</code> or <code>Curie Marie - Q2.pdf</code> (for physics, <code>TBR</code> etc. also work). Each PDF is filed under that question, the menu switches to it, and the list shows only that question's PDFs. You can load Q1 and Q2 for the same students together and switch between them with the question menu. PDFs without a question follow whatever question is selected.</p>
 
     <p>Pick one period at the top to see only that class's PDFs (plus any not matched to a student yet), or choose <b>All periods</b> to grade a mix of classes, grouped by period.</p>
 
@@ -513,7 +566,44 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
   state.suggest = state.suggest || {};      // suggest["P1|curie, marie"][type] = {parts:{A:3..}, total, comment}
   state.confirmed = state.confirmed || {};  // confirmed[fileName][type] = true              // rot[fileName][pageNum] = extra degrees        // grades[fileName] = { name, MR: {A1:1..}, TBR: {...} }
 
-  function save() { writeJSON(STORE, state); }
+  // ---------- Tests ----------
+  // Each test owns its grades, imported scores, confirmations, page rotations and part splits.
+  // state.grades etc. point at the current test's objects so the rest of the code can stay unchanged.
+  var TEST_KEYS = ["grades", "confirmed", "suggest", "rot", "parts"];
+  function newTestId() { return "t" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function makeTest(name) {
+    return { id: newTestId(), name: name, created: Date.now(), subject: state.subject, type: state.type,
+      grades: {}, confirmed: {}, suggest: {}, rot: {}, parts: {}, files: [] };
+  }
+  if (!state.tests || !Object.keys(state.tests).length) {
+    // First run with tests: whatever was graded before becomes the first test.
+    var first = makeTest("My first test");
+    TEST_KEYS.forEach(function (k) { if (state[k]) first[k] = state[k]; });
+    first.legacy = true;   // may still use the old shared scoring guides
+    state.tests = {}; state.tests[first.id] = first;
+    state.testId = first.id;
+  }
+  if (!state.tests[state.testId]) state.testId = testIds()[0];
+  function testIds() {
+    return Object.keys(state.tests).sort(function (a, b) { return state.tests[b].created - state.tests[a].created; });
+  }
+  function curTest() { return state.tests[state.testId]; }
+  function bindTest() {
+    var t = curTest();
+    TEST_KEYS.forEach(function (k) { if (!t[k]) t[k] = k === "files" ? [] : {}; state[k] = t[k]; });
+    if (!t.files) t.files = [];
+    if (t.subject && SUBJ[t.subject]) state.subject = t.subject;
+    if (t.type && TYPES[t.type] && TYPES[t.type].subject === state.subject) state.type = t.type;
+    else state.type = typeOrder(state.subject)[0];
+  }
+  bindTest();
+
+  function save() {
+    var t = curTest(); t.subject = state.subject; t.type = state.type;
+    var out = {};
+    Object.keys(state).forEach(function (k) { if (TEST_KEYS.indexOf(k) < 0) out[k] = state[k]; });
+    writeJSON(STORE, out);
+  }
   save();
 
   function partsFor(type) { return state.parts[type] || TYPES[type].parts; }
@@ -523,6 +613,24 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     return out;
   }
   function maxFor(type) { return pointIds(type).length; }
+
+  // ---------- Question from the filename ----------
+  // "Curie Marie_Q2.pdf", "Curie Marie - Q2.pdf", "Curie_Marie_FRQ2.pdf", "Curie Marie TBR.pdf" -> that question of the selected course.
+  function detectQuestion(fn) {
+    var base = String(fn).replace(/\.[a-z0-9]+$/i, "");
+    var re = /(?:^|[^a-z0-9])(?:q|frq|question)[\s_#-]*(\d{1,2})(?![0-9])/gi, m, last = null;
+    while ((m = re.exec(base))) last = m[1];
+    if (last) return resolveType("Q" + last);
+    var ph = base.match(/(?:^|[^a-z])(MR|TBR|LAB|QQT|EDA)(?![a-z])/i);
+    return ph && state.subject === "PHYS" ? resolveType(ph[1]) : null;
+  }
+  // The question a PDF belongs to: its tag if it's one of the selected course's questions, otherwise whatever is selected.
+  function taggedType(f) {
+    var q = gradesOf(f).qtype;
+    return q && TYPES[q] && TYPES[q].subject === state.subject ? q : null;
+  }
+  function fileType(f) { return taggedType(f) || state.type; }
+  function inCurrentQuestion(f) { var q = taggedType(f); return !q || q === state.type; }
 
   // ---------- Session ----------
   var files = [];          // { name, url }
@@ -566,6 +674,7 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     state.subject = subjectSelect.value; state.type = typeOrder()[0]; save();
     prefillAll();
     buildRubric(); refreshRubric(); renderFileList(); refreshGuide();
+    showQuestionFiles();
     subjectSelect.blur();
     toast("Now grading: " + SUBJ[state.subject].name + ", " + TYPES[state.type].name);
   });
@@ -580,6 +689,7 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     state.type = typeSelect.value; save();
     prefillAll();
     buildRubric(); refreshRubric(); renderFileList(); refreshGuide();
+    showQuestionFiles();
     typeSelect.blur();
     toast("Now grading: " + TYPES[state.type].name);
   });
@@ -811,32 +921,64 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
   fileInput.addEventListener("change", function (e) {
     var chosen = Array.from(e.target.files || []);
     if (!chosen.length) return;
+    var tid = state.testId, added = [];
     chosen.forEach(function (file) {
       if (files.some(function (f) { return f.name === file.name; })) return;
       files.push({ name: file.name, file: file });
+      if (curTest().files.indexOf(file.name) < 0) curTest().files.push(file.name);
+      added.push(file);
     });
     fileInput.value = "";
+    var qs = {};
+    added.forEach(function (file) {
+      var f = files.find(function (x) { return x.name === file.name; }), q = detectQuestion(file.name);
+      if (q && !gradesOf(f).qtype) gradesOf(f).qtype = q;
+      if (q) qs[q] = 1;
+    });
+    var qList = typeOrder().filter(function (t) { return qs[t]; });
+    if (qList.length && qs[state.type] === undefined) {
+      state.type = qList[0]; currentIndex = -1;
+      buildRubric(); refreshGuide();
+    }
+    if (qList.length > 1) setTimeout(function () { toast("Loaded PDFs for " + qList.map(function (t) { return TYPES[t].short; }).join(", ") + ". Switch questions in the menu to grade each one."); }, 2200);
     var nAuto = autoMatchFiles();
     prefillAll();
+    save();
     if (nAuto.tried) toast("Matched " + nAuto.matched + " of " + nAuto.tried + " PDFs to roster names from their filenames. Check the ones marked auto.");
-    document.getElementById("emptyState").style.display = "none";
-    document.getElementById("exportBtn").disabled = files.length === 0;
-    document.getElementById("sheetsBtn").disabled = files.length === 0;
-    document.getElementById("fileCount").textContent = files.length + " file" + (files.length === 1 ? "" : "s");
+    updateFileUI();
     renderFileList();
     if (currentIndex === -1) { var v0 = viewOrder(); selectFile(v0.length ? v0[0] : 0); }
+    Promise.all(added.map(function (file) { return pdfPut(tid, file); })).then(function (oks) {
+      if (oks.some(function (ok) { return !ok; })) toast("This browser couldn't save some PDFs, so they'll need reloading next time. Your scores are saved.");
+    });
   });
+  function updateFileUI() {
+    document.getElementById("emptyState").style.display = files.length ? "none" : "";
+    document.getElementById("exportBtn").disabled = files.length === 0;
+    document.getElementById("sheetsBtn").disabled = files.length === 0;
+    document.getElementById("fileCount").textContent = files.length ? files.length + " file" + (files.length === 1 ? "" : "s") : "";
+  }
 
   // Which PDFs show in the list, in order: one period (plus PDFs not matched yet), or all periods grouped.
   function viewOrder() {
     var pers = Object.keys(state.rosters), rank = {};
     pers.forEach(function (p, i) { rank[p] = i; });
     var idx = files.map(function (f, i) { return i; });
+    idx = idx.filter(function (i) { return inCurrentQuestion(files[i]); });
     if (state.period !== ALL) idx = idx.filter(function (i) { var gp = gradesOf(files[i]).period; return !gp || gp === state.period || !state.rosters[gp]; });
     function key(i) { var g = gradesOf(files[i]); var gp = g.name && g.period && rank[g.period] !== undefined ? rank[g.period] : 9999; return gp; }
     return idx.sort(function (a, b) {
       return (key(a) - key(b)) || String(gradesOf(files[a]).name || files[a].name).localeCompare(String(gradesOf(files[b]).name || files[b].name));
     });
+  }
+  // After the question changes, make sure the open PDF belongs to it.
+  function showQuestionFiles() {
+    var v = viewOrder();
+    if (v.indexOf(currentIndex) >= 0) return;
+    if (v.length) { selectFile(v[0]); return; }
+    currentIndex = -1; student.clear();
+    document.getElementById("gradePanel").style.display = "none";
+    showMode("student"); renderFileList();
   }
   function stepFile(d) {
     var v = viewOrder(), pos = v.indexOf(currentIndex);
@@ -848,7 +990,10 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     list.innerHTML = "";
     var max = maxFor(state.type);
     var view = viewOrder(), lastGroup = null;
-    if (!view.length && files.length) list.innerHTML = '<div class="file-group">No PDFs for ' + esc(state.period) + ' yet. Choose All periods to see every PDF.</div>';
+    var otherQ = files.filter(function (f) { return !inCurrentQuestion(f); }).length;
+    if (!view.length && files.length) list.innerHTML = '<div class="file-group">' + (files.length === otherQ
+      ? "No " + esc(TYPES[state.type].short) + " PDFs loaded. Pick another question in the menu to see the other PDFs."
+      : 'No PDFs for ' + esc(state.period) + ' yet. Choose All periods to see every PDF.') + '</div>';
     view.forEach(function (i, pos) {
       var f = files[i];
       var g = gradesOf(f);
@@ -877,6 +1022,8 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     if (i < 0 || i >= files.length) return;
     currentIndex = i;
     var f = files[i];
+    var tq = taggedType(f);
+    if (tq && tq !== state.type) { state.type = tq; save(); buildRubric(); refreshGuide(); }
     var gp = gradesOf(f).period;
     if (state.period !== ALL && gp && state.rosters[gp] && gp !== state.period) { state.period = gp; save(); renderPeriodSelect(); }
     document.getElementById("gradePanel").style.display = "flex";
@@ -1059,35 +1206,79 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     if (dbP) return dbP;
     dbP = new Promise(function (res) {
       try {
-        var r = indexedDB.open("ap_frq_grader_files", 1);
-        r.onupgradeneeded = function () { r.result.createObjectStore("guides"); };
+        var r = indexedDB.open("ap_frq_grader_files", 2);
+        r.onupgradeneeded = function () {
+          var d = r.result;
+          if (!d.objectStoreNames.contains("guides")) d.createObjectStore("guides");
+          if (!d.objectStoreNames.contains("pdfs")) d.createObjectStore("pdfs");   // key "testId|file name" -> { name, blob, added }
+        };
         r.onsuccess = function () { res(r.result); };
         r.onerror = function () { res(null); };
       } catch (e) { res(null); }
     });
     return dbP;
   }
-  async function guideGet(type) {
-    var d = await db(); if (!d) return sessionGuides[type] || null;
-    return new Promise(function (res) {
-      try {
-        var q = d.transaction("guides").objectStore("guides").get(type);
-        q.onsuccess = function () { res(q.result || sessionGuides[type] || null); };
-        q.onerror = function () { res(sessionGuides[type] || null); };
-      } catch (e) { res(sessionGuides[type] || null); }
+  // Scoring guides are saved per test ("testId|type"); the first test can still see guides saved before tests existed.
+  function guideKey(type) { return state.testId + "|" + type; }
+  function idbGet(store, key) {
+    return db().then(function (d) {
+      if (!d) return null;
+      return new Promise(function (res) {
+        try {
+          var q = d.transaction(store).objectStore(store).get(key);
+          q.onsuccess = function () { res(q.result || null); }; q.onerror = function () { res(null); };
+        } catch (e) { res(null); }
+      });
     });
+  }
+  async function guideGet(type) {
+    var k = guideKey(type);
+    if (sessionGuides[k] !== undefined) return sessionGuides[k];
+    var rec = await idbGet("guides", k);
+    if (!rec && curTest().legacy) rec = await idbGet("guides", type);
+    return rec;
   }
   var sessionGuides = {};   // fallback if this browser blocks storage
   async function guidePut(type, rec) {
+    type = guideKey(type);
     sessionGuides[type] = rec;
     var d = await db(); if (!d) return false;
     return new Promise(function (res) {
       try {
         var tx = d.transaction("guides", "readwrite");
-        if (rec) tx.objectStore("guides").put(rec, type); else tx.objectStore("guides").delete(type);
+        if (rec) tx.objectStore("guides").put(rec, type);
+        else { tx.objectStore("guides").delete(type); if (curTest().legacy) tx.objectStore("guides").delete(type.split("|")[1]); }
         tx.oncomplete = function () { res(true); }; tx.onerror = function () { res(false); };
       } catch (e) { res(false); }
     });
+  }
+
+  // ---------- Student PDF storage (IndexedDB, per test) ----------
+  async function pdfPut(testId, file) {
+    var d = await db(); if (!d) return false;
+    return new Promise(function (res) {
+      try {
+        var tx = d.transaction("pdfs", "readwrite");
+        tx.objectStore("pdfs").put({ name: file.name, blob: file, added: Date.now() }, testId + "|" + file.name);
+        tx.oncomplete = function () { res(true); }; tx.onerror = function () { res(false); }; tx.onabort = function () { res(false); };
+      } catch (e) { res(false); }
+    });
+  }
+  async function pdfsFor(testId) {
+    var d = await db(); if (!d) return [];
+    return new Promise(function (res) {
+      try {
+        var q = d.transaction("pdfs").objectStore("pdfs").getAll(IDBKeyRange.bound(testId + "|", testId + "|\uffff"));
+        q.onsuccess = function () { res(q.result || []); }; q.onerror = function () { res([]); };
+      } catch (e) { res([]); }
+    });
+  }
+  async function deleteTestFiles(testId) {
+    var d = await db(); if (!d) return;
+    try {
+      var tx = d.transaction(["pdfs", "guides"], "readwrite"), range = IDBKeyRange.bound(testId + "|", testId + "|\uffff");
+      tx.objectStore("pdfs").delete(range); tx.objectStore("guides").delete(range);
+    } catch (e) {}
   }
 
   async function refreshGuide() {
@@ -1203,7 +1394,7 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
   // Assign roster names to PDFs that don't have one yet, best matches first, each student once.
   function autoMatchFiles() {
     var entries = allRosterEntries(), taken = {};
-    files.forEach(function (f) { var g = gradesOf(f); if (g.name) taken[(g.period || "") + "|" + g.name.toLowerCase()] = 1; });
+    files.forEach(function (f) { var g = gradesOf(f); if (g.name) taken[fileType(f) + "|" + (g.period || "") + "|" + g.name.toLowerCase()] = 1; });
     var open = files.filter(function (f) { return !gradesOf(f).name; });
     if (!open.length || !entries.length) return { tried: open.length && entries.length ? open.length : 0, matched: 0 };
     var pairs = [];
@@ -1214,7 +1405,7 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     pairs.sort(function (x, y) { return y.sc - x.sc; });
     var done = {}, matched = 0;
     pairs.forEach(function (pr) {
-      var key = pr.e.period + "|" + pr.e.name.toLowerCase();
+      var key = fileType(pr.f) + "|" + pr.e.period + "|" + pr.e.name.toLowerCase();
       if (done[pr.f.name] || taken[key]) return;
       var g = gradesOf(pr.f);
       g.name = pr.e.name; g.period = pr.e.period; g.auto = true; g.autoScore = Math.round(pr.sc * 100) / 100;
@@ -1239,7 +1430,7 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     // returns the file name (other than current) that already has this student
     var cur = files[currentIndex] && files[currentIndex].name;
     var hit = null;
-    files.forEach(function (f) { if (f.name !== cur && (gradesOf(f).name || "").toLowerCase() === name.toLowerCase()) hit = f.name; });
+    files.forEach(function (f) { if (f.name !== cur && inCurrentQuestion(f) && (gradesOf(f).name || "").toLowerCase() === name.toLowerCase()) hit = f.name; });
     return hit;
   }
   function norm(s) { return s.toLowerCase().replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim(); }
@@ -1335,7 +1526,7 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     if (!ents.length) { el.innerHTML = 'No roster loaded. <button class="link" id="rosterInline">Import one</button> to pick names from a list.'; }
     else {
       var assigned = {};
-      files.forEach(function (f) { var g = gradesOf(f), n = (g.name || "").toLowerCase(); if (n) assigned[(g.period || "") + "|" + n] = 1; });
+      files.forEach(function (f) { if (!inCurrentQuestion(f)) return; var g = gradesOf(f), n = (g.name || "").toLowerCase(); if (n) assigned[(g.period || "") + "|" + n] = 1; });
       var left = ents.filter(function (e) { return !assigned[e.period + "|" + e.name.toLowerCase()]; }).map(function (e) { return (state.period === ALL ? e.period + " · " : "") + e.name; });
       var label = state.period === ALL ? "All periods" : state.period;
       el.innerHTML = esc(label) + ': ' + ents.length + ' students · ' + (ents.length - left.length) + ' matched to a PDF' +
@@ -1620,13 +1811,20 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     });
     if (types.length > 1) header.push("Grand Total");
     var table = [header];
-    var order = files.map(function (f, i) { return i; });
+    // One row per student: a student with a Q1 PDF and a Q2 PDF gets both questions on the same row.
+    var groups = [], byKey = {};
+    files.forEach(function (f) {
+      var g = gradesOf(f), k = g.name ? (g.period || "") + "|" + g.name.toLowerCase() : "file|" + f.name;
+      if (!byKey[k]) { byKey[k] = { files: [], g: g }; groups.push(byKey[k]); }
+      byKey[k].files.push(f);
+    });
     var per = Object.keys(state.rosters), rk = {}; per.forEach(function (p, i) { rk[p] = i; });
-    order.sort(function (a, b) { var ga = gradesOf(files[a]), gb = gradesOf(files[b]); var ra = rk[ga.period] !== undefined ? rk[ga.period] : 9999, rb = rk[gb.period] !== undefined ? rk[gb.period] : 9999; return (ra - rb) || String(ga.name || files[a].name).localeCompare(String(gb.name || files[b].name)); });
-    order.forEach(function (fi) {
-      var f = files[fi];
-      var row = [f.name, gradesOf(f).period || "", gradesOf(f).name || ""], grand = 0;
+    groups.sort(function (a, b) { var ga = a.g, gb = b.g; var ra = rk[ga.period] !== undefined ? rk[ga.period] : 9999, rb = rk[gb.period] !== undefined ? rk[gb.period] : 9999; return (ra - rb) || String(ga.name || a.files[0].name).localeCompare(String(gb.name || b.files[0].name)); });
+    groups.forEach(function (grp) {
+      var row = [grp.files.map(function (x) { return x.name; }).join("; "), grp.g.period || "", grp.g.name || ""], grand = 0;
       types.forEach(function (t) {
+        // The PDF tagged with this question wins; an untagged PDF with scores comes next.
+        var f = grp.files.find(function (x) { return taggedType(x) === t; }) || grp.files.find(function (x) { return !taggedType(x) && touched(x, t); }) || grp.files[0];
         var p = gradesOf(f)[t] || {};
         pointIds(t).forEach(function (k) { row.push(p[k] ? 1 : 0); });
         partsFor(t).forEach(function (pt) { var s = 0; for (var i = 1; i <= pt.pts; i++) if (p[pt.id + i]) s++; row.push(s); });
@@ -1645,7 +1843,8 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
   }
   function exportName(out, ext) {
     var d = new Date(), stamp = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
-    return "frq_grades_" + out.types.map(function (t) { return t.replace(":", "_"); }).join("_") + "_" + stamp + (ext || "");
+    var tn = String(curTest().name || "").replace(/[^A-Za-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+    return "frq_grades_" + (tn ? tn + "_" : "") + out.types.map(function (t) { return t.replace(":", "_"); }).join("_") + "_" + stamp + (ext || "");
   }
   document.getElementById("exportBtn").addEventListener("click", function () {
     if (!files.length) return;
@@ -1692,13 +1891,189 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     pasteFallback(buildCSV());
   });
 
+  // ---------- Test picker and Tests window ----------
+  var testSelect = document.getElementById("testSelect");
+  var NEW_TEST = "__newtest__", MANAGE_TESTS = "__manage__";
+  function renderTestSelect() {
+    testSelect.innerHTML = testIds().map(function (id) {
+      return '<option value="' + esc(id) + '"' + (id === state.testId ? " selected" : "") + '>' + esc(state.tests[id].name) + '</option>';
+    }).join("") + '<option value="' + NEW_TEST + '">+ New test…</option><option value="' + MANAGE_TESTS + '">All tests…</option>';
+  }
+  testSelect.addEventListener("change", function () {
+    var v = testSelect.value; testSelect.blur();
+    renderTestSelect();
+    if (v === NEW_TEST) { openTests(true); return; }
+    if (v === MANAGE_TESTS) { openTests(false); return; }
+    switchTest(v);
+  });
+  var loadSeq = 0;
+  async function loadTestFiles() {
+    var seq = ++loadSeq, tid = state.testId;
+    files = []; currentIndex = -1;
+    student.clear();
+    document.getElementById("gradePanel").style.display = "none";
+    document.getElementById("fileList").innerHTML = "";
+    showMode("student"); updateFileUI();
+    var recs = await pdfsFor(tid);
+    if (seq !== loadSeq) return;
+    var order = curTest().files;
+    recs.sort(function (a, b) { return order.indexOf(a.name) - order.indexOf(b.name); });
+    files = recs.map(function (r) { return { name: r.name, file: r.blob }; });
+    var missing = order.filter(function (n) { return !recs.some(function (r) { return r.name === n; }); });
+    updateFileUI(); renderFileList();
+    var v = viewOrder();
+    if (v.length) selectFile(v[0]);
+    else showMode("student");
+    if (missing.length && !files.length) toast("This test's PDFs aren't saved in this browser. Load them again; the scores are still here.");
+    else if (missing.length) toast(missing.length + " PDF" + (missing.length === 1 ? " isn't" : "s aren't") + " saved in this browser; load " + (missing.length === 1 ? "it" : "them") + " again to see the work.");
+  }
+  function switchTest(id) {
+    if (!state.tests[id]) return;
+    state.testId = id;
+    bindTest(); save();
+    renderTestSelect(); renderSubjectSelect(); buildRubric(); updateRosterStatus();
+    var p = loadTestFiles();
+    refreshGuide();
+    toast("Test: " + curTest().name);
+    return p;
+  }
+  function emptyStateText() {
+    document.querySelector("#emptyState div").textContent = "No PDFs in \u201c" + curTest().name + "\u201d yet. Click Load PDFs.";
+  }
+
+  var testsModal = document.getElementById("testsModal"), detailId = null;
+  function testStats(t) {
+    var type = t.type, ids = (t.parts && t.parts[type] ? t.parts[type] : TYPES[type].parts), max = 0;
+    ids.forEach(function (p) { max += p.pts; });
+    var graded = 0, sum = 0, names = Object.keys(t.grades || {});
+    names.forEach(function (fn) {
+      var p = (t.grades[fn] || {})[type] || {};
+      var n = Object.keys(p).filter(function (k) { return p[k]; }).length;
+      if (n || (t.confirmed[fn] && t.confirmed[fn][type])) { graded++; sum += n; }
+    });
+    return { max: max, graded: graded, avg: graded ? sum / graded : null, pdfs: (t.files || []).length || names.length };
+  }
+  function fmtDate(ms) { try { return new Date(ms).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }); } catch (e) { return ""; } }
+  function openTests(focusNew) {
+    showTestsHome();
+    testsModal.classList.add("open");
+    if (focusNew) setTimeout(function () { document.getElementById("newTestName").focus(); }, 30);
+  }
+  function showTestsHome() {
+    detailId = null;
+    document.getElementById("testsHome").style.display = "";
+    document.getElementById("testDetail").style.display = "none";
+    document.getElementById("detailBack").style.display = "none";
+    document.getElementById("detailOpen").style.display = "none";
+    var list = document.getElementById("testList");
+    list.innerHTML = "";
+    testIds().forEach(function (id) {
+      var t = state.tests[id], st = testStats(t);
+      var card = document.createElement("div");
+      card.className = "test-card" + (id === state.testId ? " current" : "");
+      card.innerHTML = '<div class="tmain"><div class="tname">' + esc(t.name) + (id === state.testId ? ' <span class="hint">(open now)</span>' : '') + '</div>' +
+        '<div class="tmeta">' + esc(SUBJ[t.subject] ? SUBJ[t.subject].name.replace(/ \(.*\)$/, "") : "") + ' · ' + esc(TYPES[t.type] ? TYPES[t.type].name : "") + ' · ' + esc(fmtDate(t.created)) + '</div></div>' +
+        '<div class="tstat"><b>' + st.graded + '</b> graded<br>' + (st.avg === null ? "no scores yet" : "avg " + st.avg.toFixed(1) + " / " + st.max) + '</div>' +
+        '<div class="tact"><button class="small" data-a="scores" title="See every student\'s score">Scores</button><button class="small" data-a="rename">Rename</button><button class="small" data-a="del" style="color:var(--danger)">Delete</button></div>';
+      card.addEventListener("click", function (ev) {
+        var a = ev.target.dataset && ev.target.dataset.a;
+        if (a === "scores") { showTestDetail(id); return; }
+        if (a === "rename") {
+          var inp = document.createElement("input"); inp.type = "text"; inp.value = t.name;
+          inp.style.cssText = "width:100%;font:inherit;font-weight:600;padding:3px 6px;border-radius:5px;border:1px solid var(--accent);background:var(--bg);color:var(--text)";
+          var nm = card.querySelector(".tname"); nm.innerHTML = ""; nm.appendChild(inp); inp.focus(); inp.select();
+          inp.addEventListener("click", function (e2) { e2.stopPropagation(); });
+          function done() { var v = inp.value.trim(); if (v) { t.name = v; save(); renderTestSelect(); emptyStateText(); } showTestsHome(); }
+          inp.addEventListener("keydown", function (e2) { if (e2.key === "Enter") { e2.preventDefault(); done(); } if (e2.key === "Escape") { e2.stopPropagation(); showTestsHome(); } });
+          inp.addEventListener("blur", done);
+          return;
+        }
+        if (a === "del") {
+          var b = ev.target;
+          if (b.dataset.armed !== "1") { b.dataset.armed = "1"; b.textContent = "Delete for good?"; return; }
+          delete state.tests[id];
+          deleteTestFiles(id);
+          if (!Object.keys(state.tests).length) { var nt = makeTest("New test"); state.tests[nt.id] = nt; }
+          if (id === state.testId) { state.testId = testIds()[0]; bindTest(); save(); renderTestSelect(); renderSubjectSelect(); buildRubric(); loadTestFiles(); refreshGuide(); emptyStateText(); }
+          else { save(); renderTestSelect(); }
+          toast("Deleted " + t.name);
+          showTestsHome();
+          return;
+        }
+        if (ev.target.tagName === "BUTTON" || ev.target.tagName === "INPUT") return;
+        testsModal.classList.remove("open");
+        if (id !== state.testId) switchTest(id);
+      });
+      list.appendChild(card);
+    });
+  }
+  function showTestDetail(id) {
+    detailId = id;
+    var t = state.tests[id], type = t.type, st = testStats(t);
+    var parts = t.parts && t.parts[type] ? t.parts[type] : TYPES[type].parts;
+    document.getElementById("testsHome").style.display = "none";
+    document.getElementById("testDetail").style.display = "";
+    document.getElementById("detailBack").style.display = "";
+    document.getElementById("detailOpen").style.display = "";
+    document.getElementById("detailOpen").textContent = id === state.testId ? "Back to grading" : "Open this test";
+    document.getElementById("detailTitle").textContent = t.name;
+    document.getElementById("detailMeta").textContent = TYPES[type].name + " · " + st.graded + " graded" + (st.avg === null ? "" : " · class average " + st.avg.toFixed(1) + " / " + st.max) + ". Click a student to open their work.";
+    var per = Object.keys(state.rosters), rk = {}; per.forEach(function (p, i) { rk[p] = i; });
+    var rows = Object.keys(t.grades).map(function (fn) { return { fn: fn, g: t.grades[fn] }; })
+      .filter(function (r) { return r.g.name || (t.files || []).indexOf(r.fn) >= 0; })
+      .sort(function (a, b) { var ra = rk[a.g.period] !== undefined ? rk[a.g.period] : 9999, rb = rk[b.g.period] !== undefined ? rk[b.g.period] : 9999; return (ra - rb) || String(a.g.name || a.fn).localeCompare(String(b.g.name || b.fn)); });
+    var html = '<tr><th>Period</th><th>Student</th>' + parts.map(function (p) { return '<th class="num">' + esc(p.id) + '</th>'; }).join("") + '<th class="num">Total</th></tr>';
+    rows.forEach(function (r) {
+      var pts = r.g[type] || {}, tot = 0;
+      var cells = parts.map(function (p) { var s = 0; for (var i = 1; i <= p.pts; i++) if (pts[p.id + i]) s++; tot += s; return '<td class="num">' + s + '</td>'; }).join("");
+      html += '<tr class="clickable" data-fn="' + esc(r.fn) + '"><td>' + esc(r.g.period || "") + '</td><td>' + esc(r.g.name || r.fn) + '</td>' + cells + '<td class="num"><b>' + tot + '</b> / ' + st.max + '</td></tr>';
+    });
+    if (!rows.length) html += '<tr><td colspan="' + (parts.length + 3) + '" class="hint">No students in this test yet.</td></tr>';
+    var tbl = document.getElementById("detailTable");
+    tbl.innerHTML = html;
+    tbl.querySelectorAll("tr.clickable").forEach(function (tr) {
+      tr.addEventListener("click", function () { openStudentIn(id, tr.dataset.fn); });
+    });
+  }
+  async function openStudentIn(id, fn) {
+    testsModal.classList.remove("open");
+    if (id !== state.testId) await switchTest(id);
+    var i = files.findIndex(function (f) { return f.name === fn; });
+    if (i < 0) { toast("That student's PDF isn't saved in this browser. Load it again to see the work."); return; }
+    if (state.period !== ALL && gradesOf(files[i]).period !== state.period) { state.period = ALL; save(); renderPeriodSelect(); }
+    selectFile(i);
+  }
+  document.getElementById("testsBtn").addEventListener("click", function () { openTests(false); this.blur(); });
+  document.getElementById("testsClose").addEventListener("click", function () { testsModal.classList.remove("open"); });
+  document.getElementById("detailBack").addEventListener("click", showTestsHome);
+  document.getElementById("detailOpen").addEventListener("click", function () {
+    testsModal.classList.remove("open");
+    if (detailId && detailId !== state.testId) switchTest(detailId);
+  });
+  function createTest() {
+    var inp = document.getElementById("newTestName"), name = inp.value.trim();
+    if (!name) { inp.focus(); toast("Give the test a name first"); return; }
+    var t = makeTest(name);
+    state.tests[t.id] = t; inp.value = "";
+    testsModal.classList.remove("open");
+    switchTest(t.id);
+    emptyStateText();
+    toast("New test: " + name + ". Pick the question, then load the PDFs.");
+  }
+  document.getElementById("newTestBtn").addEventListener("click", createTest);
+  document.getElementById("newTestName").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); createTest(); } });
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+
   // ---------- Init ----------
+  renderTestSelect();
+  emptyStateText();
   renderPeriodSelect();
   renderSubjectSelect();
   if (!state.seenHelp && !Object.keys(state.rosters).length) setTimeout(openHelp, 300);
   showMode("student");
   buildRubric();
   updateRosterStatus();
+  loadTestFiles();
 })();
 </script>
 </body>
