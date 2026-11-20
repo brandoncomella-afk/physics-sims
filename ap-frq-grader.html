@@ -1212,8 +1212,27 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
           if (!d.objectStoreNames.contains("guides")) d.createObjectStore("guides");
           if (!d.objectStoreNames.contains("pdfs")) d.createObjectStore("pdfs");   // key "testId|file name" -> { name, blob, added }
         };
-        r.onsuccess = function () { res(r.result); };
+        var blocked = false;
+        r.onsuccess = function () {
+          var d = r.result;
+          // Let a newer version of this page upgrade the storage instead of getting stuck behind this tab.
+          d.onversionchange = function () { d.close(); dbP = null; };
+          if (blocked) { dbP = Promise.resolve(d); toast("Saving PDFs and scoring guides works again"); refreshGuide(); }
+          res(d);
+        };
         r.onerror = function () { res(null); };
+        // An older copy of the grader open in another tab holds the storage at the old version.
+        // Carry on without saved files (this session only) and say how to fix it, instead of hanging.
+        // A request queued behind a blocked upgrade gets no event at all, so give up waiting after a few seconds too.
+        var timer = setTimeout(function () { if (r.readyState !== "done") r.onblocked(); }, 3000);
+        r.addEventListener("success", function () { clearTimeout(timer); });
+        r.addEventListener("error", function () { clearTimeout(timer); });
+        r.onblocked = function () {
+          if (blocked) return;
+          clearTimeout(timer);
+          blocked = true; res(null);
+          setTimeout(function () { showMessage("Close your other AP FRQ Grader tabs", "Another tab still has the older version of the grader open, so this tab can't save PDFs or scoring guides yet.\n\nClose the other grader tabs (or reload them). Saving starts working again on its own; reload this page if it doesn't. Until then, scores are still saved, and anything you load works for this session only."); }, 400);
+        };
       } catch (e) { res(null); }
     });
     return dbP;
@@ -1921,9 +1940,9 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     files = recs.map(function (r) { return { name: r.name, file: r.blob }; });
     var missing = order.filter(function (n) { return !recs.some(function (r) { return r.name === n; }); });
     updateFileUI(); renderFileList();
-    var v = viewOrder();
+    var v = viewOrder(), wasGuide = mode === "guide";
     if (v.length) selectFile(v[0]);
-    else showMode("student");
+    showMode(wasGuide ? "guide" : "student");   // don't pull a teacher off the scoring guide when the PDFs finish loading
     if (missing.length && !files.length) toast("This test's PDFs aren't saved in this browser. Load them again; the scores are still here.");
     else if (missing.length) toast(missing.length + " PDF" + (missing.length === 1 ? " isn't" : "s aren't") + " saved in this browser; load " + (missing.length === 1 ? "it" : "them") + " again to see the work.");
   }
