@@ -338,6 +338,7 @@ async function startApp() {
   $("#signin").style.display = "none"; $("#app").style.display = "block";
   $("#who").textContent = `${ME.name} · ${ME.period} · #${ME.number}`;
   $("#signOut").style.display = "";
+  $("#main").innerHTML = '<div class="intro">Loading your progress…</div>';
   await pullProgress();
   VIEW = null;
   render();
