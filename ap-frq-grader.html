@@ -201,6 +201,10 @@
     padding: 10px 18px; border-radius: 8px; font-size: 13px; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; z-index: 60;
   }
   #toast.show { opacity: 0.95; }
+  #syncBtn.on { border-color: var(--one); }
+  #syncBtn.bad { border-color: var(--warn); color: var(--warn); }
+  .sync-code { width: 100%; height: 150px; font: 12px/1.4 ui-monospace, Menlo, Consolas, monospace; white-space: pre; }
+  .sync-url { width: 100%; font: 13px ui-monospace, Menlo, Consolas, monospace; padding: 6px; box-sizing: border-box; }
 
   @media (max-width: 760px) {
     #main { flex-direction: column; }
@@ -279,6 +283,7 @@
     <button id="helpBtn" title="How to format rosters, student PDFs and score files">How to set up files</button>
     <button id="exportBtn" class="primary" disabled title="Download the grades as a CSV file">Download CSV</button>
     <button id="sheetsBtn" disabled title="Copy the grades and open a new Google Sheet to paste them into">Open in Google Sheets</button>
+    <button id="syncBtn" title="Save scores to your own Google Sheet automatically, every time you confirm or move to the next PDF">Sheet sync: off</button>
   </header>
 
   <div id="main">
@@ -432,7 +437,7 @@
 <div class="overlay" id="helpModal">
   <div class="modal" style="width:min(760px,100%)">
     <h2>How to set up your files</h2>
-    <p>Everything stays in this browser: your rosters, the PDFs you load and the scores you enter are not uploaded anywhere. Export a CSV when you're done grading.</p>
+    <p>Everything stays in this browser: your rosters, the PDFs you load and the scores you enter are not uploaded anywhere. Export a CSV when you're done grading, or turn on <b>Sheet sync</b> to save scores to your own Google Sheet as you go (only the score table is sent, never the PDFs).</p>
 
     <h3 class="hh">0. Make a test</h3>
     <p>Use the test menu at the top left (or <b>Tests</b>) to start a <b>new test</b> each time you grade a new question, e.g. <i>Unit 3 TBR</i>. A test saves its own PDFs, scores, part splits and scoring guide in this browser, so you can come back later, click the test, and see every student's work and score. Rosters are shared across all tests.</p>
@@ -483,7 +488,7 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     </ul>
 
     <h3 class="hh">6. Saving your grades</h3>
-    <p><b>Download CSV</b> saves every student's points, part scores and totals, sorted by period. <b>Open in Google Sheets</b> copies the same table and opens a blank Google Sheet; click cell A1 and paste.</p>
+    <p><b>Download CSV</b> saves every student's points, part scores and totals, sorted by period. <b>Open in Google Sheets</b> copies the same table and opens a blank Google Sheet; click cell A1 and paste. <b>Sheet sync</b> does this for you: once it's connected to your own Google Sheet, the table is saved there every time you confirm or move to the next PDF, one tab per test.</p>
 
     <h3 class="hh">Keyboard shortcuts</h3>
     <p><kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd>, <kbd>-</kbd>, <kbd>=</kbd> toggle points in order · <kbd>←</kbd>/<kbd>→</kbd> previous/next PDF · <kbd>Space</kbd> scroll · <kbd>N</kbd> or <kbd>/</kbd> name box · <kbd>Enter</kbd> confirm imported scores · <kbd>G</kbd> scoring guide · <kbd>R</kbd> flip page</p>
@@ -864,6 +869,7 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     if (isConfirmed(f, state.type)) { gradesOf(f).auto = false; save(); markNameMatch(); }
     refreshRubric(); renderFileList();
     if (isConfirmed(f, state.type)) toast("Confirmed " + (gradesOf(f).name || f.name));
+    if (sheetSync) sheetSync.touch();
   }
   document.getElementById("confirmBtn").addEventListener("click", function () { toggleConfirm(); this.blur(); });
 
@@ -1050,6 +1056,7 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
 
   function selectFile(i) {
     if (i < 0 || i >= files.length) return;
+    if (sheetSync) sheetSync.touch();   // save what was just graded before moving on
     currentIndex = i;
     var f = files[i];
     var tq = taggedType(f);
@@ -1950,7 +1957,7 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     return {
       csv: table.map(function (r) { return r.map(csvSafe).join(","); }).join("\n"),
       tsv: table.map(function (r) { return r.map(function (c) { return String(c == null ? "" : c).replace(/[\t\r\n]+/g, " "); }).join("\t"); }).join("\n"),
-      types: types, rows: table.length - 1
+      types: types, rows: table.length - 1, csvRows: table
     };
   }
   function exportName(out, ext) {
@@ -2002,6 +2009,126 @@ P3,"Franklin, Rosalind",Q2,A1 A2 A3 B1 C1 D1 D2,</pre>
     this.blur();
     pasteFallback(buildCSV());
   });
+
+
+  // ---------- Sheet sync: the score table goes to the teacher's own Google Sheet (an Apps Script web app) ----------
+  // A snapshot of the current test's table is taken on each confirm or move to another PDF, then sent a moment later.
+  // Each send replaces that test's tab, so a missed or repeated send never leaves the sheet wrong.
+  var SYNC_SCRIPT = [
+    '// AP FRQ Grader: Sheet sync. Paste this into Extensions > Apps Script in the Google Sheet you want the scores in.',
+    '// Then Deploy > New deployment > Web app, Execute as: Me, Who has access: Anyone. Copy the web app URL into the grader.',
+    'function doPost(e) {',
+    '  var d = JSON.parse(e.postData.contents);',
+    '  var rows = d.rows || [];',
+    '  var name = String(d.test || "Grades").replace(/[\\[\\]*?\\/\\\\:]/g, " ").trim().slice(0, 90) || "Grades";',
+    '  var lock = LockService.getScriptLock();',
+    '  lock.waitLock(20000);',
+    '  try {',
+    '    var ss = SpreadsheetApp.getActiveSpreadsheet();',
+    '    var sh = ss.getSheetByName(name) || ss.insertSheet(name);',
+    '    sh.clearContents();',
+    '    if (rows.length) {',
+    '      var w = rows.reduce(function (m, r) { return Math.max(m, r.length); }, 0);',
+    '      rows = rows.map(function (r) { while (r.length < w) r.push(""); return r; });',
+    '      sh.getRange(1, 1, rows.length, w).setValues(rows);',
+    '      sh.setFrozenRows(1);',
+    '      sh.getRange(1, 1, 1, w).setFontWeight("bold");',
+    '    }',
+    '    sh.getRange(rows.length + 2, 1).setValue("Last saved from the AP FRQ Grader: " + new Date().toLocaleString());',
+    '    return ContentService.createTextOutput(JSON.stringify({ ok: true, rows: rows.length })).setMimeType(ContentService.MimeType.JSON);',
+    '  } finally { lock.releaseLock(); }',
+    '}',
+    'function doGet() {',
+    '  return ContentService.createTextOutput(JSON.stringify({ ok: true, hello: "AP FRQ Grader sheet sync" })).setMimeType(ContentService.MimeType.JSON);',
+    '}'
+  ].join("\n");
+  var sheetSync = (function () {
+    var pending = {}, timer = null, busy = false, lastOk = null, failed = false;
+    var btn = document.getElementById("syncBtn");
+    function url() { return state.syncUrl || ""; }
+    function label() {
+      btn.classList.toggle("on", !!url() && !failed);
+      btn.classList.toggle("bad", !!url() && failed);
+      btn.textContent = !url() ? "Sheet sync: off"
+        : failed ? "Sheet sync: not saved, retrying"
+        : Object.keys(pending).length || busy ? "Sheet sync: saving…"
+        : lastOk ? "Sheet sync: saved " + lastOk.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+        : "Sheet sync: on";
+    }
+    function touch() {
+      if (!url() || !files.length) return;
+      var t = curTest(), out = buildCSV();
+      // numbers stay numbers; everything else goes as text
+      var table = out.csvRows.map(function (r) { return r.map(function (c) { return typeof c === "number" ? c : String(c == null ? "" : c); }); });
+      pending[t.id] = { test: t.name || "Grades", rows: table };
+      label();
+      clearTimeout(timer); timer = setTimeout(flush, 1200);
+    }
+    async function flush() {
+      if (busy) return;
+      var ids = Object.keys(pending);
+      if (!ids.length || !url()) { label(); return; }
+      busy = true; label();
+      var id = ids[0], body = pending[id];
+      delete pending[id];
+      try {
+        var r = await fetch(url(), { method: "POST", body: JSON.stringify(body) });   // text/plain: no CORS preflight
+        var j = await r.json();
+        if (!j.ok) throw new Error(j.error || "not saved");
+        failed = false; lastOk = new Date();
+      } catch (e) {
+        if (!pending[id]) pending[id] = body;   // keep it unless something newer is already waiting
+        failed = true;
+        clearTimeout(timer); timer = setTimeout(flush, 15000);
+      } finally {
+        busy = false; label();
+        if (!failed && Object.keys(pending).length) flush();
+      }
+    }
+    function open() {
+      var copy = document.createElement("button"); copy.textContent = "Copy the script";
+      var test = document.createElement("button"); test.textContent = "Save & test";
+      var off = document.createElement("button"); off.textContent = "Turn off";
+      var ov = sheetsModal("Sheet sync",
+        '<p>Save your scores to your own Google Sheet automatically, every time you confirm or move to the next PDF. Each test gets its own tab, kept up to date. Only the score table is sent, never the PDFs. It goes straight to your sheet and nowhere else.</p>' +
+        '<ol style="padding-left:20px;margin:6px 0">' +
+        '<li>Make a Google Sheet for your grades (<a href="https://sheets.new" target="_blank" rel="noopener">sheets.new</a>), then choose <b>Extensions › Apps Script</b>.</li>' +
+        '<li>Delete what\'s there and paste this script (or click <b>Copy the script</b>), then save.<textarea class="sync-code" readonly></textarea></li>' +
+        '<li>Click <b>Deploy › New deployment</b>, pick type <b>Web app</b>, set <b>Execute as: Me</b> and <b>Who has access: Anyone</b>, then <b>Deploy</b> and allow access.</li>' +
+        '<li>Copy the <b>Web app URL</b> and paste it here:<input class="sync-url" placeholder="https://script.google.com/macros/s/…/exec"></li></ol>' +
+        '<p class="sync-status" style="margin:6px 0 0"></p>',
+        [copy, off, test]);
+      var ta = ov.querySelector(".sync-code"), inp = ov.querySelector(".sync-url"), st = ov.querySelector(".sync-status");
+      ta.value = SYNC_SCRIPT; inp.value = url();
+      off.style.display = url() ? "" : "none";
+      copy.addEventListener("click", function () {
+        try { navigator.clipboard.writeText(SYNC_SCRIPT).then(function () { toast("Script copied"); }, function () { ta.select(); }); } catch (e) { ta.select(); }
+      });
+      off.addEventListener("click", function () { state.syncUrl = ""; save(); pending = {}; failed = false; label(); ov.remove(); toast("Sheet sync is off"); });
+      test.addEventListener("click", async function () {
+        var u = inp.value.trim();
+        if (!/^https:\/\/script\.google(usercontent)?\.com\//.test(u)) { st.style.color = "var(--warn)"; st.textContent = "That doesn't look like an Apps Script web app URL. It starts with https://script.google.com/macros/s/ and ends in /exec."; return; }
+        test.disabled = true; st.style.color = ""; st.textContent = "Checking…";
+        try {
+          var j = await (await fetch(u)).json();
+          if (!j.ok) throw new Error();
+          state.syncUrl = u; save(); failed = false;
+          st.textContent = "Connected. Saving this test now…";
+          touch(); clearTimeout(timer); await flush();
+          st.style.color = failed ? "var(--warn)" : "";
+          st.textContent = failed ? "Connected, but saving failed. Check that the deployment is set to Who has access: Anyone." : files.length ? "Connected. This test is saved to your sheet." : "Connected. Scores will save once you load PDFs and start grading.";
+          off.style.display = "";
+        } catch (e) {
+          st.style.color = "var(--warn)";
+          st.textContent = "Couldn't reach that URL. Check it's the Web app URL (ending in /exec) and the deployment's access is Anyone.";
+        } finally { test.disabled = false; }
+      });
+    }
+    btn.addEventListener("click", function () { open(); this.blur(); });
+    window.addEventListener("beforeunload", function (e) { if (Object.keys(pending).length || busy) { flush(); e.preventDefault(); e.returnValue = ""; } });
+    label();
+    return { touch: touch, flush: flush };
+  })();
 
   // ---------- Test picker and Tests window ----------
   var testSelect = document.getElementById("testSelect");
